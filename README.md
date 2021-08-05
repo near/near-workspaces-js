@@ -110,7 +110,7 @@ Pro Tips
 ========
 
 * `SANDBOX_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
-* `createSandbox` config – you can pass _[2021-08-05 edit: will be able to pass]_ a config object as the first argument to `createSandbox`. This lets you _[will let you]_ to do things like:
+* `createSandbox` config – you can pass _[**2021-08-05 edit**: will be able to pass]_ a config object as the first argument to `createSandbox`. This lets you _[will let you]_ do things like:
   * skip initialization if specified data directory already exists
   * always recreate such data directory instead (the default behavior)
   * specify which port to run on
