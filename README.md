@@ -7,7 +7,7 @@ This software is in early beta.
 
 
 Demo & Visioning
-----------------
+================
 
 Click below for an intro & discussion of this library from 2021-08-03. As mentioned, feedback very welcome! Please create Issues on GitHub or otherwise get in touch with anything you'd like to see improved with this library.
 
@@ -104,3 +104,15 @@ Quick Start
    4. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
    5. While `call` is invoked on the account _doing the call_ (`alice.call('other', …)`), `view` is invoked on the account _being viewed_ (`other.view(…)`). This is because the caller of a view is irrelevant and ignored.
    6. `assert` comes from [Node's `assert` library](https://nodejs.org/api/assert.html), imported with `import { strict as assert } from "assert"`. In most real tests, your test runner will include its own assertion library. For examples using [Jest](https://jestjs.io/), check out [the `tests` directory here](./tests).
+
+
+Pro Tips
+========
+
+* `SANDBOX_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
+* `createSandbox` config – you can pass _[2021-08-05 edit: will be able to pass]_ a config object as the first argument to `createSandbox`. This lets you _[will let you]_ to do things like:
+  * skip initialization if specified data directory already exists
+  * always recreate such data directory instead (the default behavior)
+  * specify which port to run on
+  * and more!
+* escape hatch to `near-api-js` – the `Account` & `ContractAccount` types returned by `getAccount` and `getContractAccount` contain a **`najAccount`** property. This returns an [`Account` type from `near-api-js`](https://near.github.io/near-api-js/classes/account.account-1.html). If you need functionality that `near-runner` doesn't yet provide, this may give you a way to do it. (But please do send a Pull Request adding the functionality directly to `near-runner`!)
