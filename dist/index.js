@@ -22,11 +22,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSandbox = exports.ContractAccount = exports.Account = exports.SandboxRuntime = void 0;
+exports.createSandbox = exports.ContractState = exports.ContractAccount = exports.Account = exports.SandboxRuntime = void 0;
 const path_1 = require("path");
 const fs_1 = require("fs");
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
+const borsh = __importStar(require("borsh"));
 // import { CodeResult } from "near-api-js/src/providers/provider"
 const utils_1 = require("./utils");
 const server_1 = require("./server");
@@ -90,6 +91,9 @@ class Account {
     get accountId() {
         return this.najAccount.accountId;
     }
+    get provider() {
+        return this.connection.provider;
+    }
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
      *
@@ -150,11 +154,47 @@ class ContractAccount extends Account {
         }
         return res.result;
     }
+    async viewState() {
+        return new ContractState(await this.najAccount.viewState(""));
+    }
+    async patchState(key, val, borshSchema) {
+        const data_key = Buffer.from(key).toString('base64');
+        let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
+        value = Buffer.from(value).toString('base64');
+        const account_id = this.accountId;
+        return this.provider.sendJsonRpc("sandbox_patch_state", {
+            records: [
+                {
+                    "Data": {
+                        account_id,
+                        data_key,
+                        value
+                    }
+                }
+            ]
+        });
+    }
 }
 exports.ContractAccount = ContractAccount;
-async function runFunction2(configOrFunction, fn) {
-    // return runFunction(f)
+class ContractState {
+    constructor(dataArray) {
+        this.data = new Map();
+        dataArray.forEach(({ key, value }) => {
+            this.data.set(key.toString(), value);
+        });
+    }
+    get_raw(key) {
+        return this.data.get(key) || Buffer.from("");
+    }
+    get(key, borshSchema) {
+        const value = this.get_raw(key);
+        if (borshSchema) {
+            return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
+        }
+        return value.toJSON();
+    }
 }
+exports.ContractState = ContractState;
 async function runFunction(f, config) {
     const server = await server_1.SandboxServer.init(config);
     try {

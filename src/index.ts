@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
-import borsh from "borsh";
+import * as borsh from "borsh";
 // import { CodeResult } from "near-api-js/src/providers/provider"
 
 
@@ -203,13 +203,13 @@ export class ContractAccount extends Account {
     return res.result;
   }
 
-  async viewState(): Promise<Array<{key: Buffer; value: Buffer;}>> {
-    return this.najAccount.viewState("");
+  async viewState(): Promise<ContractState> {
+    return new ContractState(await this.najAccount.viewState(""));
   }
 
   async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
     const data_key = Buffer.from(key).toString('base64');
-    let value  = (borshSchema) ? borsh.serialize(borshSchema, val): JSON.stringify(val);
+    let value  = (borshSchema) ? borsh.serialize(borshSchema, val): val;
     value = Buffer.from(value).toString('base64');
     const account_id = this.accountId;
     return this.provider.sendJsonRpc("sandbox_patch_state", {
@@ -228,17 +228,16 @@ export class ContractAccount extends Account {
 }
 
 export class ContractState {
-  private data: Map<Buffer, Buffer>;
+  private data: Map<string, Buffer>;
   constructor(dataArray: Array<{key: Buffer; value: Buffer;}>){
     this.data = new Map();
     dataArray.forEach(({key, value}) => {
-      this.data.set(key, value);
+      this.data.set(key.toString(), value);
     });
   }
 
   get_raw(key: string): Buffer {
-    let k = Buffer.from(key, "base64");
-    return this.data.get(k) || Buffer.from("");
+    return this.data.get(key) || Buffer.from("");
   }
 
   get(key: string, borshSchema?: {type: any, schema: any}): any {
