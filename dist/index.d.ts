@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
 export declare class SandboxRuntime {
@@ -25,6 +26,7 @@ export declare class Account {
     constructor(account: nearAPI.Account);
     get connection(): nearAPI.Connection;
     get accountId(): string;
+    get provider(): nearAPI.providers.JsonRpcProvider;
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
      *
@@ -46,6 +48,20 @@ export declare class Account {
 export declare class ContractAccount extends Account {
     view_raw(method: string, args?: Args): Promise<any>;
     view(method: string, args?: Args): Promise<any>;
+    viewState(): Promise<ContractState>;
+    patchState(key: string, val: any, borshSchema?: any): Promise<any>;
+}
+export declare class ContractState {
+    private data;
+    constructor(dataArray: Array<{
+        key: Buffer;
+        value: Buffer;
+    }>);
+    get_raw(key: string): Buffer;
+    get(key: string, borshSchema?: {
+        type: any;
+        schema: any;
+    }): any;
 }
 export declare type TestRunnerFn = (s: SandboxRuntime) => Promise<void>;
 export declare type SandboxRunner = (f: TestRunnerFn) => Promise<void>;

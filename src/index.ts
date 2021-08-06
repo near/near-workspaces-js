@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
+import * as borsh from "borsh";
 // import { CodeResult } from "near-api-js/src/providers/provider"
 
 
@@ -21,7 +22,7 @@ export class SandboxRuntime {
     near: nearAPI.Near,
     root: nearAPI.Account,
     masterKey: nearAPI.KeyPair,
-    public homeDir: string
+    public homeDir: string,
   ) {
     this.near = near;
     this.root = new Account(root);
@@ -119,6 +120,10 @@ export class Account {
     return this.najAccount.accountId;
   }
 
+  get provider(): nearAPI.providers.JsonRpcProvider {
+    return this.connection.provider as nearAPI.providers.JsonRpcProvider;
+  }
+
   /**
    * Call a NEAR contract and return full results with raw receipts, etc. Example:
    *
@@ -197,16 +202,55 @@ export class ContractAccount extends Account {
     }
     return res.result;
   }
+
+  async viewState(): Promise<ContractState> {
+    return new ContractState(await this.najAccount.viewState(""));
+  }
+
+  async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
+    const data_key = Buffer.from(key).toString('base64');
+    let value  = (borshSchema) ? borsh.serialize(borshSchema, val): val;
+    value = Buffer.from(value).toString('base64');
+    const account_id = this.accountId;
+    return this.provider.sendJsonRpc("sandbox_patch_state", {
+      records: [
+        { 
+          "Data": {
+            account_id,
+            data_key,
+            value
+          }
+        }
+      ]
+    })
+  }
+
+}
+
+export class ContractState {
+  private data: Map<string, Buffer>;
+  constructor(dataArray: Array<{key: Buffer; value: Buffer;}>){
+    this.data = new Map();
+    dataArray.forEach(({key, value}) => {
+      this.data.set(key.toString(), value);
+    });
+  }
+
+  get_raw(key: string): Buffer {
+    return this.data.get(key) || Buffer.from("");
+  }
+
+  get(key: string, borshSchema?: {type: any, schema: any}): any {
+    const value = this.get_raw(key);
+    if (borshSchema) {
+      return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
+    }
+    return value.toJSON();
+  }
+
 }
 
 export type TestRunnerFn = (s: SandboxRuntime) => Promise<void>;
-
-async function runFunction2(
-  configOrFunction: TestRunnerFn | Partial<Config>,
-  fn?: TestRunnerFn
-): Promise<void> {
-  // return runFunction(f)
-}
 
 async function runFunction(
   f: TestRunnerFn,
