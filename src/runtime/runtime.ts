@@ -6,7 +6,7 @@ import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
 import { debug } from '../utils';
 
-export type TestRunnerFn = (s: Runtime) => Promise<void>;
+export type RunnerFn = (s: Runtime) => Promise<void>;
 
 export interface Config {
   homeDir: string;
@@ -16,7 +16,10 @@ export interface Config {
   refDir: string | null;
   network: 'sandbox' | 'testnet';
   rootAccountName: string;
-  rpcAddr?: string;
+  rpcAddr: string;
+  helperUrl?: string;
+  intialBalance?: string;
+  walletUrl?: string;
 }
 
 export abstract class Runtime {
@@ -28,17 +31,31 @@ export abstract class Runtime {
   }
 
   abstract get defaultConfig(): Config;
-  abstract run(fn: TestRunnerFn): Promise<Runtime>;
+  
+  abstract setup(): Promise<void>;
+  abstract tearDown(): Promise<void>;
 
-  protected root?: Account;
-  protected near?: nearAPI.Near;
-  protected masterKey?: nearAPI.KeyPair;
+  protected root!: Account;
+  protected near!: nearAPI.Near;
+  protected masterKey!: nearAPI.KeyPair;
 
   // TODO: should probably be protected
   config: Config;
 
   constructor(config: Partial<Config>) {
     this.config = this.getConfig(config);
+  }
+
+  get homeDir(): string {
+    return this.config.homeDir;
+  }
+
+  get init(): boolean {
+    return this.config.init;
+  }
+
+  get rpcAddr(): string {
+    return this.config.rpcAddr;
   }
 
   private getConfig(config: Partial<Config>): Config {
@@ -48,29 +65,30 @@ export abstract class Runtime {
     };
   }
 
-  protected async connect(
-    rpcAddr: string,
-    homeDir: string,
-    init?: boolean
-  ): Promise<void> {
-    const keyFile = require(join(homeDir, "validator_key.json"));
+  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
+    const keyFile = require(join(this.homeDir, "validator_key.json"));
     this.masterKey = nearAPI.utils.KeyPair.fromString(
       keyFile.secret_key || keyFile.private_key
     );
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
-      homeDir
+      this.homeDir
     );
-    if (init) {
+    if (this.init) {
       await keyStore.setKey(
         this.config.network,
         this.config.rootAccountName,
         this.masterKey
       );
     }
+    return keyStore;
+  }
+
+  async connect(): Promise<void> {
+    const keyStore = await this.getKeyStore();
     this.near = await nearAPI.connect({
       keyStore,
       networkId: this.config.network,
-      nodeUrl: rpcAddr,
+      nodeUrl: this.rpcAddr,
     });
     this.root = new Account(new nearAPI.Account(
       this.near.connection,
@@ -78,24 +96,17 @@ export abstract class Runtime {
     ));
   }
 
-  checkConnected(): void {
-    if (!this.root || !this.near || !this.masterKey) {
-      throw new Error('need to call `connect`');
-    }
-  }
 
   get pubKey(): nearAPI.utils.key_pair.PublicKey {
-    this.checkConnected();
-    return this.masterKey!.getPublicKey();
+    return this.masterKey.getPublicKey();
   }
 
   async createAccount(name: string): Promise<Account> {
-    this.checkConnected();
-    const pubKey = await this.near!.connection.signer.createKey(
+    const pubKey = await this.near.connection.signer.createKey(
       name,
       this.config.network
     );
-    await this.root!.najAccount.createAccount(
+    await this.root.najAccount.createAccount(
       name,
       pubKey,
       new BN(10).pow(new BN(25))
@@ -108,13 +119,12 @@ export abstract class Runtime {
     wasm: string,
     initialDeposit: BN = new BN(10).pow(new BN(25))
   ): Promise<ContractAccount> {
-    this.checkConnected();
-    const pubKey = await this.near!.connection.signer.createKey(
+    const pubKey = await this.near.connection.signer.createKey(
       name,
       this.config.network
     );
     const najContractAccount =
-      await this.root!.najAccount.createAndDeployContract(
+      await this.root.najAccount.createAndDeployContract(
         name,
         pubKey,
         await fs.readFile(wasm),
@@ -124,26 +134,35 @@ export abstract class Runtime {
   }
 
   getRoot(): Account {
-    this.checkConnected();
-    return this.root!;
+    return this.root;
   }
 
   getAccount(name: string): Account {
-    this.checkConnected();
     return new Account(
-      new nearAPI.Account(this.near!.connection, name)
+      new nearAPI.Account(this.near.connection, name)
     );
   }
 
   getContractAccount(name: string): ContractAccount {
-    this.checkConnected();
     return new ContractAccount(
-      new nearAPI.Account(this.near!.connection, name)
+      new nearAPI.Account(this.near.connection, name)
     );
+  }
+
+  isSandbox(): boolean {
+    return this.config.network == "sandbox";
+  }
+
+  isTestnet(): boolean {
+    return this.config.network == "testnet";
   }
 }
 
 export class TestnetRuntime extends Runtime {
+  // Doesn't need setup or tearDown since the server is already live
+  async setup(): Promise<void> {}
+  async tearDown(): Promise<void> {}
+  
   get defaultConfig(): Config {
     return {
       homeDir: '',
@@ -153,14 +172,19 @@ export class TestnetRuntime extends Runtime {
       refDir: null,
       network: 'testnet',
       rootAccountName: 'oh-no',
+      rpcAddr: 'https://rpc.testnet.near.org',
+      walletUrl: "https://wallet.testnet.near.org",
+      helperUrl: "https://helper.testnet.near.org",
     }
   }
-  async run(_fn: TestRunnerFn): Promise<Runtime> {
+  async run(_fn: RunnerFn): Promise<Runtime> {
     throw new Error("TestnetRuntime coming soon!");
   }
 }
 
 class SandboxRuntime extends Runtime {
+  private server!: SandboxServer;
+
   get defaultConfig(): Config {
     const port = SandboxServer.nextPort();
     return {
@@ -171,26 +195,18 @@ class SandboxRuntime extends Runtime {
       refDir: null,
       network: 'sandbox',
       rootAccountName: 'test.near',
+      rpcAddr: `http://localhost:${port}`
     };
   }
 
-  async run(f: TestRunnerFn): Promise<Runtime> {
-    const server = await SandboxServer.init(this.config);
-    try {
-      await server.start(); // Wait until server is ready
-      await this.connect(
-        server.rpcAddr,
-        server.homeDir,
-        this.config.init
-      );
-      await f(this);
-      return this;
-    } catch (e){
-      console.error(e)
-      throw e
-    } finally {
-      debug("Closing server with port " + server.port);
-      server.close();
-    }
+  async setup(): Promise<void> {
+    this.server = await SandboxServer.init(this.config);
+    await this.server.start();
   }
+
+  async tearDown(): Promise<void> {
+    debug("Closing server with port " + this.server.port);
+    this.server.close();
+  }
+
 }

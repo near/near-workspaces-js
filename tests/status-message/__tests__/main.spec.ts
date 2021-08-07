@@ -93,7 +93,7 @@ const schema = new Map([
 ]);
 
 test('View state', async () => {
-  await runner.run(async (runtime: Runtime) => {
+  await runner.runSandbox(async (runtime: Runtime) => {
     const ali = runtime.getAccount(ALI);
     const contract = runtime.getContractAccount(CONTRACT);
     await ali.call(CONTRACT, "set_status", { message: "hello" })
@@ -114,7 +114,7 @@ test('View state', async () => {
 
 
 test('Patch state', async () => {
-  await runner.run(async (runtime: Runtime) => {
+  await runner.runSandbox(async (runtime: Runtime) => {
     const ali = runtime.getAccount(ALI);
     const contract = runtime.getContractAccount(CONTRACT);
     // contract must have some state for viewState & patchState to work
