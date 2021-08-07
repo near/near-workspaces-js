@@ -4,10 +4,9 @@ import * as borsh from "borsh";
 
 jest.setTimeout(15000)
 
-// sandbox creates sub-accounts of 'test.near'
-const ALI = "ali.test.near";
-const BOB = "bob.test.near";
-const CONTRACT = "status-message.test.near";
+const ALI = "ali";
+const BOB = "bob";
+const CONTRACT = "status-message";
 
 let sandboxRunner: SandboxRunner
 
