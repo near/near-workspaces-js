@@ -2,7 +2,7 @@ import { strict as assert } from "assert";
 import { Runner, Runtime } from "../../../src";
 import * as borsh from "borsh";
 
-jest.setTimeout(15000)
+jest.setTimeout(30000)
 
 const ALI = "ali";
 const BOB = "bob";
