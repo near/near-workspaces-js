@@ -22,7 +22,8 @@ export class Runner {
     return new Runner({
       ...config,
       init: false,
-      refDir: runtime.config.homeDir
+      refDir: runtime.config.homeDir, 
+      initFn: fn
     });
   }
 

@@ -1,12 +1,15 @@
 import { promises as fs } from "fs";
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
+import { KeyPair } from "near-api-js";
 import { join } from "path";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
 import { debug } from '../utils';
 
 export type RunnerFn = (s: Runtime) => Promise<void>;
+
+const DEFAULT_INITIAL_DEPOSIT = "1" + "0".repeat(25);
 
 export interface Config {
   homeDir: string;
@@ -15,11 +18,12 @@ export interface Config {
   rm: boolean;
   refDir: string | null;
   network: 'sandbox' | 'testnet';
-  rootAccountName: string;
+  rootAccountName?: string;
   rpcAddr: string;
   helperUrl?: string;
-  intialBalance?: string;
+  initialBalance?: string;
   walletUrl?: string;
+  initFn?: RunnerFn;
 }
 
 export abstract class Runtime {
@@ -58,25 +62,51 @@ export abstract class Runtime {
     return this.config.rpcAddr;
   }
 
+  get network(): string {
+    return this.config.network;
+  }
+
+  get masterAccount(): string {
+    return this.config.rootAccountName!;
+  }
+
   private getConfig(config: Partial<Config>): Config {
+    const defaultConfig = this.defaultConfig;
+    defaultConfig.rootAccountName = config.rootAccountName || this.randomAccountId();
     return {
       ...this.defaultConfig,
       ...config
     };
   }
 
+  private async getKeyFromFile(): Promise<nearAPI.KeyPair> {
+    const filePath = join(this.homeDir, "validator_key.json");
+    try {
+      const keyFile = require(filePath);
+      return nearAPI.utils.KeyPair.fromString(
+        keyFile.secret_key || keyFile.private_key
+      );
+    } catch (e) {
+      
+    }
+    const file = await fs.open(filePath, "w");
+    const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
+    await file.writeFile(JSON.stringify({
+      secret_key: keyPair.toString()
+    }));
+    file.close();
+    return keyPair;
+  }
+
   async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
-    const keyFile = require(join(this.homeDir, "validator_key.json"));
-    this.masterKey = nearAPI.utils.KeyPair.fromString(
-      keyFile.secret_key || keyFile.private_key
-    );
+    this.masterKey = await this.getKeyFromFile();
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
       this.homeDir
     );
     if (this.init) {
       await keyStore.setKey(
         this.config.network,
-        this.config.rootAccountName,
+        this.masterAccount,
         this.masterKey
       );
     }
@@ -89,27 +119,23 @@ export abstract class Runtime {
       keyStore,
       networkId: this.config.network,
       nodeUrl: this.rpcAddr,
+      masterAccount: this.masterAccount,
     });
     this.root = new Account(new nearAPI.Account(
       this.near.connection,
-      this.config.rootAccountName
+      this.masterAccount
     ));
   }
-
 
   get pubKey(): nearAPI.utils.key_pair.PublicKey {
     return this.masterKey.getPublicKey();
   }
 
-  async createAccount(name: string): Promise<Account> {
-    const pubKey = await this.near.connection.signer.createKey(
+  async createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> {
+    const pubKey = await this.addKey(name, keyPair);
+    await this.near.accountCreator.createAccount(
       name,
-      this.config.network
-    );
-    await this.root.najAccount.createAccount(
-      name,
-      pubKey,
-      new BN(10).pow(new BN(25))
+      pubKey
     );
     return this.getAccount(name);
   }
@@ -119,10 +145,7 @@ export abstract class Runtime {
     wasm: string,
     initialDeposit: BN = new BN(10).pow(new BN(25))
   ): Promise<ContractAccount> {
-    const pubKey = await this.near.connection.signer.createKey(
-      name,
-      this.config.network
-    );
+    const pubKey = await this.addKey(name);
     const najContractAccount =
       await this.root.najAccount.createAndDeployContract(
         name,
@@ -156,13 +179,32 @@ export abstract class Runtime {
   isTestnet(): boolean {
     return this.config.network == "testnet";
   }
+  
+  protected randomAccountId(keyPair?: nearAPI.KeyPair): string {
+    let accountId;
+    // create random number with at least 7 digits
+    const randomNumber = Math.floor(Math.random() * (9999999 - 1000000) + 1000000);
+    accountId = `dev-${Date.now()}-${randomNumber}`;
+    return accountId;
+  }
+
+  protected async addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey> {
+    let pubKey: nearAPI.utils.key_pair.PublicKey;
+    if (keyPair) {
+      const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
+      pubKey = await key.getPublicKey();
+    } else {
+      pubKey = await this.near.connection.signer.createKey(
+      name,
+      this.config.network
+     );
+    }
+    return pubKey;
+  }
 }
 
 export class TestnetRuntime extends Runtime {
-  // Doesn't need setup or tearDown since the server is already live
-  async setup(): Promise<void> {}
-  async tearDown(): Promise<void> {}
-  
+
   get defaultConfig(): Config {
     return {
       homeDir: '',
@@ -171,14 +213,34 @@ export class TestnetRuntime extends Runtime {
       rm: false,
       refDir: null,
       network: 'testnet',
-      rootAccountName: 'oh-no',
       rpcAddr: 'https://rpc.testnet.near.org',
       walletUrl: "https://wallet.testnet.near.org",
-      helperUrl: "https://helper.testnet.near.org",
+      helperUrl: "https://helper.testnet.near.org"
     }
   }
-  async run(_fn: RunnerFn): Promise<Runtime> {
-    throw new Error("TestnetRuntime coming soon!");
+
+  // Run inital function so that function starts at initial state
+  async setup(): Promise<void> {
+
+  }
+
+  // Delete any accounts created
+  async tearDown(): Promise<void> {
+
+  }
+
+  // TODO: create temp account and track to be deleted
+  createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
+    return super.createAccount(name, keyPair);
+  }
+
+  async createAndDeploy(
+    name: string,
+    wasm: string,
+    initialDeposit: BN = new BN(10).pow(new BN(25))
+  ): Promise<ContractAccount> {
+    // TODO: dev deploy!!
+    return super.createAndDeploy(name, wasm, initialDeposit);
   }
 }
 
@@ -195,8 +257,13 @@ class SandboxRuntime extends Runtime {
       refDir: null,
       network: 'sandbox',
       rootAccountName: 'test.near',
-      rpcAddr: `http://localhost:${port}`
+      rpcAddr: `http://localhost:${port}`,
+      initialBalance: DEFAULT_INITIAL_DEPOSIT,
     };
+  }
+
+  get rpcAddr(): string {
+    return `http://localhost:${this.config.port}`;
   }
 
   async setup(): Promise<void> {
