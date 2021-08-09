@@ -1,6 +1,5 @@
 import { promises as fs } from "fs";
 import * as nearAPI from "near-api-js";
-import { KeyPair } from "near-api-js";
 import { join } from "path";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
