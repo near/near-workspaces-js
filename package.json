@@ -19,7 +19,9 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
-    "test": "jest"
+    "test:testnet": "SANDBOX_DEBUG=true ts-node ./tests/status-message/__tests__/testnet.ts",
+    "test:sandbox": "jest",
+    "test": "yarn test:sandbox && yarn test:testnet"
   },
   "files": [
     "dist/*"

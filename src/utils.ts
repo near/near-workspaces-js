@@ -1,4 +1,4 @@
-import * as fs  from "fs/promises";
+import * as fs from "fs/promises";
 import { PathLike } from "fs";
 import { promisify } from "util";
 import {ChildProcess, spawn as _spawn} from "child_process";
@@ -41,3 +41,7 @@ export function debug(s: string | Buffer | null | undefined, ...args: any[]): vo
 }
 
 export const copyDir = promisify(fs_extra.copy);
+
+export function toYocto(amount: string): string {
+  return amount + "0".repeat(24);
+}

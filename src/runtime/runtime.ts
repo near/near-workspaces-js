@@ -4,11 +4,11 @@ import { join } from "path";
 import * as os from "os";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
-import { debug } from '../utils';
+import { debug, toYocto} from '../utils';
 
 export type RunnerFn = (s: Runtime) => Promise<void>;
 
-const DEFAULT_INITIAL_DEPOSIT = "1" + "0".repeat(25);
+const DEFAULT_INITIAL_DEPOSIT = toYocto("10");
 
 function randomAccountId(): string {
   let accountId;
@@ -250,7 +250,7 @@ export class TestnetRuntime extends Runtime {
       walletUrl: "https://wallet.testnet.near.org",
       helperUrl: "https://helper.testnet.near.org",
       explorerUrl: "https://explorer.testnet.near.org",
-      initialBalance: "1" + "0".repeat(25)
+      initialBalance: DEFAULT_INITIAL_DEPOSIT,
     }
   }
 
@@ -289,7 +289,8 @@ export class TestnetRuntime extends Runtime {
         this.config.network,
         this.masterAccount
       )
-      }`);
+      }
+      https://explorer.testnet.near.org/accounts/${this.masterAccount}`);
   }
 
   async afterConnect(): Promise<void> {
@@ -305,8 +306,11 @@ export class TestnetRuntime extends Runtime {
   }
 
   // TODO: create temp account and track to be deleted
-  createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
-    return super.createAccount(this.makeSubAccount(name), keyPair);
+  async createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
+    // TODO: subaccount done twice
+    const account = await super.createAccount(this.makeSubAccount(name), keyPair);
+    debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+    return account
   }
 
   async createAndDeploy(
@@ -314,7 +318,9 @@ export class TestnetRuntime extends Runtime {
     wasm: string,
   ): Promise<ContractAccount> {
     // TODO: dev deploy!!
-    return super.createAndDeploy(this.makeSubAccount(name), wasm);
+    const account = await super.createAndDeploy(this.makeSubAccount(name), wasm);
+    debug(`Deployed new account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+    return account
   }
 
   getAccount(name: string): Account {
