@@ -31,14 +31,15 @@ export class Account {
    * @returns nearAPI.providers.FinalExecutionOutcome
    */
   async call_raw(
-    contractId: string,
+    contractId: ContractAccount | string,
     methodName: string,
     args: object,
     gas: string | BN = new BN(25 * 10**12),
     attachedDeposit: string | BN = new BN('0'),
   ): Promise<any> {
+    const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
     const txResult = await this.najAccount.functionCall({
-      contractId,
+      contractId: accountId,
       methodName,
       args,
       gas: new BN(gas),
@@ -55,7 +56,7 @@ export class Account {
    * @returns any parsed return value, or throws with an error if call failed
    */
   async call(
-    contractId: string,
+    contractId: ContractAccount | string,
     methodName: string,
     args: object,
     gas: string | BN = new BN(30 * 10**12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ

@@ -250,6 +250,7 @@ export class TestnetRuntime extends Runtime {
       walletUrl: "https://wallet.testnet.near.org",
       helperUrl: "https://helper.testnet.near.org",
       explorerUrl: "https://explorer.testnet.near.org",
+      initialBalance: "1" + "0".repeat(25)
     }
   }
 
@@ -305,7 +306,7 @@ export class TestnetRuntime extends Runtime {
 
   // TODO: create temp account and track to be deleted
   createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
-    return super.createAccount(name, keyPair);
+    return super.createAccount(this.makeSubAccount(name), keyPair);
   }
 
   async createAndDeploy(
@@ -313,7 +314,19 @@ export class TestnetRuntime extends Runtime {
     wasm: string,
   ): Promise<ContractAccount> {
     // TODO: dev deploy!!
-    return super.createAndDeploy(name, wasm);
+    return super.createAndDeploy(this.makeSubAccount(name), wasm);
+  }
+
+  getAccount(name: string): Account {
+    return super.getAccount(this.makeSubAccount(name));
+  }
+
+  getContractAccount(name: string): ContractAccount {
+    return super.getContractAccount(this.makeSubAccount(name));
+  }
+
+  private makeSubAccount(name: string): string {
+    return `${name}.${this.masterAccount}`;
   }
 }
 
