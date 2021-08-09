@@ -6,6 +6,9 @@ class Runner {
     constructor(config) {
         this.config = config;
     }
+    /** Create the initial enviorment for the test to run in.
+     * For example create accounts and deploy contracts that future tests will use.
+     */
     static async create(configOrFunction, f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         const runner = new Runner(config);
@@ -13,13 +16,30 @@ class Runner {
         return new Runner({
             ...config,
             init: false,
-            refDir: runtime.config.homeDir
+            refDir: runtime.config.homeDir,
+            initFn: fn
         });
     }
+    /**
+     * Sets up the context, runs the function, and tears it down.
+     * @param fn function to pass runtime to.
+     * @returns the runtime used
+     */
     async run(fn) {
         const runtime = await runtime_1.Runtime.create(this.config);
         await runtime.run(fn);
         return runtime;
+    }
+    /**
+     * Only runs the function if the network is sandbox.
+     * @param fn is the function to run
+     * @returns
+     */
+    async runSandbox(fn) {
+        if (this.config.network == "sandbox") {
+            return this.run(fn);
+        }
+        return null;
     }
 }
 exports.Runner = Runner;

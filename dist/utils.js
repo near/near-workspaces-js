@@ -36,11 +36,15 @@ exports.rm = util_1.promisify(rimraf_1.default);
 const sandboxBinary = () => getBinary_1.default().binaryPath;
 exports.sandboxBinary = sandboxBinary;
 async function exists(d) {
+    let file;
     try {
-        await fs.access(d);
+        file = await fs.open(d, 'r');
     }
     catch (e) {
         return false;
+    }
+    finally {
+        await (file === null || file === void 0 ? void 0 : file.close());
     }
     return true;
 }

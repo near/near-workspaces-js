@@ -1,5 +1,4 @@
 import { promises as fs } from "fs";
-import BN from "bn.js";
 import * as nearAPI from "near-api-js";
 import { KeyPair } from "near-api-js";
 import { join } from "path";
@@ -27,11 +26,21 @@ export interface Config {
 }
 
 export abstract class Runtime {
-  static async create(config: Partial<Config>): Promise<Runtime> {
+  static async create(config: Partial<Config>, f?: RunnerFn): Promise<Runtime> {
     if (config.network === 'testnet') {
-      return new TestnetRuntime(config)
+      const runtime = new TestnetRuntime(config)
+      if (f) {
+        debug('Skipping initialization function for testnet; will run before each `runner.run`');
+      }
+      return runtime;
+    } else {
+      const runtime = new SandboxRuntime(config);
+      if (f) {
+        debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
+        await runtime.run(f);
+      }
+      return runtime;
     }
-    return new SandboxRuntime(config)
   }
 
   abstract get defaultConfig(): Config;
@@ -87,7 +96,7 @@ export abstract class Runtime {
         keyFile.secret_key || keyFile.private_key
       );
     } catch (e) {
-      
+
     }
     const file = await fs.open(filePath, "w");
     const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
@@ -120,11 +129,33 @@ export abstract class Runtime {
       networkId: this.config.network,
       nodeUrl: this.rpcAddr,
       masterAccount: this.masterAccount,
+      helperUrl: this.config.helperUrl,
+      walletUrl: this.config.walletUrl,
+      initialBalance: this.config.initialBalance,
     });
     this.root = new Account(new nearAPI.Account(
       this.near.connection,
       this.masterAccount
     ));
+  }
+
+  async run(fn: RunnerFn): Promise<void> {
+    try {
+      // Run any setup before trying to connect to a server
+      debug("About to call setup")
+      await this.setup();
+      // Set up connection to node
+      debug("About to connect")
+      await this.connect();
+      // Run function
+      await fn(this);
+    } catch (e){
+      console.error(e)
+      throw e; //TODO Figure out better error handling
+    } finally {
+      // Do any needed teardown
+      await this.tearDown();
+    }
   }
 
   get pubKey(): nearAPI.utils.key_pair.PublicKey {
@@ -143,17 +174,17 @@ export abstract class Runtime {
   async createAndDeploy(
     name: string,
     wasm: string,
-    initialDeposit: BN = new BN(10).pow(new BN(25))
   ): Promise<ContractAccount> {
     const pubKey = await this.addKey(name);
-    const najContractAccount =
-      await this.root.najAccount.createAndDeployContract(
-        name,
-        pubKey,
-        await fs.readFile(wasm),
-        initialDeposit
-      );
-    return new ContractAccount(najContractAccount);
+    await this.near.accountCreator.createAccount(
+      name,
+      pubKey
+    );
+    const najAccount = this.near.account(name);
+    const contractData = await fs.readFile(wasm);
+    const result = await najAccount.deployContract(contractData);
+    debug(`deployed contract ${wasm} to account ${name} with result ${JSON.stringify(result)}`);
+    return new ContractAccount(najAccount);
   }
 
   getRoot(): Account {
@@ -161,9 +192,7 @@ export abstract class Runtime {
   }
 
   getAccount(name: string): Account {
-    return new Account(
-      new nearAPI.Account(this.near.connection, name)
-    );
+    return new Account(this.near.account(name));
   }
 
   getContractAccount(name: string): ContractAccount {
@@ -237,10 +266,9 @@ export class TestnetRuntime extends Runtime {
   async createAndDeploy(
     name: string,
     wasm: string,
-    initialDeposit: BN = new BN(10).pow(new BN(25))
   ): Promise<ContractAccount> {
     // TODO: dev deploy!!
-    return super.createAndDeploy(name, wasm, initialDeposit);
+    return super.createAndDeploy(name, wasm);
   }
 }
 

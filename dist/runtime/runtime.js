@@ -30,6 +30,7 @@ const path_1 = require("path");
 const account_1 = require("./account");
 const server_1 = require("./server");
 const utils_1 = require("../utils");
+const DEFAULT_INITIAL_DEPOSIT = "1" + "0".repeat(25);
 class Runtime {
     constructor(config) {
         this.config = this.getConfig(config);
@@ -40,58 +41,128 @@ class Runtime {
         }
         return new SandboxRuntime(config);
     }
+    get homeDir() {
+        return this.config.homeDir;
+    }
+    get init() {
+        return this.config.init;
+    }
+    get rpcAddr() {
+        return this.config.rpcAddr;
+    }
+    get network() {
+        return this.config.network;
+    }
+    get masterAccount() {
+        return this.config.rootAccountName;
+    }
     getConfig(config) {
+        const defaultConfig = this.defaultConfig;
+        defaultConfig.rootAccountName = config.rootAccountName || this.randomAccountId();
         return {
             ...this.defaultConfig,
             ...config
         };
     }
-    async connect(rpcAddr, homeDir, init) {
-        const keyFile = require(path_1.join(homeDir, "validator_key.json"));
-        this.masterKey = nearAPI.utils.KeyPair.fromString(keyFile.secret_key || keyFile.private_key);
-        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(homeDir);
-        if (init) {
-            await keyStore.setKey(this.config.network, this.config.rootAccountName, this.masterKey);
+    async getKeyFromFile() {
+        const filePath = path_1.join(this.homeDir, "validator_key.json");
+        try {
+            const keyFile = require(filePath);
+            return nearAPI.utils.KeyPair.fromString(keyFile.secret_key || keyFile.private_key);
         }
+        catch (e) {
+        }
+        const file = await fs_1.promises.open(filePath, "w");
+        const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
+        await file.writeFile(JSON.stringify({
+            secret_key: keyPair.toString()
+        }));
+        file.close();
+        return keyPair;
+    }
+    async getKeyStore() {
+        this.masterKey = await this.getKeyFromFile();
+        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.homeDir);
+        if (this.init) {
+            await keyStore.setKey(this.config.network, this.masterAccount, this.masterKey);
+        }
+        return keyStore;
+    }
+    async connect() {
+        const keyStore = await this.getKeyStore();
         this.near = await nearAPI.connect({
             keyStore,
             networkId: this.config.network,
-            nodeUrl: rpcAddr,
+            nodeUrl: this.rpcAddr,
+            masterAccount: this.masterAccount,
         });
-        this.root = new account_1.Account(new nearAPI.Account(this.near.connection, this.config.rootAccountName));
+        this.root = new account_1.Account(new nearAPI.Account(this.near.connection, this.masterAccount));
     }
-    checkConnected() {
-        if (!this.root || !this.near || !this.masterKey) {
-            throw new Error('need to call `connect`');
+    async run(fn) {
+        try {
+            // Run any setup before trying to connect to a server
+            utils_1.debug("About to call setup");
+            await this.setup();
+            // Set up connection to node
+            utils_1.debug("About to connect");
+            await this.connect();
+            // Run function
+            await fn(this);
+        }
+        catch (e) {
+            console.error(e);
+            throw e; //TODO Figure out better error handling
+        }
+        finally {
+            // Do any needed teardown
+            await this.tearDown();
         }
     }
     get pubKey() {
-        this.checkConnected();
         return this.masterKey.getPublicKey();
     }
-    async createAccount(name) {
-        this.checkConnected();
-        const pubKey = await this.near.connection.signer.createKey(name, this.config.network);
-        await this.root.najAccount.createAccount(name, pubKey, new bn_js_1.default(10).pow(new bn_js_1.default(25)));
+    async createAccount(name, keyPair) {
+        const pubKey = await this.addKey(name, keyPair);
+        await this.near.accountCreator.createAccount(name, pubKey);
         return this.getAccount(name);
     }
     async createAndDeploy(name, wasm, initialDeposit = new bn_js_1.default(10).pow(new bn_js_1.default(25))) {
-        this.checkConnected();
-        const pubKey = await this.near.connection.signer.createKey(name, this.config.network);
+        const pubKey = await this.addKey(name);
         const najContractAccount = await this.root.najAccount.createAndDeployContract(name, pubKey, await fs_1.promises.readFile(wasm), initialDeposit);
         return new account_1.ContractAccount(najContractAccount);
     }
     getRoot() {
-        this.checkConnected();
         return this.root;
     }
     getAccount(name) {
-        this.checkConnected();
         return new account_1.Account(new nearAPI.Account(this.near.connection, name));
     }
     getContractAccount(name) {
-        this.checkConnected();
         return new account_1.ContractAccount(new nearAPI.Account(this.near.connection, name));
+    }
+    isSandbox() {
+        return this.config.network == "sandbox";
+    }
+    isTestnet() {
+        return this.config.network == "testnet";
+    }
+    randomAccountId(keyPair) {
+        let accountId;
+        // create random number with at least 7 digits
+        const randomNumber = Math.floor(Math.random() * (9999999 - 1000000) + 1000000);
+        accountId = `dev-${Date.now()}-${randomNumber}`;
+        return accountId;
+    }
+    async addKey(name, keyPair) {
+        let pubKey;
+        if (keyPair) {
+            const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
+            pubKey = await key.getPublicKey();
+        }
+        else {
+            pubKey = await this.near.connection.signer.createKey(name, this.config.network);
+        }
+        return pubKey;
     }
 }
 exports.Runtime = Runtime;
@@ -104,11 +175,24 @@ class TestnetRuntime extends Runtime {
             rm: false,
             refDir: null,
             network: 'testnet',
-            rootAccountName: 'oh-no',
+            rpcAddr: 'https://rpc.testnet.near.org',
+            walletUrl: "https://wallet.testnet.near.org",
+            helperUrl: "https://helper.testnet.near.org"
         };
     }
-    async run(_fn) {
-        throw new Error("TestnetRuntime coming soon!");
+    // Run inital function so that function starts at initial state
+    async setup() {
+    }
+    // Delete any accounts created
+    async tearDown() {
+    }
+    // TODO: create temp account and track to be deleted
+    createAccount(name, keyPair) {
+        return super.createAccount(name, keyPair);
+    }
+    async createAndDeploy(name, wasm, initialDeposit = new bn_js_1.default(10).pow(new bn_js_1.default(25))) {
+        // TODO: dev deploy!!
+        return super.createAndDeploy(name, wasm, initialDeposit);
     }
 }
 exports.TestnetRuntime = TestnetRuntime;
@@ -123,24 +207,20 @@ class SandboxRuntime extends Runtime {
             refDir: null,
             network: 'sandbox',
             rootAccountName: 'test.near',
+            rpcAddr: `http://localhost:${port}`,
+            initialBalance: DEFAULT_INITIAL_DEPOSIT,
         };
     }
-    async run(f) {
-        const server = await server_1.SandboxServer.init(this.config);
-        try {
-            await server.start(); // Wait until server is ready
-            await this.connect(server.rpcAddr, server.homeDir, this.config.init);
-            await f(this);
-            return this;
-        }
-        catch (e) {
-            console.error(e);
-            throw e;
-        }
-        finally {
-            utils_1.debug("Closing server with port " + server.port);
-            server.close();
-        }
+    get rpcAddr() {
+        return `http://localhost:${this.config.port}`;
+    }
+    async setup() {
+        this.server = await server_1.SandboxServer.init(this.config);
+        await this.server.start();
+    }
+    async tearDown() {
+        utils_1.debug("Closing server with port " + this.server.port);
+        this.server.close();
     }
 }
 //# sourceMappingURL=runtime.js.map

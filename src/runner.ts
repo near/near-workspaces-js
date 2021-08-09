@@ -17,8 +17,7 @@ export class Runner {
     f?: RunnerFn
   ): Promise<Runner> {
     const { config, fn } = getConfigAndFn(configOrFunction, f);
-    const runner = new Runner(config);
-    const runtime = await runner.run(fn);
+    const runtime = await Runtime.create(config, fn);
     return new Runner({
       ...config,
       init: false,
@@ -34,22 +33,7 @@ export class Runner {
    */
   async run(fn: RunnerFn): Promise<Runtime> {
     const runtime = await Runtime.create(this.config);
-    try {
-      // Run any setup before trying to connect to a server
-      debug("About to call setup")
-      await runtime.setup();
-      // Set up connection to node
-      debug("About to connect")
-      await runtime.connect();
-      // Run function
-      await fn(runtime);
-    } catch (e){
-      console.error(e)
-      throw e; //TODO Figure out better error handling
-    } finally {
-      // Do any needed teardown
-      await runtime.tearDown();
-    }
+    await runtime.run(fn);
     return runtime;
   }
 
