@@ -1,4 +1,3 @@
-import BN from "bn.js";
 import * as nearAPI from "near-api-js";
 import { Account, ContractAccount } from './account';
 export declare type RunnerFn = (s: Runtime) => Promise<void>;
@@ -9,7 +8,7 @@ export interface Config {
     rm: boolean;
     refDir: string | null;
     network: 'sandbox' | 'testnet';
-    rootAccountName?: string;
+    masterAccount?: string;
     rpcAddr: string;
     helperUrl?: string;
     initialBalance?: string;
@@ -17,13 +16,15 @@ export interface Config {
     initFn?: RunnerFn;
 }
 export declare abstract class Runtime {
-    static create(config: Partial<Config>): Promise<Runtime>;
+    static create(config: Partial<Config>, f?: RunnerFn): Promise<Runtime>;
     abstract get defaultConfig(): Config;
+    abstract get keyFilePath(): string;
     abstract setup(): Promise<void>;
     abstract tearDown(): Promise<void>;
     protected root: Account;
     protected near: nearAPI.Near;
     protected masterKey: nearAPI.KeyPair;
+    protected keyStore: nearAPI.keyStores.KeyStore;
     config: Config;
     constructor(config: Partial<Config>);
     get homeDir(): string;
@@ -32,25 +33,24 @@ export declare abstract class Runtime {
     get network(): string;
     get masterAccount(): string;
     private getConfig;
-    private getKeyFromFile;
-    getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+    abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     connect(): Promise<void>;
     run(fn: RunnerFn): Promise<void>;
-    get pubKey(): nearAPI.utils.key_pair.PublicKey;
     createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
-    createAndDeploy(name: string, wasm: string, initialDeposit?: BN): Promise<ContractAccount>;
+    createAndDeploy(name: string, wasm: string): Promise<ContractAccount>;
     getRoot(): Account;
     getAccount(name: string): Account;
     getContractAccount(name: string): ContractAccount;
     isSandbox(): boolean;
     isTestnet(): boolean;
-    protected randomAccountId(keyPair?: nearAPI.KeyPair): string;
     protected addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey>;
 }
 export declare class TestnetRuntime extends Runtime {
     get defaultConfig(): Config;
+    get keyFilePath(): string;
+    getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     setup(): Promise<void>;
     tearDown(): Promise<void>;
     createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account>;
-    createAndDeploy(name: string, wasm: string, initialDeposit?: BN): Promise<ContractAccount>;
+    createAndDeploy(name: string, wasm: string): Promise<ContractAccount>;
 }

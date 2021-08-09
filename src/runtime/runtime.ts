@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import * as nearAPI from "near-api-js";
 import { join } from "path";
+import * as os from "os";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
 import { debug } from '../utils';
@@ -9,6 +10,31 @@ export type RunnerFn = (s: Runtime) => Promise<void>;
 
 const DEFAULT_INITIAL_DEPOSIT = "1" + "0".repeat(25);
 
+function randomAccountId(): string {
+  let accountId;
+  // create random number with at least 7 digits
+  const randomNumber = Math.floor(Math.random() * (9999999 - 1000000) + 1000000);
+  accountId = `dev-${Date.now()}-${randomNumber}`;
+  return accountId;
+}
+
+async function getKeyFromFile(filePath: string): Promise<nearAPI.KeyPair> {
+  try {
+    const keyFile = require(filePath);
+    return nearAPI.utils.KeyPair.fromString(
+      keyFile.secret_key || keyFile.private_key
+    );
+  } catch (e) {
+    const keyFile = await fs.open(filePath, "w");
+    const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
+    await keyFile.writeFile(JSON.stringify({
+      secret_key: keyPair.toString()
+    }));
+    keyFile.close();
+    return keyPair;
+  }
+}
+
 export interface Config {
   homeDir: string;
   port: number;
@@ -16,7 +42,7 @@ export interface Config {
   rm: boolean;
   refDir: string | null;
   network: 'sandbox' | 'testnet';
-  rootAccountName?: string;
+  masterAccount?: string;
   rpcAddr: string;
   helperUrl?: string;
   initialBalance?: string;
@@ -43,13 +69,15 @@ export abstract class Runtime {
   }
 
   abstract get defaultConfig(): Config;
-  
+  abstract get keyFilePath(): string;
+
   abstract setup(): Promise<void>;
   abstract tearDown(): Promise<void>;
 
   protected root!: Account;
   protected near!: nearAPI.Near;
   protected masterKey!: nearAPI.KeyPair;
+  protected keyStore!: nearAPI.keyStores.KeyStore;
 
   // TODO: should probably be protected
   config: Config;
@@ -75,56 +103,21 @@ export abstract class Runtime {
   }
 
   get masterAccount(): string {
-    return this.config.rootAccountName!;
+    return this.config.masterAccount!;
   }
 
   private getConfig(config: Partial<Config>): Config {
-    const defaultConfig = this.defaultConfig;
-    defaultConfig.rootAccountName = config.rootAccountName || this.randomAccountId();
     return {
       ...this.defaultConfig,
       ...config
     };
   }
 
-  private async getKeyFromFile(): Promise<nearAPI.KeyPair> {
-    const filePath = join(this.homeDir, "validator_key.json");
-    try {
-      const keyFile = require(filePath);
-      return nearAPI.utils.KeyPair.fromString(
-        keyFile.secret_key || keyFile.private_key
-      );
-    } catch (e) {
-
-    }
-    const file = await fs.open(filePath, "w");
-    const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
-    await file.writeFile(JSON.stringify({
-      secret_key: keyPair.toString()
-    }));
-    file.close();
-    return keyPair;
-  }
-
-  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
-    this.masterKey = await this.getKeyFromFile();
-    const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
-      this.homeDir
-    );
-    if (this.init) {
-      await keyStore.setKey(
-        this.config.network,
-        this.masterAccount,
-        this.masterKey
-      );
-    }
-    return keyStore;
-  }
+  abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
 
   async connect(): Promise<void> {
-    const keyStore = await this.getKeyStore();
     this.near = await nearAPI.connect({
-      keyStore,
+      keyStore: this.keyStore,
       networkId: this.config.network,
       nodeUrl: this.rpcAddr,
       masterAccount: this.masterAccount,
@@ -142,6 +135,7 @@ export abstract class Runtime {
     try {
       // Run any setup before trying to connect to a server
       debug("About to call setup")
+      this.keyStore = await this.getKeyStore();
       await this.setup();
       // Set up connection to node
       debug("About to connect")
@@ -155,10 +149,6 @@ export abstract class Runtime {
       // Do any needed teardown
       await this.tearDown();
     }
-  }
-
-  get pubKey(): nearAPI.utils.key_pair.PublicKey {
-    return this.masterKey.getPublicKey();
   }
 
   async createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> {
@@ -208,14 +198,6 @@ export abstract class Runtime {
     return this.config.network == "testnet";
   }
   
-  protected randomAccountId(keyPair?: nearAPI.KeyPair): string {
-    let accountId;
-    // create random number with at least 7 digits
-    const randomNumber = Math.floor(Math.random() * (9999999 - 1000000) + 1000000);
-    accountId = `dev-${Date.now()}-${randomNumber}`;
-    return accountId;
-  }
-
   protected async addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey> {
     let pubKey: nearAPI.utils.key_pair.PublicKey;
     if (keyPair) {
@@ -247,9 +229,30 @@ export class TestnetRuntime extends Runtime {
     }
   }
 
+  get keyFilePath(): string {
+    return join(`${os.homedir()}/.near-credentials/testnet`, `${this.masterAccount}.json`);
+  }
+
+  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
+    const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
+      this.homeDir
+    );
+    return keyStore;
+  }
+
   // Run inital function so that function starts at initial state
   async setup(): Promise<void> {
-
+    if (this.config.masterAccount) {
+      throw new Error('custom masterAccount not yet supported on testnet');
+      // create sub-accounts of it with random IDs
+      this.config.masterAccount = `${randomAccountId()}.something`
+    } else {
+      // create new `dev-deploy`-style account (or reuse existing)
+      this.config.masterAccount = randomAccountId()
+    }
+    if (this.config.initFn) {
+      await this.run(this.config.initFn);
+    }
   }
 
   // Delete any accounts created
@@ -283,10 +286,21 @@ class SandboxRuntime extends Runtime {
       rm: false,
       refDir: null,
       network: 'sandbox',
-      rootAccountName: 'test.near',
+      masterAccount: 'test.near',
       rpcAddr: `http://localhost:${port}`,
       initialBalance: DEFAULT_INITIAL_DEPOSIT,
     };
+  }
+
+  get keyFilePath(): string {
+    return join(this.homeDir, "validator_key.json");
+  }
+
+  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
+    const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
+      this.homeDir
+    );
+    return keyStore;
   }
 
   get rpcAddr(): string {
@@ -295,6 +309,14 @@ class SandboxRuntime extends Runtime {
 
   async setup(): Promise<void> {
     this.server = await SandboxServer.init(this.config);
+    if (this.init) {
+      const masterKey = await getKeyFromFile(this.keyFilePath);
+      await this.keyStore.setKey(
+        this.config.network,
+        this.masterAccount,
+        masterKey
+      );
+    }
     await this.server.start();
   }
 

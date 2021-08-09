@@ -11,8 +11,7 @@ class Runner {
      */
     static async create(configOrFunction, f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
-        const runner = new Runner(config);
-        const runtime = await runner.run(fn);
+        const runtime = await runtime_1.Runtime.create(config, fn);
         return new Runner({
             ...config,
             init: false,
