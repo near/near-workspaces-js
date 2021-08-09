@@ -54,9 +54,9 @@ async function asyncSpawn(...args) {
     return promisify_child_process_1.spawn(exports.sandboxBinary(), args, { encoding: 'utf8' });
 }
 exports.asyncSpawn = asyncSpawn;
-function debug(s) {
+function debug(s, ...args) {
     if (process.env["SANDBOX_DEBUG"]) {
-        console.error(s);
+        console.error(s, ...args);
     }
 }
 exports.debug = debug;

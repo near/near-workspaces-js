@@ -11,6 +11,7 @@ export interface Config {
     masterAccount?: string;
     rpcAddr: string;
     helperUrl?: string;
+    explorerUrl?: string;
     initialBalance?: string;
     walletUrl?: string;
     initFn?: RunnerFn;
@@ -19,8 +20,7 @@ export declare abstract class Runtime {
     static create(config: Partial<Config>, f?: RunnerFn): Promise<Runtime>;
     abstract get defaultConfig(): Config;
     abstract get keyFilePath(): string;
-    abstract setup(): Promise<void>;
-    abstract tearDown(): Promise<void>;
+    abstract afterRun(): Promise<void>;
     protected root: Account;
     protected near: nearAPI.Near;
     protected masterKey: nearAPI.KeyPair;
@@ -32,10 +32,14 @@ export declare abstract class Runtime {
     get rpcAddr(): string;
     get network(): string;
     get masterAccount(): string;
+    getMasterKey(): Promise<nearAPI.KeyPair>;
     private getConfig;
     abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+    beforeConnect(): Promise<void>;
+    afterConnect(): Promise<void>;
     connect(): Promise<void>;
     run(fn: RunnerFn): Promise<void>;
+    protected addMasterAccountKey(): Promise<void>;
     createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<ContractAccount>;
     getRoot(): Account;
@@ -49,8 +53,9 @@ export declare class TestnetRuntime extends Runtime {
     get defaultConfig(): Config;
     get keyFilePath(): string;
     getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-    setup(): Promise<void>;
-    tearDown(): Promise<void>;
+    beforeConnect(): Promise<void>;
+    afterConnect(): Promise<void>;
+    afterRun(): Promise<void>;
     createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<ContractAccount>;
 }

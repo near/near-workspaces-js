@@ -34,9 +34,9 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
 
 export {_spawn as spawn}
 
-export function debug(s: string | Buffer | null | undefined): void {
+export function debug(s: string | Buffer | null | undefined, ...args: any[]): void {
   if (process.env["SANDBOX_DEBUG"]) {
-    console.error(s);
+    console.error(s, ...args);
   }
 }
 
