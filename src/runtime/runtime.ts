@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import * as nearAPI from "near-api-js";
-import { join } from "path";
+import { join, dirname } from "path";
 import * as os from "os";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
@@ -266,6 +266,7 @@ export class TestnetRuntime extends Runtime {
   }
 
   async beforeConnect(): Promise<void> {
+    await this.ensureKeyFileFolder();
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
       ({} as any), // ignored
       this.config.helperUrl!
@@ -333,6 +334,15 @@ export class TestnetRuntime extends Runtime {
 
   private makeSubAccount(name: string): string {
     return `${name}.${this.masterAccount}`;
+  }
+
+  private async ensureKeyFileFolder(): Promise<void> {
+    const keyFolder = dirname(this.keyFilePath);
+    try {
+      await fs.mkdir(keyFolder, {recursive: true})
+    } catch (e) {
+      // TODO: check error
+    }
   }
 }
 

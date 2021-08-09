@@ -58,4 +58,8 @@ export declare class TestnetRuntime extends Runtime {
     afterRun(): Promise<void>;
     createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<ContractAccount>;
+    getAccount(name: string): Account;
+    getContractAccount(name: string): ContractAccount;
+    private makeSubAccount;
+    private ensureKeyFileFolder;
 }

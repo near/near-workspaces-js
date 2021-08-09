@@ -17,7 +17,7 @@ export declare class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: string, methodName: string, args: object, gas?: string | BN, attachedDeposit?: string | BN): Promise<any>;
+    call_raw(contractId: ContractAccount | string, methodName: string, args: object, gas?: string | BN, attachedDeposit?: string | BN): Promise<any>;
     /**
      * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
      *
@@ -25,7 +25,7 @@ export declare class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call(contractId: string, methodName: string, args: object, gas?: string | BN, // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
+    call(contractId: ContractAccount | string, methodName: string, args: object, gas?: string | BN, // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
     attachedDeposit?: string | BN): Promise<any>;
 }
 export declare class ContractAccount extends Account {

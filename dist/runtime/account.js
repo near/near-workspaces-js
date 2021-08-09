@@ -46,8 +46,9 @@ class Account {
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
     async call_raw(contractId, methodName, args, gas = new bn_js_1.default(25 * 10 ** 12), attachedDeposit = new bn_js_1.default('0')) {
+        const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
         const txResult = await this.najAccount.functionCall({
-            contractId,
+            contractId: accountId,
             methodName,
             args,
             gas: new bn_js_1.default(gas),

@@ -27,7 +27,7 @@ const os = __importStar(require("os"));
 const account_1 = require("./account");
 const server_1 = require("./server");
 const utils_1 = require("../utils");
-const DEFAULT_INITIAL_DEPOSIT = "1" + "0".repeat(25);
+const DEFAULT_INITIAL_DEPOSIT = utils_1.toYocto("10");
 function randomAccountId() {
     let accountId;
     // create random number with at least 7 digits
@@ -195,6 +195,7 @@ class TestnetRuntime extends Runtime {
             walletUrl: "https://wallet.testnet.near.org",
             helperUrl: "https://helper.testnet.near.org",
             explorerUrl: "https://explorer.testnet.near.org",
+            initialBalance: DEFAULT_INITIAL_DEPOSIT,
         };
     }
     get keyFilePath() {
@@ -205,6 +206,7 @@ class TestnetRuntime extends Runtime {
         return keyStore;
     }
     async beforeConnect() {
+        await this.ensureKeyFileFolder();
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
         this.config.helperUrl);
         if (this.config.masterAccount) {
@@ -218,7 +220,8 @@ class TestnetRuntime extends Runtime {
         }
         await this.addMasterAccountKey();
         await accountCreator.createAccount(this.masterAccount, (await this.getMasterKey()).getPublicKey());
-        utils_1.debug(`Added masterAccount ${this.config.masterAccount} with keyStore ${this.keyStore} and publicKey ${await this.keyStore.getKey(this.config.network, this.masterAccount)}`);
+        utils_1.debug(`Added masterAccount ${this.config.masterAccount} with keyStore ${this.keyStore} and publicKey ${await this.keyStore.getKey(this.config.network, this.masterAccount)}
+      https://explorer.testnet.near.org/accounts/${this.masterAccount}`);
     }
     async afterConnect() {
         if (this.config.initFn) {
@@ -230,12 +233,35 @@ class TestnetRuntime extends Runtime {
     async afterRun() {
     }
     // TODO: create temp account and track to be deleted
-    createAccount(name, keyPair) {
-        return super.createAccount(name, keyPair);
+    async createAccount(name, keyPair) {
+        // TODO: subaccount done twice
+        const account = await super.createAccount(this.makeSubAccount(name), keyPair);
+        utils_1.debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+        return account;
     }
     async createAndDeploy(name, wasm) {
         // TODO: dev deploy!!
-        return super.createAndDeploy(name, wasm);
+        const account = await super.createAndDeploy(this.makeSubAccount(name), wasm);
+        utils_1.debug(`Deployed new account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+        return account;
+    }
+    getAccount(name) {
+        return super.getAccount(this.makeSubAccount(name));
+    }
+    getContractAccount(name) {
+        return super.getContractAccount(this.makeSubAccount(name));
+    }
+    makeSubAccount(name) {
+        return `${name}.${this.masterAccount}`;
+    }
+    async ensureKeyFileFolder() {
+        const keyFolder = path_1.dirname(this.keyFilePath);
+        try {
+            await fs_1.promises.mkdir(keyFolder, { recursive: true });
+        }
+        catch (e) {
+            // TODO: check error
+        }
     }
 }
 exports.TestnetRuntime = TestnetRuntime;

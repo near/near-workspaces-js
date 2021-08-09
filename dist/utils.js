@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.toYocto = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
@@ -61,4 +61,8 @@ function debug(s, ...args) {
 }
 exports.debug = debug;
 exports.copyDir = util_1.promisify(fs_extra_1.default.copy);
+function toYocto(amount) {
+    return amount + "0".repeat(24);
+}
+exports.toYocto = toYocto;
 //# sourceMappingURL=utils.js.map
