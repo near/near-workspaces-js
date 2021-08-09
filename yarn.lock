@@ -570,6 +570,13 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
+"@types/bn.js@^5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@types/bn.js/-/bn.js-5.1.0.tgz#32c5d271503a12653c62cf4d2b45e6eab8cebc68"
+  integrity sha512-QSSVYj7pYFN49kW77o2s9xTCwZ8F2xLbjLLSEVh8D2F4JUhZtPAGOFLTD+ffqksBx/u4cE/KImFjyhqCjn/LIA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/fs-extra@^9.0.12":
   version "9.0.12"
   resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-9.0.12.tgz#9b8f27973df8a7a3920e8461517ebf8a7d4fdfaf"
@@ -2202,14 +2209,12 @@ near-api-js@near/near-api-js#spike/sandbox-runner-tweaks:
     text-encoding-utf-8 "^1.0.2"
     tweetnacl "^1.0.1"
 
-near-sandbox@0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.3.tgz#8591fa68c3b948e437a2d494e62fbc667c8ee023"
-  integrity sha512-tzxJ9HKMZOLvnByu78edIfnLkRJdbcTqpotrtNu0yssjjlFi7gAGXbu4DChIHdYxWJlQYxiGhoBUOnnmiKJJyg==
+near-sandbox@^0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.5.tgz#72b53907408f9bb72fc2d766465b4964fca18b2b"
+  integrity sha512-za74tz1yyIz3EjWYT5z5gYX3jTN0NxN1W8rB2lbRHQfNXPTIUNtipQSkyzAo6cNsrJsxmT1x1cypblnTITcVcQ==
   dependencies:
     binary-install "^0.1.1"
-    promisify-child-process "^4.1.1"
-    rimraf "^3.0.2"
 
 node-fetch@^2.6.1:
   version "2.6.1"

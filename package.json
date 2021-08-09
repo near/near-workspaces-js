@@ -11,7 +11,7 @@
     "bn.js": "^5.2.0",
     "fs-extra": "^10.0.0",
     "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
-    "near-sandbox": "0.0.3",
+    "near-sandbox": "^0.0.5",
     "promisify-child-process": "^4.1.1",
     "rimraf": "^3.0.2",
     "temp-dir": "^2.0.0"
@@ -25,6 +25,7 @@
     "dist/*"
   ],
   "devDependencies": {
+    "@types/bn.js": "^5.1.0",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.10",
