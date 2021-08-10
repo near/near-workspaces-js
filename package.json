@@ -24,7 +24,7 @@
     "test": "yarn test:sandbox && yarn test:testnet"
   },
   "files": [
-    "dist/*"
+    "dist/"
   ],
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
