@@ -11,6 +11,7 @@ class Runner {
      */
     static async create(configOrFunction, f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
+        config.network = config.network || this.getNetworkFromEnv();
         const runtime = await runtime_1.Runtime.create(config, fn);
         return new Runner({
             ...config,
@@ -18,6 +19,19 @@ class Runner {
             refDir: runtime.config.homeDir,
             initFn: fn
         });
+    }
+    static getNetworkFromEnv() {
+        const network = process.env.NEAR_RUNNER_NETWORK;
+        switch (network) {
+            case 'sandbox':
+            case 'testnet':
+                return network;
+            case undefined:
+                return 'sandbox';
+            default:
+                throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; ` +
+                    "use 'testnet' or 'sandbox' (the default)");
+        }
     }
     /**
      * Sets up the context, runs the function, and tears it down.
@@ -35,7 +49,7 @@ class Runner {
      * @returns
      */
     async runSandbox(fn) {
-        if (this.config.network == "sandbox") {
+        if ('sandbox' === this.config.network) {
             return this.run(fn);
         }
         return null;
@@ -53,7 +67,7 @@ function getConfigAndFn(configOrFunction, f) {
         // @ts-ignore Type this|that not assignable to that
         return { config: configOrFunction, fn: f };
     }
-    throw new Error("Invalid arguments!" +
+    throw new Error("Invalid arguments! " +
         "Expected `(config, runFunction)` or just `(runFunction)`");
 }
 //# sourceMappingURL=runner.js.map

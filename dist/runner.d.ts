@@ -2,11 +2,12 @@ import { Runtime, RunnerFn } from './runtime';
 import { Config } from './runtime';
 export declare class Runner {
     private config;
-    constructor(config: Partial<Config>);
+    private constructor();
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
      */
     static create(configOrFunction: RunnerFn | Partial<Config>, f?: RunnerFn): Promise<Runner>;
+    static getNetworkFromEnv(): 'sandbox' | 'testnet';
     /**
      * Sets up the context, runs the function, and tears it down.
      * @param fn function to pass runtime to.
