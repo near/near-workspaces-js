@@ -1,10 +1,8 @@
 import { join } from "path";
 import * as http from "http";
-
 import tmpDir from "temp-dir";
-
 import { openSync }from "fs";
-
+import { Config } from './runtime';
 import {
   debug,
   asyncSpawn,
@@ -14,17 +12,7 @@ import {
   spawn,
   copyDir,
   sandboxBinary,
-} from "./utils";
-
-const readyRegex = /Server listening at ed25519| stats: /;
-
-export interface Config {
-  homeDir: string;
-  port: number;
-  init: boolean;
-  rm: boolean;
-  refDir: string | null;
-}
+} from "../utils";
 
 export function getHomeDir(p: number = 3000): string {
   return join(tmpDir, "sandbox", p.toString());
@@ -67,7 +55,7 @@ function pingServer(port: number): Promise<boolean> {
       debug(e.toString());
       resolve(false);
     });
-    
+
     // Write data to request body
     req.write(pollData);
     debug(`polling server at port ${options.port}`);
@@ -87,35 +75,17 @@ async function sandboxStarted(port: number, timeout: number = 20_000): Promise<v
 export class SandboxServer {
   private subprocess!: any;
   private static lastPort = 4000;
-  private _config: Config;
   private readyToDie: boolean = false;
-  private ready: boolean = false;
+  private config: Config;
 
-  private static nextPort(): number {
+  static nextPort(): number {
     return SandboxServer.lastPort++;
   }
 
-  private static defaultConfig(): Config {
-    const port = SandboxServer.nextPort();
-    return {
-      homeDir: getHomeDir(port),
-      port,
-      init: true,
-      rm: false,
-      refDir: null,
-    };
-  }
-
-  private constructor(config?: Partial<Config>) {
-    this._config = {
-      ...SandboxServer.defaultConfig(),
-      ...config,
-    };
+  // TODO: split SandboxServer config & Runtime config
+  private constructor(config: Config) {
+    this.config = config;
     assertPortRange(this.port);
-  }
-
-  get config(): Config {
-    return this._config;
   }
 
   get homeDir(): string {
@@ -134,7 +104,7 @@ export class SandboxServer {
     return `0.0.0.0:${this.port}`;
   }
 
-  static async init(config?: Partial<Config>): Promise<SandboxServer> {
+  static async init(config: Config): Promise<SandboxServer> {
     const server = new SandboxServer(config);
     if (server.config.refDir) {
       await rm(server.homeDir);

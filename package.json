@@ -10,8 +10,8 @@
   "dependencies": {
     "bn.js": "^5.2.0",
     "fs-extra": "^10.0.0",
-    "near-api-js": "^0.42.0",
-    "near-sandbox": "0.0.3",
+    "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
+    "near-sandbox": "^0.0.5",
     "promisify-child-process": "^4.1.1",
     "rimraf": "^3.0.2",
     "temp-dir": "^2.0.0"
@@ -19,12 +19,15 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
-    "test": "jest"
+    "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest",
+    "test:sandbox": "NEAR_RUNNER_NETWORK=sandbox jest",
+    "test": "yarn test:sandbox && yarn test:testnet"
   },
   "files": [
     "dist/*"
   ],
   "devDependencies": {
+    "@types/bn.js": "^5.1.0",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.10",
