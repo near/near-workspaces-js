@@ -5,7 +5,7 @@ import { debug } from './utils';
 export class Runner {
   private config: Partial<Config>;
 
-  constructor(config: Partial<Config>) {
+  private constructor(config: Partial<Config>) {
     this.config = config;
   }
 
@@ -17,14 +17,32 @@ export class Runner {
     f?: RunnerFn
   ): Promise<Runner> {
     const { config, fn } = getConfigAndFn(configOrFunction, f);
+    config.network = config.network || this.getNetworkFromEnv();
     const runtime = await Runtime.create(config, fn);
     return new Runner({
       ...config,
       init: false,
-      refDir: runtime.config.homeDir, 
+      refDir: runtime.config.homeDir,
       initFn: fn
     });
   }
+
+  static getNetworkFromEnv(): 'sandbox' | 'testnet' {
+    const network = process.env.NEAR_RUNNER_NETWORK;
+    switch (network) {
+      case 'sandbox':
+      case 'testnet':
+        return network;
+      case undefined:
+        return 'sandbox';
+      default:
+        throw new Error(
+          `environment variable NEAR_RUNNER_NETWORK=${network} invalid; ` +
+          "use 'testnet' or 'sandbox' (the default)"
+        );
+    }
+  }
+
 
   /**
    * Sets up the context, runs the function, and tears it down.
@@ -40,10 +58,10 @@ export class Runner {
   /**
    * Only runs the function if the network is sandbox.
    * @param fn is the function to run
-   * @returns 
+   * @returns
    */
   async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
-    if (this.config.network == "sandbox") {
+    if ('sandbox' === this.config.network) {
       return this.run(fn);
     }
     return null;
@@ -65,7 +83,7 @@ function getConfigAndFn(
     return { config: configOrFunction, fn: f };
   }
   throw new Error(
-    "Invalid arguments!" +
+    "Invalid arguments! " +
     "Expected `(config, runFunction)` or just `(runFunction)`"
   )
 }

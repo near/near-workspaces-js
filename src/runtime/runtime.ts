@@ -4,7 +4,8 @@ import { join, dirname } from "path";
 import * as os from "os";
 import { Account, ContractAccount } from './account'
 import { SandboxServer, getHomeDir } from './server';
-import { debug, toYocto} from '../utils';
+import { debug, toYocto } from '../utils';
+import { accountCreator } from "near-api-js";
 
 export type RunnerFn = (s: Runtime) => Promise<void>;
 
@@ -56,19 +57,27 @@ export interface Config {
 export abstract class Runtime {
   static async create(config: Partial<Config>, f?: RunnerFn): Promise<Runtime> {
     let runtime: Runtime;
-    if (config.network === 'testnet') {
-      runtime = new TestnetRuntime(config)
-      if (f) {
-        debug('Skipping initialization function for testnet; will run before each `runner.run`');
+    switch (config.network) {
+      case 'testnet': {
+        if (f) {
+          debug('Skipping initialization function for testnet; will run before each `runner.run`');
+        }
+        return new TestnetRuntime(config)
       }
-    } else {
-      runtime = new SandboxRuntime(config);
-      if (f) {
-        debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
-        await runtime.run(f);
+      case 'sandbox': {
+        const runtime = new SandboxRuntime(config);
+        if (f) {
+          debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
+          await runtime.run(f);
+        }
+        return runtime;
       }
+      default:
+        throw new Error(
+          `config.network = '${config.network}' invalid; ` +
+          "must be 'testnet' or 'sandbox' (the default)"
+        );
     }
-    return runtime;
   }
 
   abstract get defaultConfig(): Config;
@@ -135,8 +144,8 @@ export abstract class Runtime {
       keyPath: this.keyFilePath,
       networkId: this.config.network,
       nodeUrl: this.rpcAddr,
-      helperUrl: this.config.helperUrl,
       walletUrl: this.config.walletUrl,
+      masterAccount: this.config.masterAccount,
       initialBalance: this.config.initialBalance,
     });
     this.root = new Account(new nearAPI.Account(
@@ -339,7 +348,7 @@ export class TestnetRuntime extends Runtime {
   private async ensureKeyFileFolder(): Promise<void> {
     const keyFolder = dirname(this.keyFilePath);
     try {
-      await fs.mkdir(keyFolder, {recursive: true})
+      await fs.mkdir(keyFolder, { recursive: true })
     } catch (e) {
       // TODO: check error
     }
