@@ -10,7 +10,7 @@ const CONTRACT = "status-message";
 
 let runner: Runner
 
-describe(`Running on ${process.env.NEAR_RUNNER_NETWORK || 'sandbox'}`, () => {
+describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   beforeAll(async () => {
     runner = await Runner.create(async (runtime: Runtime) => {
       await runtime.createAndDeploy(
