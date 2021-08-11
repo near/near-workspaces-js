@@ -427,7 +427,7 @@ class SandboxRuntime extends Runtime {
   static async defaultConfig(): Promise<Config> {
     const port = await SandboxServer.nextPort();
     return {
-      homeDir: createDir(port),
+      homeDir: createDir(),
       port,
       init: true,
       rm: false,

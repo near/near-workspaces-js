@@ -31,8 +31,8 @@ const utils_1 = require("../utils");
 // @ts-ignore
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
-function createDir(p = 3000) {
-    return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(1).toString()));
+function createDir() {
+    return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(4).toString()));
 }
 exports.createDir = createDir;
 const pollData = JSON.stringify({
@@ -79,6 +79,9 @@ async function sandboxStarted(port, timeout = 20000) {
         await new Promise(res => setTimeout(() => res(true), 250));
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
+}
+function initalPort() {
+    return Math.floor(Math.random() * 10000);
 }
 class SandboxServer {
     // TODO: split SandboxServer config & Runtime config
@@ -163,10 +166,10 @@ class SandboxServer {
         }
     }
     static async nextPort() {
-        this.lastPort = await portCheck.nextAvailable(this.lastPort, "0.0.0.0");
+        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0");
         return this.lastPort;
     }
 }
 exports.SandboxServer = SandboxServer;
-SandboxServer.lastPort = 4000;
+SandboxServer.lastPort = initalPort();
 //# sourceMappingURL=server.js.map

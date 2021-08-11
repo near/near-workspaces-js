@@ -1,5 +1,5 @@
 import { Config } from './runtime';
-export declare function createDir(p?: number): string;
+export declare function createDir(): string;
 export declare class SandboxServer {
     private subprocess;
     private static lastPort;

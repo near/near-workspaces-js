@@ -18,8 +18,8 @@ import {
 import * as portCheck from "node-port-check"
 import UUID from "pure-uuid";
 
-export function createDir(p: number = 3000): string {
-  return join(tmpDir, "sandbox", (new UUID(1).toString()));
+export function createDir(): string {
+  return join(tmpDir, "sandbox", (new UUID(4).toString()));
 }
 
 
@@ -70,9 +70,13 @@ async function sandboxStarted(port: number, timeout: number = 20_000): Promise<v
   throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 
+function initalPort(): number {
+  return Math.floor(Math.random() * 10000);
+}
+
 export class SandboxServer {
   private subprocess!: any;
-  private static lastPort = 4000;
+  private static lastPort: number = initalPort();
   private readyToDie: boolean = false;
   private config: Config;
 
@@ -171,7 +175,7 @@ export class SandboxServer {
   }
 
   static async nextPort(): Promise<number> {
-    this.lastPort = await portCheck.nextAvailable(this.lastPort, "0.0.0.0")
+    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0")
     return this.lastPort;
   }
 }
