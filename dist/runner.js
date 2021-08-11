@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Runner = void 0;
 const runtime_1 = require("./runtime");
 class Runner {
-    constructor(config) {
+    constructor(config, args = {}) {
         this.config = config;
+        this.args = args;
     }
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
@@ -18,7 +19,7 @@ class Runner {
             init: false,
             refDir: runtime.config.homeDir,
             initFn: fn
-        });
+        }, runtime.resultArgs);
     }
     static getNetworkFromEnv() {
         const network = process.env.NEAR_RUNNER_NETWORK;
@@ -40,7 +41,7 @@ class Runner {
      */
     async run(fn) {
         const runtime = await runtime_1.Runtime.create(this.config);
-        await runtime.run(fn);
+        await runtime.run(fn, this.args);
         return runtime;
     }
     /**

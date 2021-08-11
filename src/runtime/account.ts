@@ -5,11 +5,9 @@ import * as borsh from "borsh";
 type Args = { [key: string]: any };
 
 export class Account {
-  najAccount: nearAPI.Account;
-
-  constructor(account: nearAPI.Account) {
-    this.najAccount = account;
-  }
+  constructor(
+    public najAccount: nearAPI.Account
+  ) { }
 
   get connection(): nearAPI.Connection {
     return this.najAccount.connection;
@@ -31,10 +29,10 @@ export class Account {
    * @returns nearAPI.providers.FinalExecutionOutcome
    */
   async call_raw(
-    contractId: ContractAccount | string,
+    contractId: Account | string,
     methodName: string,
     args: object,
-    gas: string | BN = new BN(25 * 10**12),
+    gas: string | BN = new BN(25 * 10 ** 12),
     attachedDeposit: string | BN = new BN('0'),
   ): Promise<any> {
     const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
@@ -56,10 +54,10 @@ export class Account {
    * @returns any parsed return value, or throws with an error if call failed
    */
   async call(
-    contractId: ContractAccount | string,
+    contractId: Account | string,
     methodName: string,
     args: object,
-    gas: string | BN = new BN(30 * 10**12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
+    gas: string | BN = new BN(30 * 10 ** 12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
     attachedDeposit: string | BN = new BN('0'),
   ): Promise<any> {
     const txResult = await this.call_raw(
@@ -79,9 +77,7 @@ export class Account {
     }
     throw JSON.stringify(txResult.status);
   }
-}
 
-export class ContractAccount extends Account {
   // async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
   //   const res: CodeResult = await this.connection.provider.query({
   async view_raw(method: string, args: Args = {}): Promise<any> {
@@ -109,12 +105,12 @@ export class ContractAccount extends Account {
 
   async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
     const data_key = Buffer.from(key).toString('base64');
-    let value  = (borshSchema) ? borsh.serialize(borshSchema, val): val;
+    let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
     value = Buffer.from(value).toString('base64');
     const account_id = this.accountId;
     return this.provider.sendJsonRpc("sandbox_patch_state", {
       records: [
-        { 
+        {
           "Data": {
             account_id,
             data_key,
@@ -124,14 +120,12 @@ export class ContractAccount extends Account {
       ]
     })
   }
-
 }
-
 export class ContractState {
   private data: Map<string, Buffer>;
-  constructor(dataArray: Array<{key: Buffer; value: Buffer;}>){
+  constructor(dataArray: Array<{ key: Buffer; value: Buffer; }>) {
     this.data = new Map();
-    dataArray.forEach(({key, value}) => {
+    dataArray.forEach(({ key, value }) => {
       this.data.set(key.toString(), value);
     });
   }
@@ -140,7 +134,7 @@ export class ContractState {
     return this.data.get(key) || Buffer.from("");
   }
 
-  get(key: string, borshSchema?: {type: any, schema: any}): any {
+  get(key: string, borshSchema?: { type: any, schema: any }): any {
     const value = this.get_raw(key);
     if (borshSchema) {
       return borsh.deserialize(borshSchema.schema, borshSchema.type, value);

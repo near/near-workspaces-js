@@ -124,7 +124,7 @@ class SandboxServer {
             }
             catch (e) {
                 // TODO: should this throw?
-                console.log(e);
+                console.error(e);
             }
         }
         utils_1.debug("created " + server.homeDir);
@@ -145,7 +145,7 @@ class SandboxServer {
         const options = {
             stdio: ['ignore', 'ignore', 'ignore']
         };
-        if (process.env["SANDBOX_DEBUG"]) {
+        if (process.env["NEAR_RUNNER_DEBUG"]) {
             const filePath = path_1.join(this.homeDir, 'sandboxServer.log');
             utils_1.debug(`near-sandbox logs writing to file: ${filePath}`);
             options.stdio[2] = fs_1.openSync(filePath, 'a');

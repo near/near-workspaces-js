@@ -20,7 +20,7 @@
     "build": "tsc",
     "prepublishOnly": "yarn build",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest",
-    "test:sandbox": "NEAR_RUNNER_NETWORK=sandbox jest",
+    "test:sandbox": "jest",
     "test": "yarn test:sandbox && yarn test:testnet"
   },
   "files": [

@@ -43,21 +43,22 @@ async function getKeyFromFile(filePath, create = true) {
     catch (e) {
         if (!create)
             throw e;
-        const keyFile = await fs_1.promises.open(filePath, "w");
+        utils_1.debug("about to write to ", filePath);
         const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
-        await keyFile.writeFile(JSON.stringify({
+        await fs_1.promises.writeFile(filePath, JSON.stringify({
             secret_key: keyPair.toString()
         }));
-        await keyFile.close();
+        utils_1.debug("wrote to file ", filePath);
         return keyPair;
     }
 }
 class Runtime {
-    constructor(config) {
+    constructor(config, resultArgs) {
+        this.accountsCreated = new Map();
         this.config = this.getConfig(config);
+        this.resultArgs = resultArgs;
     }
     static async create(config, f) {
-        let runtime;
         switch (config.network) {
             case 'testnet': {
                 if (f) {
@@ -69,7 +70,9 @@ class Runtime {
                 const runtime = new SandboxRuntime(config);
                 if (f) {
                     utils_1.debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
-                    await runtime.run(f);
+                    const args = await runtime.createRun(f);
+                    runtime.addResultArgs(args);
+                    return runtime;
                 }
                 return runtime;
             }
@@ -77,6 +80,20 @@ class Runtime {
                 throw new Error(`config.network = '${config.network}' invalid; ` +
                     "must be 'testnet' or 'sandbox' (the default)");
         }
+    }
+    addResultArgs(args) {
+        this.resultArgs = new Map(Object.entries(args).map(([argName, account]) => [
+            argName, this.accountsCreated.get(account.accountId)
+        ]));
+    }
+    deserializeResultArgs(args) {
+        if (!args && this.resultArgs == undefined)
+            return {};
+        let encodedArgs = args || this.resultArgs;
+        return Object.fromEntries(Array.from(encodedArgs.entries()).map(([argName, accountShortName]) => [
+            argName,
+            this.getAccount(accountShortName)
+        ]));
     }
     get homeDir() {
         return this.config.homeDir;
@@ -94,6 +111,7 @@ class Runtime {
         return this.config.masterAccount;
     }
     async getMasterKey() {
+        utils_1.debug("reading key from file", this.keyFilePath);
         return getKeyFromFile(this.keyFilePath);
     }
     getConfig(config) {
@@ -120,7 +138,7 @@ class Runtime {
         });
         this.root = new account_1.Account(new nearAPI.Account(this.near.connection, this.masterAccount));
     }
-    async run(fn) {
+    async run(fn, args) {
         utils_1.debug('About to runtime.run with config', this.config);
         try {
             this.keyStore = await this.getKeyStore();
@@ -130,8 +148,30 @@ class Runtime {
             await this.connect();
             utils_1.debug("About to call afterConnect");
             await this.afterConnect();
-            utils_1.debug("About to call run");
-            await fn(this);
+            if (args)
+                utils_1.debug(`Passing ${Object.getOwnPropertyNames(args)}`);
+            return await fn(this.deserializeResultArgs(args), this);
+        }
+        catch (e) {
+            console.error(e.stack);
+            throw e; //TODO Figure out better error handling
+        }
+        finally {
+            // Do any needed teardown
+            await this.afterRun();
+        }
+    }
+    async createRun(fn) {
+        utils_1.debug('About to runtime.run with config', this.config);
+        try {
+            this.keyStore = await this.getKeyStore();
+            utils_1.debug("About to call beforeConnect");
+            await this.beforeConnect();
+            utils_1.debug("About to call connect");
+            await this.connect();
+            utils_1.debug("About to call afterConnect");
+            await this.afterConnect();
+            return await fn({ runtime: this });
         }
         catch (e) {
             console.error(e);
@@ -143,12 +183,15 @@ class Runtime {
         }
     }
     async addMasterAccountKey() {
-        await this.keyStore.setKey(this.config.network, this.masterAccount, await this.getMasterKey());
+        const masterKey = await this.getMasterKey();
+        await this.keyStore.setKey(this.config.network, this.masterAccount, masterKey);
     }
     async createAccount(name, keyPair) {
         const pubKey = await this.addKey(name, keyPair);
         await this.near.accountCreator.createAccount(name, pubKey);
-        return this.getAccount(name);
+        const account = this.getAccount(name);
+        this.accountsCreated.set(account.accountId, name);
+        return account;
     }
     async createAndDeploy(name, wasm) {
         const pubKey = await this.addKey(name);
@@ -156,17 +199,16 @@ class Runtime {
         const najAccount = this.near.account(name);
         const contractData = await fs_1.promises.readFile(wasm);
         const result = await najAccount.deployContract(contractData);
-        utils_1.debug(`deployed contract ${wasm} to account ${name} with result ${JSON.stringify(result)}`);
-        return new account_1.ContractAccount(najAccount);
+        utils_1.debug(`deployed contract ${wasm} to account ${name} with result ${JSON.stringify(result)} `);
+        const account = new account_1.Account(najAccount);
+        this.accountsCreated.set(account.accountId, name);
+        return account;
     }
     getRoot() {
         return this.root;
     }
     getAccount(name) {
         return new account_1.Account(this.near.account(name));
-    }
-    getContractAccount(name) {
-        return new account_1.ContractAccount(new nearAPI.Account(this.near.connection, name));
     }
     isSandbox() {
         return this.config.network == "sandbox";
@@ -204,10 +246,10 @@ class TestnetRuntime extends Runtime {
         };
     }
     get keyFilePath() {
-        return path_1.join(`${os.homedir()}/.near-credentials/testnet`, `${this.masterAccount}.json`);
+        return path_1.join(os.homedir(), `.near-credentials`, `testnet`, `${this.masterAccount}.json`);
     }
     async getKeyStore() {
-        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(`${os.homedir()}/.near-credentials`);
+        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path_1.join(os.homedir(), `.near-credentials`));
         return keyStore;
     }
     async beforeConnect() {
@@ -215,7 +257,7 @@ class TestnetRuntime extends Runtime {
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
         this.config.helperUrl);
         if (this.config.masterAccount) {
-            throw new Error('custom masterAccount not yet supported on testnet');
+            throw new Error('custom masterAccount not yet supported on testnet ' + this.config.masterAccount);
             // create sub-accounts of it with random IDs
             this.config.masterAccount = `${randomAccountId()}.something`;
         }
@@ -231,12 +273,11 @@ class TestnetRuntime extends Runtime {
     async afterConnect() {
         if (this.config.initFn) {
             utils_1.debug('About to run initFn');
-            await this.config.initFn(this);
+            this.addResultArgs(await this.config.initFn({ runtime: this }));
         }
     }
     // Delete any accounts created
-    async afterRun() {
-    }
+    async afterRun() { }
     // TODO: create temp account and track to be deleted
     async createAccount(name, keyPair) {
         // TODO: subaccount done twice
@@ -252,9 +293,6 @@ class TestnetRuntime extends Runtime {
     }
     getAccount(name) {
         return super.getAccount(this.makeSubAccount(name));
-    }
-    getContractAccount(name) {
-        return super.getContractAccount(this.makeSubAccount(name));
     }
     makeSubAccount(name) {
         return `${name}.${this.masterAccount}`;

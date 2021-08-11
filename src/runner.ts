@@ -1,20 +1,17 @@
-import { Runtime, RunnerFn } from './runtime';
-import { Config } from './runtime';
-import { debug } from './utils';
+import { Runtime, RunnerFn, CreateRunnerFn, Config } from './runtime';
 
 export class Runner {
-  private config: Partial<Config>;
-
-  private constructor(config: Partial<Config>) {
-    this.config = config;
-  }
+  private constructor(
+    private config: Partial<Config>,
+    private args?: any
+  ) { /* auto-assigns to this.config & this.args */ }
 
   /** Create the initial enviorment for the test to run in.
    * For example create accounts and deploy contracts that future tests will use.
    */
   static async create(
-    configOrFunction: RunnerFn | Partial<Config>,
-    f?: RunnerFn
+    configOrFunction: CreateRunnerFn | Partial<Config>,
+    f?: CreateRunnerFn
   ): Promise<Runner> {
     const { config, fn } = getConfigAndFn(configOrFunction, f);
     config.network = config.network || this.getNetworkFromEnv();
@@ -24,7 +21,7 @@ export class Runner {
       init: false,
       refDir: runtime.config.homeDir,
       initFn: fn
-    });
+    }, runtime.resultArgs);
   }
 
   static getNetworkFromEnv(): 'sandbox' | 'testnet' {
@@ -51,7 +48,7 @@ export class Runner {
    */
   async run(fn: RunnerFn): Promise<Runtime> {
     const runtime = await Runtime.create(this.config);
-    await runtime.run(fn);
+    await runtime.run(fn, this.args);
     return runtime;
   }
 
@@ -69,9 +66,9 @@ export class Runner {
 }
 
 function getConfigAndFn(
-  configOrFunction: RunnerFn | Partial<Config>,
-  f?: RunnerFn
-): { fn: RunnerFn, config: Partial<Config> } {
+  configOrFunction: CreateRunnerFn | Partial<Config>,
+  f?: CreateRunnerFn
+): { fn: CreateRunnerFn, config: Partial<Config> } {
   const type1 = typeof configOrFunction;
   const type2 = typeof f;
   if (type1 === 'function' && type2 === 'undefined') {
