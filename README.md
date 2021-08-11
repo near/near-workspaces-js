@@ -28,7 +28,7 @@ Quick Start
 2. Import.
 
        // if using JavaScript, skip the Runtime type import
-       import { Runner, Runtime } from 'near-runner'
+       import { Runner } from 'near-runner'
 
 3. Create a `Runner`.
 
