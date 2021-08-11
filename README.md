@@ -92,7 +92,14 @@ Quick Start
 Running on Testnet
 ==================
 
-near-runner is set up so that you can write tests once and run them against a local Sandbox node (the default behavior) or against [NEAR TestNet](https://docs.near.org/docs/concepts/networks). You can do this in two ways.
+near-runner is set up so that you can write tests once and run them against a local Sandbox node (the default behavior) or against [NEAR TestNet](https://docs.near.org/docs/concepts/networks). Some reasons this might be helpful:
+
+* Gives higher confidence that your contracts work as expected
+* You can test against deployed testnet contracts
+* If something seems off in Sandbox mode, you can compare it to testnet
+* Until we have a full-featured dev environment that includes Explorer, Wallet, etc, you can write full end-to-end tests using a tool like [Cypress](https://www.cypress.io/)
+
+You can run in testnet mode in two ways.
 
 1. When creating your Runner, pass a config object as the first argument:
 
