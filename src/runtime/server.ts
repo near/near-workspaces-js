@@ -14,17 +14,14 @@ import {
   sandboxBinary,
   ensureBinary,
 } from "../utils";
+// @ts-ignore
+import * as portCheck from "node-port-check"
+import UUID from "pure-uuid";
 
-export function getHomeDir(p: number = 3000): string {
-  return join(tmpDir, "sandbox", p.toString());
+export function createDir(p: number = 3000): string {
+  return join(tmpDir, "sandbox", (new UUID(1).toString()));
 }
 
-// TODO: detemine safe port range
-function assertPortRange(p: number): void {
-  if (p < 4000 || p > 5000) {
-    throw new Error("port is out of range, 3000-3999");
-  }
-}
 
 const pollData = JSON.stringify({
   jsonrpc: "2.0",
@@ -79,14 +76,9 @@ export class SandboxServer {
   private readyToDie: boolean = false;
   private config: Config;
 
-  static nextPort(): number {
-    return SandboxServer.lastPort++;
-  }
-
   // TODO: split SandboxServer config & Runtime config
   private constructor(config: Config) {
     this.config = config;
-    assertPortRange(this.port);
   }
 
   get homeDir(): string {
@@ -176,5 +168,10 @@ export class SandboxServer {
     if (this.config.rm) {
       rm(this.homeDir);
     }
+  }
+
+  static async nextPort(): Promise<number> {
+    this.lastPort = await portCheck.nextAvailable(this.lastPort, "0.0.0.0")
+    return this.lastPort;
   }
 }
