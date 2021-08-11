@@ -40,13 +40,12 @@ export class Runner {
     }
   }
 
-
   /**
    * Sets up the context, runs the function, and tears it down.
    * @param fn function to pass runtime to.
    * @returns the runtime used
    */
-  async run(fn: RunnerFn): Promise<Runtime> {
+  run = async (fn: RunnerFn): Promise<Runtime> => {
     const runtime = await Runtime.create(this.config);
     await runtime.run(fn, this.args);
     return runtime;
@@ -57,7 +56,7 @@ export class Runner {
    * @param fn is the function to run
    * @returns
    */
-  async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
+  runSandbox = async (fn: RunnerFn): Promise<Runtime | null> => {
     if ('sandbox' === this.config.network) {
       return this.run(fn);
     }

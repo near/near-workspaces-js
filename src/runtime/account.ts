@@ -28,13 +28,13 @@ export class Account {
    *
    * @returns nearAPI.providers.FinalExecutionOutcome
    */
-  async call_raw(
+  call_raw = async (
     contractId: Account | string,
     methodName: string,
     args: object,
     gas: string | BN = new BN(25 * 10 ** 12),
-    attachedDeposit: string | BN = new BN('0'),
-  ): Promise<any> {
+    attachedDeposit: string | BN = new BN('0')
+  ): Promise<any> => {
     const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
     const txResult = await this.najAccount.functionCall({
       contractId: accountId,
@@ -53,13 +53,13 @@ export class Account {
    *
    * @returns any parsed return value, or throws with an error if call failed
    */
-  async call(
+  call = async (
     contractId: Account | string,
     methodName: string,
     args: object,
-    gas: string | BN = new BN(30 * 10 ** 12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
+    gas: string | BN = new BN(30 * 10 ** 12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ 
     attachedDeposit: string | BN = new BN('0'),
-  ): Promise<any> {
+  ): Promise<any> => {
     const txResult = await this.call_raw(
       contractId,
       methodName,
@@ -80,7 +80,7 @@ export class Account {
 
   // async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
   //   const res: CodeResult = await this.connection.provider.query({
-  async view_raw(method: string, args: Args = {}): Promise<any> {
+  view_raw = async (method: string, args: Args = {}): Promise<any> => {
     const res: any = await this.connection.provider.query({
       request_type: 'call_function',
       account_id: this.accountId,
@@ -91,7 +91,7 @@ export class Account {
     return res;
   }
 
-  async view(method: string, args: Args = {}): Promise<any> {
+  view = async (method: string, args: Args = {}): Promise<any> => {
     const res = await this.view_raw(method, args);
     if (res.result) {
       return JSON.parse(Buffer.from(res.result).toString())
@@ -99,11 +99,11 @@ export class Account {
     return res.result;
   }
 
-  async viewState(): Promise<ContractState> {
+  viewState = async (): Promise<ContractState> => {
     return new ContractState(await this.najAccount.viewState(""));
   }
 
-  async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
+  patchState = async (key: string, val: any, borshSchema?: any): Promise<any> => {
     const data_key = Buffer.from(key).toString('base64');
     let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
     value = Buffer.from(value).toString('base64');
@@ -130,11 +130,11 @@ export class ContractState {
     });
   }
 
-  get_raw(key: string): Buffer {
+  get_raw = (key: string): Buffer => {
     return this.data.get(key) || Buffer.from("");
   }
 
-  get(key: string, borshSchema?: { type: any, schema: any }): any {
+  get = (key: string, borshSchema?: { type: any, schema: any }): any => {
     const value = this.get_raw(key);
     if (borshSchema) {
       return borsh.deserialize(borshSchema.schema, borshSchema.type, value);

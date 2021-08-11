@@ -1,5 +1,12 @@
-import { Runner } from "../../../src";
+import { Runner, RunnerFn, Runtime } from "../../../src";
 import * as borsh from "borsh";
+
+async function checkNullResponse(run: (f: RunnerFn) => Promise<Runtime>): Promise<void> {
+  await run(async ({ contract, root }) => {
+    const result = await contract.view("get_status", { account_id: root!.accountId })
+    expect(result).toBeNull();
+  })
+}
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner
@@ -17,10 +24,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   })
 
   test('Root gets null status', async () => {
-    await runner.run(async ({ contract, root }) => {
-      const result = await contract.view("get_status", { account_id: root.accountId })
-      expect(result).toBeNull();
-    })
+    await checkNullResponse(runner.run);
   });
 
   test('Ali sets then gets status', async () => {

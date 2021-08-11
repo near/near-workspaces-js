@@ -13,11 +13,11 @@ export declare class Runner {
      * @param fn function to pass runtime to.
      * @returns the runtime used
      */
-    run(fn: RunnerFn): Promise<Runtime>;
+    run: (fn: RunnerFn) => Promise<Runtime>;
     /**
      * Only runs the function if the network is sandbox.
      * @param fn is the function to run
      * @returns
      */
-    runSandbox(fn: RunnerFn): Promise<Runtime | null>;
+    runSandbox: (fn: RunnerFn) => Promise<Runtime | null>;
 }
