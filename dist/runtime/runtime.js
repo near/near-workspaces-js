@@ -18,9 +18,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestnetRuntime = exports.Runtime = void 0;
 const fs_1 = require("fs");
+const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const path_1 = require("path");
 const os = __importStar(require("os"));
@@ -71,7 +75,7 @@ class Runtime {
                 if (f) {
                     utils_1.debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
                     const args = await runtime.createRun(f);
-                    runtime.addResultArgs(args);
+                    runtime.serializeAccountArgs(args);
                     return runtime;
                 }
                 return runtime;
@@ -81,19 +85,23 @@ class Runtime {
                     "must be 'testnet' or 'sandbox' (the default)");
         }
     }
-    addResultArgs(args) {
+    serializeAccountArgs(args) {
         this.resultArgs = new Map(Object.entries(args).map(([argName, account]) => [
             argName, this.accountsCreated.get(account.accountId)
         ]));
     }
-    deserializeResultArgs(args) {
+    deserializeAccountArgs(args) {
+        const ret = { root: this.getRoot() };
         if (!args && this.resultArgs == undefined)
-            return {};
+            return ret;
         let encodedArgs = args || this.resultArgs;
-        return Object.fromEntries(Array.from(encodedArgs.entries()).map(([argName, accountShortName]) => [
-            argName,
-            this.getAccount(accountShortName)
-        ]));
+        return {
+            ...ret,
+            ...Object.fromEntries(Array.from(encodedArgs.entries()).map(([argName, accountShortName]) => [
+                argName,
+                this.getAccount(accountShortName)
+            ]))
+        };
     }
     get homeDir() {
         return this.config.homeDir;
@@ -150,7 +158,7 @@ class Runtime {
             await this.afterConnect();
             if (args)
                 utils_1.debug(`Passing ${Object.getOwnPropertyNames(args)}`);
-            return await fn(this.deserializeResultArgs(args), this);
+            await fn(this.deserializeAccountArgs(args), this);
         }
         catch (e) {
             console.error(e.stack);
@@ -162,7 +170,7 @@ class Runtime {
         }
     }
     async createRun(fn) {
-        utils_1.debug('About to runtime.run with config', this.config);
+        utils_1.debug('About to runtime.createRun with config', this.config);
         try {
             this.keyStore = await this.getKeyStore();
             utils_1.debug("About to call beforeConnect");
@@ -186,21 +194,22 @@ class Runtime {
         const masterKey = await this.getMasterKey();
         await this.keyStore.setKey(this.config.network, this.masterAccount, masterKey);
     }
+    makeSubAccount(name) {
+        return `${name}.${this.masterAccount}`;
+    }
     async createAccount(name, keyPair) {
-        const pubKey = await this.addKey(name, keyPair);
-        await this.near.accountCreator.createAccount(name, pubKey);
+        const accountId = this.makeSubAccount(name);
+        const pubKey = await this.addKey(accountId, keyPair);
+        await this.root.najAccount.createAccount(accountId, pubKey, new bn_js_1.default(this.config.initialBalance));
         const account = this.getAccount(name);
-        this.accountsCreated.set(account.accountId, name);
+        this.accountsCreated.set(accountId, name);
         return account;
     }
     async createAndDeploy(name, wasm) {
-        const pubKey = await this.addKey(name);
-        await this.near.accountCreator.createAccount(name, pubKey);
-        const najAccount = this.near.account(name);
+        const account = await this.createAccount(name);
         const contractData = await fs_1.promises.readFile(wasm);
-        const result = await najAccount.deployContract(contractData);
+        const result = await account.najAccount.deployContract(contractData);
         utils_1.debug(`deployed contract ${wasm} to account ${name} with result ${JSON.stringify(result)} `);
-        const account = new account_1.Account(najAccount);
         this.accountsCreated.set(account.accountId, name);
         return account;
     }
@@ -208,7 +217,8 @@ class Runtime {
         return this.root;
     }
     getAccount(name) {
-        return new account_1.Account(this.near.account(name));
+        const accountId = this.makeSubAccount(name);
+        return new account_1.Account(this.near.account(accountId));
     }
     isSandbox() {
         return this.config.network == "sandbox";
@@ -252,6 +262,12 @@ class TestnetRuntime extends Runtime {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path_1.join(os.homedir(), `.near-credentials`));
         return keyStore;
     }
+    serializeAccountArgs(args) {
+        this.accountArgs = args;
+    }
+    deserializeAccountArgs(args) {
+        return { root: this.getRoot(), ...this.accountArgs };
+    }
     async beforeConnect() {
         await this.ensureKeyFileFolder();
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
@@ -273,7 +289,7 @@ class TestnetRuntime extends Runtime {
     async afterConnect() {
         if (this.config.initFn) {
             utils_1.debug('About to run initFn');
-            this.addResultArgs(await this.config.initFn({ runtime: this }));
+            this.serializeAccountArgs(await this.config.initFn({ runtime: this }));
         }
     }
     // Delete any accounts created
@@ -281,21 +297,15 @@ class TestnetRuntime extends Runtime {
     // TODO: create temp account and track to be deleted
     async createAccount(name, keyPair) {
         // TODO: subaccount done twice
-        const account = await super.createAccount(this.makeSubAccount(name), keyPair);
+        const account = await super.createAccount(name, keyPair);
         utils_1.debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
         return account;
     }
     async createAndDeploy(name, wasm) {
         // TODO: dev deploy!!
-        const account = await super.createAndDeploy(this.makeSubAccount(name), wasm);
-        utils_1.debug(`Deployed new account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+        const account = await super.createAndDeploy(name, wasm);
+        utils_1.debug(`Deployed new account: ${this.config.explorerUrl}/accounts/${account.accountId}`);
         return account;
-    }
-    getAccount(name) {
-        return super.getAccount(this.makeSubAccount(name));
-    }
-    makeSubAccount(name) {
-        return `${name}.${this.masterAccount}`;
     }
     async ensureKeyFileFolder() {
         const keyFolder = path_1.dirname(this.keyFilePath);

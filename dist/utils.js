@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toYocto = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.ensureBinary = exports.toYocto = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
@@ -54,6 +54,17 @@ async function asyncSpawn(...args) {
     return promisify_child_process_1.spawn(exports.sandboxBinary(), args, { encoding: 'utf8' });
 }
 exports.asyncSpawn = asyncSpawn;
+async function install() {
+    const runPath = require.resolve("near-sandbox/install");
+    try {
+        await promisify_child_process_1.spawn("node", [runPath]);
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error("Failed to install binary");
+    }
+    return;
+}
 function debug(s, ...args) {
     if (process.env["NEAR_RUNNER_DEBUG"]) {
         console.error(s, ...args);
@@ -65,4 +76,11 @@ function toYocto(amount) {
     return amount + "0".repeat(24);
 }
 exports.toYocto = toYocto;
+async function ensureBinary() {
+    const binPath = exports.sandboxBinary();
+    if (!await exists(binPath)) {
+        await install();
+    }
+}
+exports.ensureBinary = ensureBinary;
 //# sourceMappingURL=utils.js.map

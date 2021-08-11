@@ -106,6 +106,7 @@ class SandboxServer {
         return `0.0.0.0:${this.port}`;
     }
     static async init(config) {
+        await utils_1.ensureBinary();
         const server = new SandboxServer(config);
         if (server.config.refDir) {
             await utils_1.rm(server.homeDir);

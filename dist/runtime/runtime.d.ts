@@ -3,15 +3,18 @@ import { Account } from './account';
 interface RuntimeArg {
     runtime: Runtime;
 }
-export interface RunnerArgs {
+export interface ReturnedAccounts {
     [key: string]: Account;
 }
-export declare type CreateRunnerFn = (args: RuntimeArg) => Promise<RunnerArgs>;
-export declare type RunnerFn = (args: RunnerArgs, runtime?: Runtime) => Promise<void>;
+export interface AccountArgs extends ReturnedAccounts {
+    root: Account;
+}
+export declare type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
+export declare type RunnerFn = (args: AccountArgs, runtime?: Runtime) => Promise<void>;
 declare type AccountShortName = string;
 declare type AccountId = string;
 declare type UserPropName = string;
-declare type SerializedResultArgs = Map<UserPropName, AccountShortName>;
+declare type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
 export interface Config {
     homeDir: string;
     port: number;
@@ -38,10 +41,10 @@ export declare abstract class Runtime {
     protected keyStore: nearAPI.keyStores.KeyStore;
     config: Config;
     protected accountsCreated: Map<AccountId, AccountShortName>;
-    resultArgs?: SerializedResultArgs;
-    constructor(config: Partial<Config>, resultArgs?: SerializedResultArgs);
-    addResultArgs(args: RunnerArgs): void;
-    deserializeResultArgs(args?: SerializedResultArgs): RunnerArgs;
+    resultArgs?: SerializedReturnedAccounts;
+    constructor(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts);
+    serializeAccountArgs(args: ReturnedAccounts): void;
+    deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs;
     get homeDir(): string;
     get init(): boolean;
     get rpcAddr(): string;
@@ -53,9 +56,10 @@ export declare abstract class Runtime {
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     connect(): Promise<void>;
-    run(fn: RunnerFn, args?: SerializedResultArgs): Promise<any>;
-    createRun(fn: CreateRunnerFn): Promise<any>;
+    run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void>;
+    createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     protected addMasterAccountKey(): Promise<void>;
+    private makeSubAccount;
     createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     getRoot(): Account;
@@ -65,16 +69,17 @@ export declare abstract class Runtime {
     protected addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey>;
 }
 export declare class TestnetRuntime extends Runtime {
+    private accountArgs?;
     get defaultConfig(): Config;
     get keyFilePath(): string;
     getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+    serializeAccountArgs(args: ReturnedAccounts): void;
+    deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs;
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     afterRun(): Promise<void>;
     createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
-    getAccount(name: string): Account;
-    private makeSubAccount;
     private ensureKeyFileFolder;
 }
 export {};

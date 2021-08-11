@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Runner = void 0;
 const runtime_1 = require("./runtime");
 class Runner {
-    constructor(config, args = {}) {
+    constructor(config, args) {
         this.config = config;
         this.args = args;
     }

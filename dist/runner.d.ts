@@ -1,7 +1,7 @@
 import { Runtime, RunnerFn, CreateRunnerFn, Config } from './runtime';
 export declare class Runner {
     private config;
-    private args;
+    private args?;
     private constructor();
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.

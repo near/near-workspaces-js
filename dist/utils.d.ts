@@ -11,3 +11,4 @@ export { _spawn as spawn };
 export declare function debug(s: string | Buffer | null | undefined, ...args: any[]): void;
 export declare const copyDir: (arg1: string, arg2: string) => Promise<void>;
 export declare function toYocto(amount: string): string;
+export declare function ensureBinary(): Promise<void>;
