@@ -1,7 +1,7 @@
-near-runner
-===========
+near-runner for TypeScript/JavaScript
+=====================================
 
-Write tests once in TypeScript/JavaScript, run them both on [NEAR TestNet](https://docs.near.org/docs/concepts/networks) and a controlled [NEAR Sandbox](https://github.com/near/sandbox) local environment
+Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/concepts/networks) and a controlled [NEAR Sandbox](https://github.com/near/sandbox) local environment
 
 This software is in early beta.
 
