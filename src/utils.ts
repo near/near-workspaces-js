@@ -34,7 +34,7 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
   return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
 }
 
-export async function testRunBinary(): Promise<void> {
+async function testRunBinary(): Promise<void> {
   const runPath = require.resolve("near-sandbox/install");
   try {
     await _asyncSpawn("node", [runPath]);
