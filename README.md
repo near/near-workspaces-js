@@ -32,28 +32,14 @@ Quick Start
 
 3. Create a `Runner`.
 
-
-   With TypeScript:
-
    ```ts
-   const runner: Runner = await Runner.create(async (runtime: Runtime) => {
-     await runtime.createAccount('alice')
-     await runtime.createAndDeploy(
+   const runner = await Runner.create(async ({ runtime }) => {
+     const alice = await runtime.createAccount('alice')
+     const contract = await runtime.createAndDeploy(
        'contract-account-name',
        './path/to/compiled.wasm'
      )
-   })
-   ```
-
-   With JavaScript:
-
-   ```js
-   const runner = await Runner.create(async runtime => {
-     await runtime.createAccount('alice')
-     await runtime.createAndDeploy(
-       'contract-account-name',
-       './path/to/compiled.wasm'
-     )
+     return { alice, contract }
    })
    ```
 
@@ -64,16 +50,13 @@ Quick Start
    3. `runtime.createAndDeploy` creates a new account with the given name, then deploys the specified Wasm file to it.
    4. After `Runner.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
    5. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
+   6. The object returned, `{ alice, contract } `, will be passed along to subsequent tests.
 
 4. Write tests.
 
-   With TypeScript (JS version now left as an exercise for the reader):
-
    ```ts
    await Promise.all([
-     runner.run(async (runtime: Runtime) => {
-       const alice = runtime.getAccount('alice')
-       const contract = runtime.getContractAccount('contract-account-name')
+     runner.run(async ({ alice, contract }) => {
        await alice.call(
          contract,
          'some_update_function',
@@ -81,15 +64,14 @@ Quick Start
        )
        const result = await contract.view(
          'some_view_function',
-         { account_id: 'alice' }
+         { account_id: alice.accountId }
        )
        assert.equal(result, 'whatever')
      }),
-     runner.run(async (runtime: Runtime) => {
-       const contract = runtime.getContractAccount('contract-account-name')
+     runner.run(async ({ alice, contract }) => {
        const result = await contract.view(
          'some_view_function',
-         { account_id: 'alice' }
+         { account_id: alice.accountId }
        )
        assert.equal(result, 'some default')
      })
@@ -103,7 +85,7 @@ Quick Start
    3. `runtime.getAccount` and `runtime.getContractAccount` get the accounts that were initialized in `Runner.create`.
    4. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
    5. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
-   6. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` (or `alice.call(contract.accountId, …)`) rather than `alice.call('contract-account-name', …)`
+   6. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` and `alice.accountId` rather than `alice.call('contract-account-name', …)` and `'alice'`
    7. `assert` comes from [Node's `assert` library](https://nodejs.org/api/assert.html), imported with `import { strict as assert } from "assert"`. In most real tests, your test runner will include its own assertion library. For examples using [Jest](https://jestjs.io/), check out [the `tests` directory here](./tests).
 
 
@@ -115,9 +97,9 @@ near-runner is set up so that you can write tests once and run them against a lo
 1. When creating your Runner, pass a config object as the first argument:
 
    ```ts
-   const runner: Runner = await Runner.create(
+   const runner = await Runner.create(
      { network: 'testnet' },
-     async (runtime: Runtime) => { … }
+     async ({ runtime }) => { … }
    )
    ```
 
@@ -138,7 +120,7 @@ Let's revisit a shortened version of the example from the Quick Start above, des
 3. Create a `Runner`.
 
    ```ts
-   const runner: Runner = await Runner.create(async (runtime: Runtime) => {
+   const runner = await Runner.create(async ({ runtime }) => {
      await runtime.createAccount('alice')
      await runtime.createAndDeploy(
        'contract-account-name',
@@ -155,9 +137,7 @@ Let's revisit a shortened version of the example from the Quick Start above, des
 
    ```ts
    await Promise.all([
-     runner.run(async (runtime: Runtime) => {
-       const alice = runtime.getAccount('alice')
-       const contract = runtime.getContractAccount('contract-account-name')
+     runner.run(async ({ alice, contract }) => {
        await alice.call(
          contract,
          'some_update_function',
@@ -165,15 +145,14 @@ Let's revisit a shortened version of the example from the Quick Start above, des
        )
        const result = await contract.view(
          'some_view_function',
-         { account_id: 'alice' }
+         { account_id: alice.accountId }
        )
        assert.equal(result, 'whatever')
      }),
-     runner.run(async (runtime: Runtime) => {
-       const contract = runtime.getContractAccount('contract-account-name')
+     runner.run(async ({ alice, contract }) => {
        const result = await contract.view(
          'some_view_function',
-         { account_id: 'alice' }
+         { account_id: alice.accountId }
        )
        assert.equal(result, 'some default')
      })
@@ -197,10 +176,10 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
 
    ```ts
    await Promise.all([
-     runner.run(async (runtime: Runtime) => {
+     runner.run(async ({ … }) => {
        // runs on any network, sandbox or testnet
      }),
-     runner.runSandbox(async (runtime: Runtime) => {
+     runner.runSandbox(async ({ … }) => {
        // only runs on sandbox network
      })
    ])
@@ -210,14 +189,14 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
 
    ```ts
    describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-     let runner: Runner
+     let runner: Runner // leave off `Runner` typing in plain JS
      beforeAll(() => {
-       runner = await Runner.create(async (runtime: Runtime) => {
-         await runtime.createAndDeploy(
+       runner = await Runner.create(async ({ runtime }) => ({ // note the implicit return
+         contract: await runtime.createAndDeploy(
            'contract-account-name',
            './path/to/compiled.wasm'
          )
-       })
+       }))
      })
      test('thing that makes sense on any network', async () => {
        // test basic contract & account interactions
@@ -232,7 +211,7 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
 Pro Tips
 ========
 
-* `SANDBOX_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
+* `NEAR_RUNNER_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
 
 * `Runner.create` [config](https://github.com/near/runner/blob/9ab25a74ba47740a1064aebea02b642b51bb50d4/src/runtime/runtime.ts#L11-L20) – you can pass a config object as the first argument to `Runner.create`. This lets you do things like:
 
@@ -241,7 +220,7 @@ Pro Tips
     ```ts
     Runner.create(
       { init: false, homeDir: './test-data/alice-owns-an-nft' },
-      async (runtime: Runtime) => { … }
+      async ({ runtime }) => { … }
     )
     ```
 

@@ -1,63 +1,50 @@
-import { strict as assert } from "assert";
-import { Runner, Runtime } from "../../../src";
+import { Runner } from "../../../src";
 import * as borsh from "borsh";
 
-jest.setTimeout(30000)
-
-const ALI = "ali";
-const BOB = "bob";
-const CONTRACT = "status-message";
-
-let runner: Runner
-
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
+  let runner: Runner
+  jest.setTimeout(60000);
+
   beforeAll(async () => {
-    runner = await Runner.create(async (runtime: Runtime) => {
-      await runtime.createAndDeploy(
-        CONTRACT,
+    runner = await Runner.create(async ({ runtime }) => {
+      const contract = await runtime.createAndDeploy(
+        "status-message",
         `${__dirname}/../build/debug/status_message.wasm`
       );
-      await runtime.createAccount(ALI);
-      await runtime.createAccount(BOB);
+      const ali = await runtime.createAccount("ali");
+      return { contract, ali }
     })
   })
 
+  test('Root gets null status', async () => {
+    await runner.run(async ({ contract, root }) => {
+      const result = await contract.view("get_status", { account_id: root.accountId })
+      expect(result).toBeNull();
+    })
+  });
+
   test('Ali sets then gets status', async () => {
-    await runner.run(async (runtime: Runtime) => {
-      const ali = runtime.getAccount(ALI);
-      const contract = runtime.getContractAccount(CONTRACT);
+    await runner.run(async ({ contract, ali }) => {
       await ali.call(contract, "set_status", { message: "hello" })
       const result = await contract.view("get_status", { account_id: ali.accountId })
-      assert.equal(result, "hello");
+      expect(result).toBe("hello");
     })
   });
 
-  test('Bob gets null status', async () => {
-    await runner.run(async (runtime: Runtime) => {
-      const contract = runtime.getContractAccount(CONTRACT);
-      const result = await contract.view("get_status", { account_id: BOB })
-      assert.equal(result, null)
-    })
-  });
-
-  test('Bob and Ali have different statuses', async () => {
-    await runner.run(async (runtime: Runtime) => {
-      const bob = runtime.getAccount(BOB);
-      const contract = runtime.getContractAccount(CONTRACT);
-      await bob.call(contract, "set_status", { message: "world" })
-      const bobStatus = await contract.view(
+  test('Root and Ali have different statuses', async () => {
+    await runner.run(async ({ contract, root, ali }) => {
+      await root.call(contract, "set_status", { message: "world" })
+      const rootStatus = await contract.view(
         "get_status",
-        { account_id: bob.accountId }
+        { account_id: root.accountId }
       )
-      assert.equal(bobStatus, "world");
-
-      const ali = runtime.getAccount(ALI);
+      expect(rootStatus).toBe("world");
 
       const aliStatus = await contract.view(
         "get_status",
         { account_id: ali.accountId }
       )
-      assert.equal(aliStatus, null)
+      expect(aliStatus).toBeNull();
     })
   });
 
@@ -90,9 +77,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     ]);
 
     test(`View state${process.env.NEAR_RUNNER_NETWORK !== 'testnet' ? '' : '(skipping on testnet)'}`, async () => {
-      await runner.runSandbox(async (runtime: Runtime) => {
-        const ali = runtime.getAccount(ALI);
-        const contract = runtime.getContractAccount(CONTRACT);
+      await runner.runSandbox(async ({ contract, ali }) => {
         await ali.call(contract, "set_status", { message: "hello" })
 
         const state = await contract.viewState();
@@ -111,9 +96,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
 
     test(`Patch state${process.env.NEAR_RUNNER_NETWORK !== 'testnet' ? '' : ' (skipping on testnet)'}`, async () => {
-      await runner.runSandbox(async (runtime: Runtime) => {
-        const ali = runtime.getAccount(ALI);
-        const contract = runtime.getContractAccount(CONTRACT);
+      await runner.runSandbox(async ({ contract, ali }) => {
         // contract must have some state for viewState & patchState to work
         await ali.call(contract, "set_status", { message: "hello" })
         // Get state

@@ -55,7 +55,7 @@ async function asyncSpawn(...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 function debug(s, ...args) {
-    if (process.env["SANDBOX_DEBUG"]) {
+    if (process.env["NEAR_RUNNER_DEBUG"]) {
         console.error(s, ...args);
     }
 }

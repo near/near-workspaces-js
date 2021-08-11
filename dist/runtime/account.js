@@ -22,12 +22,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractState = exports.ContractAccount = exports.Account = void 0;
+exports.ContractState = exports.Account = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const borsh = __importStar(require("borsh"));
 class Account {
-    constructor(account) {
-        this.najAccount = account;
+    constructor(najAccount) {
+        this.najAccount = najAccount;
     }
     get connection() {
         return this.najAccount.connection;
@@ -77,9 +77,6 @@ class Account {
         }
         throw JSON.stringify(txResult.status);
     }
-}
-exports.Account = Account;
-class ContractAccount extends Account {
     // async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
     //   const res: CodeResult = await this.connection.provider.query({
     async view_raw(method, args = {}) {
@@ -120,7 +117,7 @@ class ContractAccount extends Account {
         });
     }
 }
-exports.ContractAccount = ContractAccount;
+exports.Account = Account;
 class ContractState {
     constructor(dataArray) {
         this.data = new Map();
