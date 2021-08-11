@@ -6,14 +6,6 @@ Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/con
 This software is in early beta.
 
 
-Demo & Visioning
-================
-
-Click below for an intro & discussion of this library from 2021-08-03. As mentioned, feedback very welcome! Please create Issues on GitHub or otherwise get in touch with anything you'd like to see improved with this library.
-
-[![discussion on YouTube](http://img.youtube.com/vi/7QWhURvNODI/0.jpg)](https://youtu.be/7QWhURvNODI)
-
-
 Quick Start
 ===========
 
