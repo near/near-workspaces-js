@@ -34,7 +34,7 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
   return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
 }
 
-async function testRunBinary(): Promise<void> {
+async function install(): Promise<void> {
   const runPath = require.resolve("near-sandbox/install");
   try {
     await _asyncSpawn("node", [runPath]);
@@ -62,6 +62,6 @@ export function toYocto(amount: string): string {
 export async function ensureBinary(): Promise<void> {
   const binPath = sandboxBinary();
   if (!await exists(binPath)) {
-    await testRunBinary();
+    await install();
   }
 }
