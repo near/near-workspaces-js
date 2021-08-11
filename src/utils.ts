@@ -8,6 +8,8 @@ import rimraf from "rimraf";
 // @ts-ignore
 import getBinary from "near-sandbox/getBinary";
 import fs_extra from "fs-extra";
+// @ts-ignore
+import installSandbox from "near-sandbox/install";
 
 export const rm = promisify(rimraf);
 
@@ -32,6 +34,17 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
   return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
 }
 
+async function install(): Promise<void> {
+  const runPath = require.resolve("near-sandbox/install");
+  try {
+    await _asyncSpawn("node", [runPath]);
+  } catch(e){
+    console.error(e);
+    throw new Error("Failed to install binary");
+  }
+  return;
+}
+
 export {_spawn as spawn}
 
 export function debug(s: string | Buffer | null | undefined, ...args: any[]): void {
@@ -44,4 +57,11 @@ export const copyDir = promisify(fs_extra.copy);
 
 export function toYocto(amount: string): string {
   return amount + "0".repeat(24);
+}
+
+export async function ensureBinary(): Promise<void> {
+  const binPath = sandboxBinary();
+  if (!await exists(binPath)) {
+    await install();
+  }
 }
