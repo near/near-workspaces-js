@@ -14,7 +14,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
         run: yarn && yarn test:testnet
-
   sandbox:
     strategy:
       matrix:
@@ -28,3 +27,16 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
         run: yarn && yarn test:sandbox
+  near-sandbox-install:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Run tests
+        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox

@@ -12,6 +12,7 @@ import {
   spawn,
   copyDir,
   sandboxBinary,
+  ensureBinary,
 } from "../utils";
 
 export function getHomeDir(p: number = 3000): string {
@@ -105,6 +106,7 @@ export class SandboxServer {
   }
 
   static async init(config: Config): Promise<SandboxServer> {
+    await ensureBinary();
     const server = new SandboxServer(config);
     if (server.config.refDir) {
       await rm(server.homeDir);
