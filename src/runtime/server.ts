@@ -71,7 +71,7 @@ async function sandboxStarted(port: number, timeout: number = 20_000): Promise<v
 }
 
 function initalPort(): number {
-  return Math.floor(Math.random() * 10000);
+  return Math.floor(Math.random() * 1024);
 }
 
 export class SandboxServer {
