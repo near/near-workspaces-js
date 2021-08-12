@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default("1" + "0".repeat(24));
@@ -36,4 +36,6 @@ function createKeyPair() {
     return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
 exports.createKeyPair = createKeyPair;
+function tGas(s) { return s + '0'.repeat(12); }
+exports.tGas = tGas;
 //# sourceMappingURL=utils.js.map

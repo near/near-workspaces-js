@@ -14,3 +14,5 @@ export function toYocto(amount: string): string {
 export function createKeyPair(): nearAPI.KeyPair {
   return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
+
+export function tGas(s: string) { return s + '0'.repeat(12); }

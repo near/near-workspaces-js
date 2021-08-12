@@ -1,4 +1,4 @@
-import { Runner, toYocto, createKeyPair, BN } from "..";
+import { Runner, toYocto, createKeyPair, BN, tGas } from "..";
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60000);
@@ -44,7 +44,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {
           signWithKey: senderKey,
-          gas: "50" + "0".repeat(12),
+          gas: tGas("50"),
         }
       );
       // @ts-ignore
@@ -85,7 +85,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {
           signWithKey: senderKey,
-          gas: "50" + "0".repeat(12),
+          gas: tGas("50"),
         }
       );
 
