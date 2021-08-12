@@ -16,7 +16,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     test("call myself", async () => {
       await runner.run(async ({ root, linkdrop }) => {
   
-        //TODO: how to use access keys ;-p
         const senderKeys = createKeyPair();
         const public_key = senderKeys.getPublicKey().toString()
   
