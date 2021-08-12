@@ -118,7 +118,7 @@ export abstract class Runtime {
     this.resultArgs = resultArgs;
   }
 
-  serializeAccountArgs = (args: ReturnedAccounts): void => {
+  serializeAccountArgs(args: ReturnedAccounts): void {
     this.resultArgs = new Map(
       Object.entries(args).map(([argName, account]) => [
         argName, this.accountsCreated.get(account.accountId)!
@@ -126,7 +126,7 @@ export abstract class Runtime {
     )
   }
 
-  deserializeAccountArgs = (args?: SerializedReturnedAccounts): AccountArgs => {
+  deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs {
     const ret = { root: this.getRoot() };
 
     if (!args && this.resultArgs == undefined) return ret;
@@ -165,7 +165,7 @@ export abstract class Runtime {
     return this.config.masterAccount!;
   }
 
-  getMasterKey = async (): Promise<nearAPI.KeyPair> => {
+  async getMasterKey(): Promise<nearAPI.KeyPair> {
     debug("reading key from file", this.keyFilePath);
     return getKeyFromFile(this.keyFilePath);
   }
@@ -180,12 +180,12 @@ export abstract class Runtime {
   abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
 
   // Hook that child classes can override to add functionality before `connect` call
-  beforeConnect = async (): Promise<void> => { }
+  async beforeConnect(): Promise<void> { }
 
   // Hook that child classes can override to add functionality after `connect` call
-  afterConnect = async (): Promise<void> => { }
+  async afterConnect(): Promise<void> { }
 
-  connect = async (): Promise<void> => {
+  async connect(): Promise<void> {
     this.near = await nearAPI.connect({
       deps: {
         keyStore: this.keyStore,
@@ -203,7 +203,7 @@ export abstract class Runtime {
     ));
   }
 
-  run = async (fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void> => {
+  async run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void> {
     debug('About to runtime.run with config', this.config);
     try {
       this.keyStore = await this.getKeyStore();
@@ -229,7 +229,7 @@ export abstract class Runtime {
     }
   }
 
-  createRun = async (fn: CreateRunnerFn): Promise<ReturnedAccounts> => {
+  async createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts> {
     debug('About to runtime.createRun with config', this.config);
     try {
       this.keyStore = await this.getKeyStore();
@@ -262,7 +262,7 @@ export abstract class Runtime {
     return `${name}.${this.masterAccount}`;
   }
 
-  createAccount = async (name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> => {
+  async createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> {
     const accountId = this.makeSubAccount(name);
     const pubKey = await this.addKey(accountId, keyPair);
     await this.root.najAccount.createAccount(
@@ -275,7 +275,10 @@ export abstract class Runtime {
     return account;
   }
 
-  createAndDeploy = async (name: string, wasm: string): Promise<Account> => {
+  async createAndDeploy(
+    name: string,
+    wasm: string,
+  ): Promise<Account> {
     const account = await this.createAccount(name);
     const contractData = await fs.readFile(wasm);
     const result = await account.najAccount.deployContract(contractData);
@@ -284,20 +287,20 @@ export abstract class Runtime {
     return account;
   }
 
-  getRoot = (): Account => {
+  getRoot(): Account {
     return this.root;
   }
 
-  getAccount = (name: string): Account => {
+  getAccount(name: string): Account {
     const accountId = this.makeSubAccount(name);
     return new Account(this.near.account(accountId));
   }
 
-  isSandbox = (): boolean => {
+  isSandbox(): boolean {
     return this.config.network == "sandbox";
   }
 
-  isTestnet = (): boolean => {
+  isTestnet(): boolean {
     return this.config.network == "testnet";
   }
 
@@ -339,22 +342,22 @@ export class TestnetRuntime extends Runtime {
     return join(os.homedir(), `.near-credentials`, `testnet`, `${this.masterAccount}.json`);
   }
 
-  getKeyStore = async (): Promise<nearAPI.keyStores.KeyStore> => {
+  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
       join(os.homedir(), `.near-credentials`)
     );
     return keyStore;
   }
 
-  serializeAccountArgs = (args: ReturnedAccounts): void => {
+  serializeAccountArgs(args: ReturnedAccounts): void {
     this.accountArgs = args;
   }
 
-  deserializeAccountArgs = (args?: SerializedReturnedAccounts): AccountArgs => {
+  deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs {
     return { root: this.getRoot(), ...this.accountArgs };
   }
 
-  beforeConnect = async (): Promise<void> => {
+  async beforeConnect(): Promise<void> {
     await this.ensureKeyFileFolder();
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
       ({} as any), // ignored
@@ -383,7 +386,7 @@ export class TestnetRuntime extends Runtime {
       https://explorer.testnet.near.org/accounts/${this.masterAccount}`);
   }
 
-  afterConnect = async (): Promise<void> => {
+  async afterConnect(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
       this.serializeAccountArgs(await this.config.initFn({ runtime: this }));
@@ -391,10 +394,10 @@ export class TestnetRuntime extends Runtime {
   }
 
   // Delete any accounts created
-  afterRun = async (): Promise<void> => { }
+  async afterRun(): Promise<void> { }
 
   // TODO: create temp account and track to be deleted
-  createAccount = async (name: string, keyPair?: nearAPI.KeyPair): Promise<Account> => {
+  async createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
     // TODO: subaccount done twice
     const account = await super.createAccount(name, keyPair);
     debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId
@@ -402,7 +405,10 @@ export class TestnetRuntime extends Runtime {
     return account
   }
 
-  createAndDeploy = async (name: string, wasm: string): Promise<Account> => {
+  async createAndDeploy(
+    name: string,
+    wasm: string,
+  ): Promise<Account> {
     // TODO: dev deploy!!
     const account = await super.createAndDeploy(name, wasm);
     debug(`Deployed new account: ${this.config.explorerUrl!}/accounts/${account.accountId}`);
@@ -441,7 +447,7 @@ class SandboxRuntime extends Runtime {
     return join(this.homeDir, "validator_key.json");
   }
 
-  getKeyStore = async (): Promise<nearAPI.keyStores.KeyStore> => {
+  async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
       this.homeDir
     );
@@ -452,13 +458,13 @@ class SandboxRuntime extends Runtime {
     return `http://localhost:${this.config.port}`;
   }
 
-  beforeConnect = async (): Promise<void> => {
+  async beforeConnect(): Promise<void> {
     this.server = await SandboxServer.init(this.config);
     if (this.init) await this.addMasterAccountKey();
     await this.server.start();
   }
 
-  afterRun = async (): Promise<void> => {
+  async afterRun(): Promise<void> {
     debug("Closing server with port " + this.server.port);
     this.server.close();
   }

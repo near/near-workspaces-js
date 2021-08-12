@@ -87,41 +87,6 @@ class SandboxServer {
     // TODO: split SandboxServer config & Runtime config
     constructor(config) {
         this.readyToDie = false;
-        this.start = async () => {
-            const args = [
-                "--home",
-                this.homeDir,
-                "run",
-                "--rpc-addr",
-                this.internalRpcAddr,
-            ];
-            utils_1.debug(`sending args, ${args.join(" ")}`);
-            const options = {
-                stdio: ['ignore', 'ignore', 'ignore']
-            };
-            if (process.env["NEAR_RUNNER_DEBUG"]) {
-                const filePath = path_1.join(this.homeDir, 'sandboxServer.log');
-                utils_1.debug(`near-sandbox logs writing to file: ${filePath}`);
-                options.stdio[2] = fs_1.openSync(filePath, 'a');
-                options.env = { RUST_BACKTRACE: 'full' };
-            }
-            this.subprocess = utils_1.spawn(utils_1.sandboxBinary(), args, options);
-            this.subprocess.on("exit", () => {
-                utils_1.debug(`Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"}`);
-            });
-            await sandboxStarted(this.port);
-            utils_1.debug(`Connected to server at ${this.internalRpcAddr}`);
-            return this;
-        };
-        this.close = () => {
-            this.readyToDie = true;
-            if (!this.subprocess.kill("SIGINT")) {
-                console.error(`Failed to kill child process with PID: ${this.subprocess.pid}`);
-            }
-            if (this.config.rm) {
-                utils_1.rm(this.homeDir);
-            }
-        };
         this.config = config;
         assertPortRange(this.port);
     }
@@ -168,6 +133,41 @@ class SandboxServer {
     }
     async spawn(command) {
         return utils_1.asyncSpawn("--home", this.homeDir, command);
+    }
+    async start() {
+        const args = [
+            "--home",
+            this.homeDir,
+            "run",
+            "--rpc-addr",
+            this.internalRpcAddr,
+        ];
+        utils_1.debug(`sending args, ${args.join(" ")}`);
+        const options = {
+            stdio: ['ignore', 'ignore', 'ignore']
+        };
+        if (process.env["NEAR_RUNNER_DEBUG"]) {
+            const filePath = path_1.join(this.homeDir, 'sandboxServer.log');
+            utils_1.debug(`near-sandbox logs writing to file: ${filePath}`);
+            options.stdio[2] = fs_1.openSync(filePath, 'a');
+            options.env = { RUST_BACKTRACE: 'full' };
+        }
+        this.subprocess = utils_1.spawn(utils_1.sandboxBinary(), args, options);
+        this.subprocess.on("exit", () => {
+            utils_1.debug(`Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"}`);
+        });
+        await sandboxStarted(this.port);
+        utils_1.debug(`Connected to server at ${this.internalRpcAddr}`);
+        return this;
+    }
+    close() {
+        this.readyToDie = true;
+        if (!this.subprocess.kill("SIGINT")) {
+            console.error(`Failed to kill child process with PID: ${this.subprocess.pid}`);
+        }
+        if (this.config.rm) {
+            utils_1.rm(this.homeDir);
+        }
     }
 }
 exports.SandboxServer = SandboxServer;

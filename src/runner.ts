@@ -4,7 +4,9 @@ export class Runner {
   private constructor(
     private config: Partial<Config>,
     private args?: any
-  ) { /* auto-assigns to this.config & this.args */ }
+  ) {
+    this.run = this.run.bind(this)
+  }
 
   /** Create the initial enviorment for the test to run in.
    * For example create accounts and deploy contracts that future tests will use.
@@ -40,12 +42,13 @@ export class Runner {
     }
   }
 
+
   /**
    * Sets up the context, runs the function, and tears it down.
    * @param fn function to pass runtime to.
    * @returns the runtime used
    */
-  run = async (fn: RunnerFn): Promise<Runtime> => {
+  async run(fn: RunnerFn): Promise<Runtime> {
     const runtime = await Runtime.create(this.config);
     await runtime.run(fn, this.args);
     return runtime;
@@ -56,7 +59,7 @@ export class Runner {
    * @param fn is the function to run
    * @returns
    */
-  runSandbox = async (fn: RunnerFn): Promise<Runtime | null> => {
+  async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
     if ('sandbox' === this.config.network) {
       return this.run(fn);
     }

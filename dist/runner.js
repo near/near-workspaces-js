@@ -6,27 +6,7 @@ class Runner {
     constructor(config, args) {
         this.config = config;
         this.args = args;
-        /**
-         * Sets up the context, runs the function, and tears it down.
-         * @param fn function to pass runtime to.
-         * @returns the runtime used
-         */
-        this.run = async (fn) => {
-            const runtime = await runtime_1.Runtime.create(this.config);
-            await runtime.run(fn, this.args);
-            return runtime;
-        };
-        /**
-         * Only runs the function if the network is sandbox.
-         * @param fn is the function to run
-         * @returns
-         */
-        this.runSandbox = async (fn) => {
-            if ('sandbox' === this.config.network) {
-                return this.run(fn);
-            }
-            return null;
-        };
+        this.run = this.run.bind(this);
     }
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
@@ -54,6 +34,27 @@ class Runner {
                 throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; ` +
                     "use 'testnet' or 'sandbox' (the default)");
         }
+    }
+    /**
+     * Sets up the context, runs the function, and tears it down.
+     * @param fn function to pass runtime to.
+     * @returns the runtime used
+     */
+    async run(fn) {
+        const runtime = await runtime_1.Runtime.create(this.config);
+        await runtime.run(fn, this.args);
+        return runtime;
+    }
+    /**
+     * Only runs the function if the network is sandbox.
+     * @param fn is the function to run
+     * @returns
+     */
+    async runSandbox(fn) {
+        if ('sandbox' === this.config.network) {
+            return this.run(fn);
+        }
+        return null;
     }
 }
 exports.Runner = Runner;

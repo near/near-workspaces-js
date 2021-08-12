@@ -13,6 +13,6 @@ export declare class SandboxServer {
     private get internalRpcAddr();
     static init(config: Config): Promise<SandboxServer>;
     private spawn;
-    start: () => Promise<SandboxServer>;
-    close: () => void;
+    start(): Promise<SandboxServer>;
+    close(): void;
 }

@@ -135,7 +135,7 @@ export class SandboxServer {
     return asyncSpawn("--home", this.homeDir, command);
   }
 
-  start = async (): Promise<SandboxServer> => {
+  async start(): Promise<SandboxServer> {
     const args = [
       "--home",
       this.homeDir,
@@ -166,7 +166,7 @@ export class SandboxServer {
     return this; 
   }
 
-  close = (): void => {
+  close(): void {
     this.readyToDie = true;
     if (!this.subprocess.kill("SIGINT")) {
       console.error(
