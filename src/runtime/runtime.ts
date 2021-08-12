@@ -284,8 +284,8 @@ export abstract class Runtime {
     return this.root;
   }
 
-  getAccount(name: string): Account {
-    const accountId = this.makeSubAccount(name);
+  getAccount(name: string, addSubaccountPrefix: boolean = true): Account {
+    const accountId = addSubaccountPrefix ? this.makeSubAccount(name): name;
     return new Account(this.near.account(accountId));
   }
 

@@ -61,7 +61,7 @@ export declare abstract class Runtime {
     createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     getRoot(): Account;
-    getAccount(name: string): Account;
+    getAccount(name: string, addSubaccountPrefix?: boolean): Account;
     isSandbox(): boolean;
     isTestnet(): boolean;
     protected addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey>;

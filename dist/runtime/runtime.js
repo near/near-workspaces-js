@@ -211,8 +211,8 @@ class Runtime {
     getRoot() {
         return this.root;
     }
-    getAccount(name) {
-        const accountId = this.makeSubAccount(name);
+    getAccount(name, addSubaccountPrefix = true) {
+        const accountId = addSubaccountPrefix ? this.makeSubAccount(name) : name;
         return new account_1.Account(this.near.account(accountId));
     }
     isSandbox() {

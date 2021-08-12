@@ -27,7 +27,12 @@ const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default("1" + "0".repeat(24));
 function toYocto(amount) {
-    const base = new bn_js_1.default(amount);
+    let base;
+    if (amount.startsWith("0.")) {
+        base = new bn_js_1.default(amount.slice(2));
+        return base.mul(exports.ONE_NEAR).div(new bn_js_1.default("10")).toString();
+    }
+    base = new bn_js_1.default(amount);
     const res = base.mul(exports.ONE_NEAR);
     return res.toString();
 }
