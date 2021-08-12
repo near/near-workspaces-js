@@ -1,5 +1,17 @@
 import { Runner, toYocto, createKeyPair, BN, tGas } from "..";
 
+/* Contract API for reference
+impl Linkdrop {
+  pub fn create_account(new_account_id: &str, new_public_key: &str){}
+  pub fn get_key_balance(public_key: &str){}
+  pub fn send(public_key: &str){}
+  pub fn create_account_and_claim(new_account_id: &str, new_public_key: &str){}
+  pub fn on_account_created(predecessor_account_id: &str, amount: &str){}
+  pub fn on_account_created_and_claimed(amount: &str){}
+  pub fn claim(account_id: &str){}
+}
+*/
+
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60000);
   let runner: Runner;
@@ -104,16 +116,3 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 });
-
-/* Contract API for reference
-
-impl Linkdrop {
-  pub fn create_account(new_account_id: &str, new_public_key: &str){}
-  pub fn get_key_balance(public_key: &str){}
-  pub fn send(public_key: &str){}
-  pub fn create_account_and_claim(new_account_id: &str, new_public_key: &str){}
-  pub fn on_account_created(predecessor_account_id: &str, amount: &str){}
-  pub fn on_account_created_and_claimed(amount: &str){}
-  pub fn claim(account_id: &str){}
-}
-*/
