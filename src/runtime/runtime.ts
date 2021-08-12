@@ -5,7 +5,8 @@ import { join, dirname } from "path";
 import * as os from "os";
 import { Account } from './account'
 import { SandboxServer, createDir } from './server';
-import { debug, toYocto } from '../utils';
+import { debug } from './utils';
+import { toYocto } from '../utils';
 
 interface RuntimeArg {
   runtime: Runtime;
@@ -26,7 +27,7 @@ type AccountId = string;
 type UserPropName = string;
 type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
 
-const DEFAULT_INITIAL_DEPOSIT = toYocto("10");
+const DEFAULT_INITIAL_DEPOSIT: string = toYocto("10");
 
 function randomAccountId(): string {
   let accountId;
@@ -435,7 +436,7 @@ class SandboxRuntime extends Runtime {
       network: 'sandbox',
       masterAccount: 'test.near',
       rpcAddr: `http://localhost:${port}`,
-      initialBalance: DEFAULT_INITIAL_DEPOSIT,
+      initialBalance: toYocto("100"),
     };
   }
 

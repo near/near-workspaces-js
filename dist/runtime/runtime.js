@@ -30,8 +30,9 @@ const path_1 = require("path");
 const os = __importStar(require("os"));
 const account_1 = require("./account");
 const server_1 = require("./server");
-const utils_1 = require("../utils");
-const DEFAULT_INITIAL_DEPOSIT = utils_1.toYocto("10");
+const utils_1 = require("./utils");
+const utils_2 = require("../utils");
+const DEFAULT_INITIAL_DEPOSIT = utils_2.toYocto("10");
 function randomAccountId() {
     let accountId;
     // create random number with at least 7 digits
@@ -327,7 +328,7 @@ class SandboxRuntime extends Runtime {
             network: 'sandbox',
             masterAccount: 'test.near',
             rpcAddr: `http://localhost:${port}`,
-            initialBalance: DEFAULT_INITIAL_DEPOSIT,
+            initialBalance: utils_2.toYocto("100"),
         };
     }
     static async createRuntime(config, resultArgs) {

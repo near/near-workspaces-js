@@ -21,6 +21,12 @@ class Runner {
             initFn: fn
         }, runtime.resultArgs);
     }
+    static networkIsTestnet() {
+        return this.getNetworkFromEnv() === 'testnet';
+    }
+    static networkIsSandbox() {
+        return this.getNetworkFromEnv() === 'sandbox';
+    }
     static getNetworkFromEnv() {
         const network = process.env.NEAR_RUNNER_NETWORK;
         switch (network) {

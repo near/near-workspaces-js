@@ -23,12 +23,32 @@ export class Account {
     return this.najAccount.connection;
   }
 
+  get networkId(): string { 
+    return this.connection.networkId; 
+  }
+
+  get signer(): nearAPI.InMemorySigner {
+    return this.connection.signer as nearAPI.InMemorySigner;
+  }
+
+  get keyStore(): nearAPI.keyStores.KeyStore {
+    return this.signer.keyStore;
+  }
+
   get accountId(): string {
     return this.najAccount.accountId;
   }
 
   get provider(): nearAPI.providers.JsonRpcProvider {
     return this.connection.provider as nearAPI.providers.JsonRpcProvider;
+  }
+
+  async getKey(accountId: string): Promise<nearAPI.KeyPair> {
+    return this.keyStore.getKey(this.networkId, accountId);
+  }
+
+  async setKey(accountId: string, keyPair: nearAPI.KeyPair): Promise<void> {
+    await this.keyStore.setKey(this.networkId, accountId, keyPair);
   }
 
   /**
@@ -45,9 +65,15 @@ export class Account {
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
+      signWithKey = undefined,
     }: Partial<CallOptions> = {}
   ): Promise<any> {
     const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
+    let oldKey: nearAPI.KeyPair;
+    if (signWithKey) {
+      oldKey = await this.getKey(accountId);
+      await this.setKey(accountId, signWithKey);
+    }
     const txResult = await this.najAccount.functionCall({
       contractId: accountId,
       methodName,
@@ -55,6 +81,9 @@ export class Account {
       gas: new BN(gas),
       attachedDeposit: new BN(attachedDeposit),
     });
+    if (signWithKey) {
+      await this.setKey(accountId, oldKey!);
+    }
     return txResult;
   }
 
