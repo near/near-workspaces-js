@@ -1,4 +1,4 @@
-import { Runner } from "../src";
+import { Runner } from "..";
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner;

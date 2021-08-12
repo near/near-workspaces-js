@@ -20,6 +20,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "pretest": "yarn build",
     "prepublishOnly": "yarn build",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest",
     "test:sandbox": "jest",

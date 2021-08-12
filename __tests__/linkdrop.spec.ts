@@ -1,4 +1,4 @@
-import { Runner, toYocto, createKeyPair, BN } from "../src";
+import { Runner, toYocto, createKeyPair, BN } from "..";
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60000);

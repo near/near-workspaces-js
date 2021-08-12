@@ -1,4 +1,4 @@
-import { Runner } from "../src";
+import { Runner } from "..";
 import * as borsh from "borsh";
 
 describe("view state & patch state", () => {

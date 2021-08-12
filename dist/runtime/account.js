@@ -47,6 +47,9 @@ class Account {
     get accountId() {
         return this.najAccount.accountId;
     }
+    async balance() {
+        return this.najAccount.getAccountBalance();
+    }
     get provider() {
         return this.connection.provider;
     }

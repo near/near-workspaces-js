@@ -9,6 +9,12 @@ export interface CallOptions {
     attachedDeposit: string | BN;
     signWithKey?: nearAPI.KeyPair;
 }
+export interface AccountBalance {
+    total: string;
+    stateStaked: string;
+    staked: string;
+    available: string;
+}
 export declare class Account {
     najAccount: nearAPI.Account;
     constructor(najAccount: nearAPI.Account);
@@ -17,6 +23,7 @@ export declare class Account {
     get signer(): nearAPI.InMemorySigner;
     get keyStore(): nearAPI.keyStores.KeyStore;
     get accountId(): string;
+    balance(): Promise<AccountBalance>;
     get provider(): nearAPI.providers.JsonRpcProvider;
     getKey(accountId: string): Promise<nearAPI.KeyPair>;
     setKey(accountId: string, keyPair: nearAPI.KeyPair): Promise<void>;
