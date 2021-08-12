@@ -4,6 +4,16 @@ import * as borsh from "borsh";
 
 type Args = { [key: string]: any };
 
+// TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
+const DEFAULT_FUNCTION_CALL_GAS = new BN(30 * 10 ** 12);
+const NO_DEPOSIT = new BN('0');
+
+export interface CallOptions {
+  gas: string | BN;
+  attachedDeposit: string | BN;
+  signWithKey?: nearAPI.KeyPair;
+}
+
 export class Account {
   constructor(
     public najAccount: nearAPI.Account
@@ -32,8 +42,10 @@ export class Account {
     contractId: Account | string,
     methodName: string,
     args: object,
-    gas: string | BN = new BN(25 * 10 ** 12),
-    attachedDeposit: string | BN = new BN('0'),
+    {
+      gas = DEFAULT_FUNCTION_CALL_GAS,
+      attachedDeposit = NO_DEPOSIT,
+    }: Partial<CallOptions> = {}
   ): Promise<any> {
     const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
     const txResult = await this.najAccount.functionCall({
@@ -57,15 +69,19 @@ export class Account {
     contractId: Account | string,
     methodName: string,
     args: object,
-    gas: string | BN = new BN(30 * 10 ** 12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
-    attachedDeposit: string | BN = new BN('0'),
+    {
+      gas = DEFAULT_FUNCTION_CALL_GAS,
+      attachedDeposit = NO_DEPOSIT,
+    }: Partial<CallOptions> = {}
   ): Promise<any> {
     const txResult = await this.call_raw(
       contractId,
       methodName,
       args,
-      gas,
-      attachedDeposit,
+      {
+        gas,
+        attachedDeposit,
+      }
     );
     if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
       const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
