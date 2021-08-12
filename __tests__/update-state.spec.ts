@@ -5,14 +5,13 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60000);
 
   beforeAll(async () => {
-    runner = await Runner.create(async ({ runtime }) => {
-      const contract = await runtime.createAndDeploy(
+    runner = await Runner.create(async ({ runtime }) => ({
+      contract: await runtime.createAndDeploy(
         "status-message",
         `${__dirname}/build/debug/status_message.wasm`
-      );
-      const ali = await runtime.createAccount("ali");
-      return { contract, ali };
-    });
+      ),
+      ali: await runtime.createAccount("ali"),
+    }));
   });
 
   test("Root gets null status", async () => {

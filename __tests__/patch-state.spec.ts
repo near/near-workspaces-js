@@ -46,11 +46,7 @@ describe("view state & patch state", () => {
       ],
     ]);
 
-    test(`View state${
-      process.env.NEAR_RUNNER_NETWORK !== "testnet"
-        ? ""
-        : "(skipping on testnet)"
-    }`, async () => {
+    test("View state", async () => {
       await runner.runSandbox(async ({ contract, ali }) => {
         await ali.call(contract, "set_status", { message: "hello" });
 
@@ -72,11 +68,7 @@ describe("view state & patch state", () => {
       });
     });
 
-    test(`Patch state${
-      process.env.NEAR_RUNNER_NETWORK !== "testnet"
-        ? ""
-        : " (skipping on testnet)"
-    }`, async () => {
+    test("Patch state", async () => {
       await runner.runSandbox(async ({ contract, ali }) => {
         // contract must have some state for viewState & patchState to work
         await ali.call(contract, "set_status", { message: "hello" });

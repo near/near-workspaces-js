@@ -42,7 +42,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           attachedDeposit: toYocto("2"),
         }
       );
-      // can only create subaccounts
       const new_account_id = `bob.${linkdrop.accountId}`;
       const actualKey = createKeyPair();
       const new_public_key = actualKey.getPublicKey().toString();
