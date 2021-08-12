@@ -1,7 +1,7 @@
 import { join } from "path";
 import * as http from "http";
 import tmpDir from "temp-dir";
-import { openSync }from "fs";
+import { openSync } from "fs";
 import { Config } from './runtime';
 import {
   debug,
@@ -14,17 +14,14 @@ import {
   sandboxBinary,
   ensureBinary,
 } from "../utils";
+// @ts-ignore
+import * as portCheck from "node-port-check"
+import UUID from "pure-uuid";
 
-export function getHomeDir(p: number = 3000): string {
-  return join(tmpDir, "sandbox", p.toString());
+export function createDir(): string {
+  return join(tmpDir, "sandbox", (new UUID(4).toString()));
 }
 
-// TODO: detemine safe port range
-function assertPortRange(p: number): void {
-  if (p < 4000 || p > 5000) {
-    throw new Error("port is out of range, 3000-3999");
-  }
-}
 
 const pollData = JSON.stringify({
   jsonrpc: "2.0",
@@ -44,7 +41,7 @@ function pingServer(port: number): Promise<boolean> {
     },
   };
   return new Promise((resolve, _) => {
-    const req  = http.request(options, (res) => {
+    const req = http.request(options, (res) => {
       if (res.statusCode == 200) {
         resolve(true);
       } else {
@@ -73,20 +70,19 @@ async function sandboxStarted(port: number, timeout: number = 20_000): Promise<v
   throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 
+function initalPort(): number {
+  return Math.max(1024, Math.floor(Math.random() * 10000));
+}
+
 export class SandboxServer {
   private subprocess!: any;
-  private static lastPort = 4000;
+  private static lastPort: number = initalPort();
   private readyToDie: boolean = false;
   private config: Config;
-
-  static nextPort(): number {
-    return SandboxServer.lastPort++;
-  }
 
   // TODO: split SandboxServer config & Runtime config
   private constructor(config: Config) {
     this.config = config;
-    assertPortRange(this.port);
   }
 
   get homeDir(): string {
@@ -148,22 +144,21 @@ export class SandboxServer {
       stdio: ['ignore', 'ignore', 'ignore']
     };
     if (process.env["NEAR_RUNNER_DEBUG"]) {
-      const filePath = join(this.homeDir,'sandboxServer.log');
+      const filePath = join(this.homeDir, 'sandboxServer.log');
       debug(`near-sandbox logs writing to file: ${filePath}`)
       options.stdio[2] = openSync(filePath, 'a');
-      options.env = { RUST_BACKTRACE: 'full'};
+      options.env = { RUST_BACKTRACE: 'full' };
     }
     this.subprocess = spawn(sandboxBinary(), args, options);
     this.subprocess.on("exit", () => {
       debug(
-        `Server with port ${this.port}: Died ${
-          this.readyToDie ? "gracefully" : "horribly"
+        `Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"
         }`
       );
     });
     await sandboxStarted(this.port);
     debug(`Connected to server at ${this.internalRpcAddr}`);
-    return this; 
+    return this;
   }
 
   close(): void {
@@ -176,5 +171,10 @@ export class SandboxServer {
     if (this.config.rm) {
       rm(this.homeDir);
     }
+  }
+
+  static async nextPort(): Promise<number> {
+    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0")
+    return this.lastPort;
   }
 }

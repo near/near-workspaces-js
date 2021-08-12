@@ -12,7 +12,9 @@
     "fs-extra": "^10.0.0",
     "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
     "near-sandbox": "^0.0.5",
+    "node-port-check": "^2.0.1",
     "promisify-child-process": "^4.1.1",
+    "pure-uuid": "^1.6.2",
     "rimraf": "^3.0.2",
     "temp-dir": "^2.0.0"
   },

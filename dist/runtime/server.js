@@ -22,22 +22,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SandboxServer = exports.getHomeDir = void 0;
+exports.SandboxServer = exports.createDir = void 0;
 const path_1 = require("path");
 const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
 const fs_1 = require("fs");
 const utils_1 = require("../utils");
-function getHomeDir(p = 3000) {
-    return path_1.join(temp_dir_1.default, "sandbox", p.toString());
+// @ts-ignore
+const portCheck = __importStar(require("node-port-check"));
+const pure_uuid_1 = __importDefault(require("pure-uuid"));
+function createDir() {
+    return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(4).toString()));
 }
-exports.getHomeDir = getHomeDir;
-// TODO: detemine safe port range
-function assertPortRange(p) {
-    if (p < 4000 || p > 5000) {
-        throw new Error("port is out of range, 3000-3999");
-    }
-}
+exports.createDir = createDir;
 const pollData = JSON.stringify({
     jsonrpc: "2.0",
     id: "dontcare",
@@ -83,15 +80,14 @@ async function sandboxStarted(port, timeout = 20000) {
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
+function initalPort() {
+    return Math.floor(Math.random() * 10000);
+}
 class SandboxServer {
     // TODO: split SandboxServer config & Runtime config
     constructor(config) {
         this.readyToDie = false;
         this.config = config;
-        assertPortRange(this.port);
-    }
-    static nextPort() {
-        return SandboxServer.lastPort++;
     }
     get homeDir() {
         return this.config.homeDir;
@@ -169,7 +165,11 @@ class SandboxServer {
             utils_1.rm(this.homeDir);
         }
     }
+    static async nextPort() {
+        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0");
+        return this.lastPort;
+    }
 }
 exports.SandboxServer = SandboxServer;
-SandboxServer.lastPort = 4000;
+SandboxServer.lastPort = initalPort();
 //# sourceMappingURL=server.js.map

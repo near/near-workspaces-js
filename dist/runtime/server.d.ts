@@ -1,11 +1,10 @@
 import { Config } from './runtime';
-export declare function getHomeDir(p?: number): string;
+export declare function createDir(): string;
 export declare class SandboxServer {
     private subprocess;
     private static lastPort;
     private readyToDie;
     private config;
-    static nextPort(): number;
     private constructor();
     get homeDir(): string;
     get port(): number;
@@ -15,4 +14,5 @@ export declare class SandboxServer {
     private spawn;
     start(): Promise<SandboxServer>;
     close(): void;
+    static nextPort(): Promise<number>;
 }

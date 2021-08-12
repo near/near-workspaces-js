@@ -59,7 +59,7 @@ async function getKeyFromFile(filePath, create = true) {
 class Runtime {
     constructor(config, resultArgs) {
         this.accountsCreated = new Map();
-        this.config = this.getConfig(config);
+        this.config = config;
         this.resultArgs = resultArgs;
     }
     static async create(config, f) {
@@ -68,10 +68,10 @@ class Runtime {
                 if (f) {
                     utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
                 }
-                return new TestnetRuntime(config);
+                return TestnetRuntime.createRuntime(config);
             }
             case 'sandbox': {
-                const runtime = new SandboxRuntime(config);
+                const runtime = await SandboxRuntime.createRuntime(config);
                 if (f) {
                     utils_1.debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
                     const args = await runtime.createRun(f);
@@ -121,12 +121,6 @@ class Runtime {
     async getMasterKey() {
         utils_1.debug("reading key from file", this.keyFilePath);
         return getKeyFromFile(this.keyFilePath);
-    }
-    getConfig(config) {
-        return {
-            ...this.defaultConfig,
-            ...config
-        };
     }
     // Hook that child classes can override to add functionality before `connect` call
     async beforeConnect() { }
@@ -240,7 +234,10 @@ class Runtime {
 }
 exports.Runtime = Runtime;
 class TestnetRuntime extends Runtime {
-    get defaultConfig() {
+    static createRuntime(config, resultArgs) {
+        return new TestnetRuntime({ ...this.defaultConfig, ...config }, resultArgs);
+    }
+    static get defaultConfig() {
         return {
             homeDir: 'ignored',
             port: 3030,
@@ -319,10 +316,10 @@ class TestnetRuntime extends Runtime {
 }
 exports.TestnetRuntime = TestnetRuntime;
 class SandboxRuntime extends Runtime {
-    get defaultConfig() {
-        const port = server_1.SandboxServer.nextPort();
+    static async defaultConfig() {
+        const port = await server_1.SandboxServer.nextPort();
         return {
-            homeDir: server_1.getHomeDir(port),
+            homeDir: server_1.createDir(),
             port,
             init: true,
             rm: false,
@@ -332,6 +329,10 @@ class SandboxRuntime extends Runtime {
             rpcAddr: `http://localhost:${port}`,
             initialBalance: DEFAULT_INITIAL_DEPOSIT,
         };
+    }
+    static async createRuntime(config, resultArgs) {
+        const defaultConfig = await this.defaultConfig();
+        return new SandboxRuntime({ ...defaultConfig, ...config }, resultArgs);
     }
     get keyFilePath() {
         return path_1.join(this.homeDir, "validator_key.json");
@@ -350,7 +351,7 @@ class SandboxRuntime extends Runtime {
         await this.server.start();
     }
     async afterRun() {
-        utils_1.debug("Closing server with port " + this.server.port);
+        utils_1.debug("Closing server with port " + this.config.port);
         this.server.close();
     }
 }

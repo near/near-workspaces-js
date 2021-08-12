@@ -32,7 +32,6 @@ export interface Config {
 }
 export declare abstract class Runtime {
     static create(config: Partial<Config>, f?: CreateRunnerFn): Promise<Runtime>;
-    abstract get defaultConfig(): Config;
     abstract get keyFilePath(): string;
     abstract afterRun(): Promise<void>;
     protected root: Account;
@@ -42,7 +41,7 @@ export declare abstract class Runtime {
     config: Config;
     protected accountsCreated: Map<AccountId, AccountShortName>;
     resultArgs?: SerializedReturnedAccounts;
-    constructor(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts);
+    constructor(config: Config, resultArgs?: SerializedReturnedAccounts);
     serializeAccountArgs(args: ReturnedAccounts): void;
     deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs;
     get homeDir(): string;
@@ -51,7 +50,6 @@ export declare abstract class Runtime {
     get network(): string;
     get masterAccount(): string;
     getMasterKey(): Promise<nearAPI.KeyPair>;
-    private getConfig;
     abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
@@ -70,7 +68,8 @@ export declare abstract class Runtime {
 }
 export declare class TestnetRuntime extends Runtime {
     private accountArgs?;
-    get defaultConfig(): Config;
+    static createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts): TestnetRuntime;
+    static get defaultConfig(): Config;
     get keyFilePath(): string;
     getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     serializeAccountArgs(args: ReturnedAccounts): void;

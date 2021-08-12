@@ -4,7 +4,7 @@ import * as nearAPI from "near-api-js";
 import { join, dirname } from "path";
 import * as os from "os";
 import { Account } from './account'
-import { SandboxServer, getHomeDir } from './server';
+import { SandboxServer, createDir } from './server';
 import { debug, toYocto } from '../utils';
 
 interface RuntimeArg {
@@ -77,10 +77,10 @@ export abstract class Runtime {
         if (f) {
           debug('Skipping initialization function for testnet; will run before each `runner.run`');
         }
-        return new TestnetRuntime(config)
+        return TestnetRuntime.createRuntime(config)
       }
       case 'sandbox': {
-        const runtime = new SandboxRuntime(config);
+        const runtime = await SandboxRuntime.createRuntime(config);
         if (f) {
           debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
           const args = await runtime.createRun(f);
@@ -97,7 +97,6 @@ export abstract class Runtime {
     }
   }
 
-  abstract get defaultConfig(): Config;
   abstract get keyFilePath(): string;
 
   abstract afterRun(): Promise<void>;
@@ -113,8 +112,8 @@ export abstract class Runtime {
   resultArgs?: SerializedReturnedAccounts;
 
 
-  constructor(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts) {
-    this.config = this.getConfig(config);
+  constructor(config: Config, resultArgs?: SerializedReturnedAccounts) {
+    this.config = config;
     this.resultArgs = resultArgs;
   }
 
@@ -168,13 +167,6 @@ export abstract class Runtime {
   async getMasterKey(): Promise<nearAPI.KeyPair> {
     debug("reading key from file", this.keyFilePath);
     return getKeyFromFile(this.keyFilePath);
-  }
-
-  private getConfig(config: Partial<Config>): Config {
-    return {
-      ...this.defaultConfig,
-      ...config
-    };
   }
 
   abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
@@ -322,7 +314,11 @@ export abstract class Runtime {
 export class TestnetRuntime extends Runtime {
   private accountArgs?: ReturnedAccounts;
 
-  get defaultConfig(): Config {
+  static createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts): TestnetRuntime {
+    return new TestnetRuntime({...this.defaultConfig, ...config}, resultArgs);
+  }
+
+  static get defaultConfig(): Config {
     return {
       homeDir: 'ignored',
       port: 3030,
@@ -428,10 +424,10 @@ export class TestnetRuntime extends Runtime {
 class SandboxRuntime extends Runtime {
   private server!: SandboxServer;
 
-  get defaultConfig(): Config {
-    const port = SandboxServer.nextPort();
+  static async defaultConfig(): Promise<Config> {
+    const port = await SandboxServer.nextPort();
     return {
-      homeDir: getHomeDir(port),
+      homeDir: createDir(),
       port,
       init: true,
       rm: false,
@@ -441,6 +437,11 @@ class SandboxRuntime extends Runtime {
       rpcAddr: `http://localhost:${port}`,
       initialBalance: DEFAULT_INITIAL_DEPOSIT,
     };
+  }
+
+  static async createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts) {
+    const defaultConfig = await this.defaultConfig();
+    return new SandboxRuntime({...defaultConfig, ...config}, resultArgs);
   }
 
   get keyFilePath(): string {
@@ -465,7 +466,7 @@ class SandboxRuntime extends Runtime {
   }
 
   async afterRun(): Promise<void> {
-    debug("Closing server with port " + this.server.port);
+    debug("Closing server with port " + this.config.port);
     this.server.close();
   }
 }
