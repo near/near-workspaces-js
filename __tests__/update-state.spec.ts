@@ -1,5 +1,4 @@
-import { Runner } from "../../../src";
-import * as borsh from "borsh";
+import { Runner } from "../src";
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner
@@ -9,7 +8,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     runner = await Runner.create(async ({ runtime }) => {
       const contract = await runtime.createAndDeploy(
         "status-message",
-        `${__dirname}/../build/debug/status_message.wasm`
+        `${__dirname}/build/debug/status_message.wasm`
       );
       const ali = await runtime.createAccount("ali");
       return { contract, ali }

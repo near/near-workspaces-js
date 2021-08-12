@@ -1,4 +1,4 @@
-import { Runner } from "../../../src";
+import { Runner } from "../src";
 import * as borsh from "borsh";
 
 describe('view state & patch state', () => {
@@ -12,7 +12,7 @@ describe('view state & patch state', () => {
       runner = await Runner.create(async ({ runtime }) => {
         const contract = await runtime.createAndDeploy(
           "status-message",
-          `${__dirname}/../build/debug/status_message.wasm`
+          `${__dirname}/build/debug/status_message.wasm`
         );
         const ali = await runtime.createAccount("ali");
         return { contract, ali }
