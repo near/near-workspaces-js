@@ -24,6 +24,14 @@ export class Runner {
     }, runtime.resultArgs);
   }
 
+  static networkIsTestnet(): boolean {
+    return this.getNetworkFromEnv() === 'testnet';
+  }
+
+  static networkIsSandbox(): boolean {
+    return this.getNetworkFromEnv() === 'sandbox';
+  }
+
   static getNetworkFromEnv(): 'sandbox' | 'testnet' {
     const network = process.env.NEAR_RUNNER_NETWORK;
     switch (network) {
