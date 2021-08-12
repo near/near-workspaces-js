@@ -1,7 +1,7 @@
 import { join } from "path";
 import * as http from "http";
 import tmpDir from "temp-dir";
-import { openSync }from "fs";
+import { openSync } from "fs";
 import { Config } from './runtime';
 import {
   debug,
@@ -41,7 +41,7 @@ function pingServer(port: number): Promise<boolean> {
     },
   };
   return new Promise((resolve, _) => {
-    const req  = http.request(options, (res) => {
+    const req = http.request(options, (res) => {
       if (res.statusCode == 200) {
         resolve(true);
       } else {
@@ -71,7 +71,7 @@ async function sandboxStarted(port: number, timeout: number = 20_000): Promise<v
 }
 
 function initalPort(): number {
-  return Math.floor(Math.random() * 1024);
+  return Math.max(1024, Math.floor(Math.random() * 10000));
 }
 
 export class SandboxServer {
@@ -144,22 +144,21 @@ export class SandboxServer {
       stdio: ['ignore', 'ignore', 'ignore']
     };
     if (process.env["NEAR_RUNNER_DEBUG"]) {
-      const filePath = join(this.homeDir,'sandboxServer.log');
+      const filePath = join(this.homeDir, 'sandboxServer.log');
       debug(`near-sandbox logs writing to file: ${filePath}`)
       options.stdio[2] = openSync(filePath, 'a');
-      options.env = { RUST_BACKTRACE: 'full'};
+      options.env = { RUST_BACKTRACE: 'full' };
     }
     this.subprocess = spawn(sandboxBinary(), args, options);
     this.subprocess.on("exit", () => {
       debug(
-        `Server with port ${this.port}: Died ${
-          this.readyToDie ? "gracefully" : "horribly"
+        `Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"
         }`
       );
     });
     await sandboxStarted(this.port);
     debug(`Connected to server at ${this.internalRpcAddr}`);
-    return this; 
+    return this;
   }
 
   close(): void {
