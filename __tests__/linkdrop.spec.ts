@@ -13,7 +13,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     }));
   });
 
-  test("call myself", async () => {
+  test("Use `create_account_and_claim` to create a new account", async () => {
     await runner.run(async ({ root, linkdrop }) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
@@ -56,7 +56,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test("call myself", async () => {
+  test("Use `claim` to transfer to an existing account", async () => {
     await runner.run(async ({ root, linkdrop }, runtime) => {
       const bob = await runtime.createAccount("bob");
       const originalBalance = await bob.balance();
@@ -109,17 +109,11 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
 impl Linkdrop {
   pub fn create_account(new_account_id: &str, new_public_key: &str){}
-
   pub fn get_key_balance(public_key: &str){}
-
   pub fn send(public_key: &str){}
-
   pub fn create_account_and_claim(new_account_id: &str, new_public_key: &str){}
-
   pub fn on_account_created(predecessor_account_id: &str, amount: &str){}
-
   pub fn on_account_created_and_claimed(amount: &str){}
-
   pub fn claim(account_id: &str){}
 }
 */
