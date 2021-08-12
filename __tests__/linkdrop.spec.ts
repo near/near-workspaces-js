@@ -81,7 +81,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         linkdrop,
         "claim",
         {
-          account_id: bob.accountId
+          account_id: bob.accountId,
         },
         {
           signWithKey: senderKey,
@@ -90,15 +90,17 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       );
 
       const newBalance = await bob.balance();
-      
-      console.log(
-        res
-      );
+
+      console.log(res);
       const originalAvaiable = new BN(originalBalance.available);
       const newAvaiable = new BN(newBalance.available);
       expect(originalAvaiable.lt(newAvaiable)).toBeTruthy();
 
-      console.log(`${bob.accountId} claimed ${newAvaiable.sub(originalAvaiable).toString()} yoctoNear`);
+      console.log(
+        `${bob.accountId} claimed ${newAvaiable
+          .sub(originalAvaiable)
+          .toString()} yoctoNear`
+      );
     });
   });
 });
