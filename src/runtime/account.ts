@@ -14,6 +14,14 @@ export interface CallOptions {
   signWithKey?: nearAPI.KeyPair;
 }
 
+// TODO: expose in naj
+export interface AccountBalance {
+  total: string;
+  stateStaked: string;
+  staked: string;
+  available: string;
+}
+
 export class Account {
   constructor(
     public najAccount: nearAPI.Account
@@ -37,6 +45,10 @@ export class Account {
 
   get accountId(): string {
     return this.najAccount.accountId;
+  }
+
+  async balance(): Promise<AccountBalance> {
+    return this.najAccount.getAccountBalance() as Promise<AccountBalance>;
   }
 
   get provider(): nearAPI.providers.JsonRpcProvider {

@@ -21,7 +21,7 @@ export interface AccountArgs extends ReturnedAccounts {
 }
 
 export type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
-export type RunnerFn = (args: AccountArgs, runtime?: Runtime) => Promise<void>;
+export type RunnerFn = (args: AccountArgs, runtime: Runtime) => Promise<void>;
 type AccountShortName = string;
 type AccountId = string;
 type UserPropName = string;

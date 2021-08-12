@@ -1,11 +1,11 @@
 import { Runner } from "../src";
 import * as borsh from "borsh";
 
-describe('view state & patch state', () => {
+describe("view state & patch state", () => {
   if (!Runner.networkIsSandbox()) {
-    test('skipping; not using sandbox', () => { })
+    test("skipping; not using sandbox", () => {});
   } else {
-    let runner: Runner
+    let runner: Runner;
     jest.setTimeout(60000);
 
     beforeAll(async () => {
@@ -15,9 +15,9 @@ describe('view state & patch state', () => {
           `${__dirname}/build/debug/status_message.wasm`
         );
         const ali = await runtime.createAccount("ali");
-        return { contract, ali }
-      })
-    })
+        return { contract, ali };
+      });
+    });
 
     class Assignable {
       [key: string]: any;
@@ -28,9 +28,9 @@ describe('view state & patch state', () => {
       }
     }
 
-    class StatusMessage extends Assignable { }
+    class StatusMessage extends Assignable {}
 
-    class Record extends Assignable { }
+    class Record extends Assignable {}
 
     const schema = new Map([
       [StatusMessage, { kind: "struct", fields: [["records", [Record]]] }],
@@ -46,9 +46,13 @@ describe('view state & patch state', () => {
       ],
     ]);
 
-    test(`View state${process.env.NEAR_RUNNER_NETWORK !== 'testnet' ? '' : '(skipping on testnet)'}`, async () => {
+    test(`View state${
+      process.env.NEAR_RUNNER_NETWORK !== "testnet"
+        ? ""
+        : "(skipping on testnet)"
+    }`, async () => {
       await runner.runSandbox(async ({ contract, ali }) => {
-        await ali.call(contract, "set_status", { message: "hello" })
+        await ali.call(contract, "set_status", { message: "hello" });
 
         const state = await contract.viewState();
 
@@ -56,38 +60,55 @@ describe('view state & patch state', () => {
         let data = state.get_raw("STATE");
 
         // deserialize from borsh
-        const statusMessage: StatusMessage = borsh.deserialize(schema, StatusMessage, data);
+        const statusMessage: StatusMessage = borsh.deserialize(
+          schema,
+          StatusMessage,
+          data
+        );
 
         expect(statusMessage.records[0]).toStrictEqual(
-          new Record({ k: ali.accountId, v: 'hello' })
-        )
+          new Record({ k: ali.accountId, v: "hello" })
+        );
       });
     });
 
-
-    test(`Patch state${process.env.NEAR_RUNNER_NETWORK !== 'testnet' ? '' : ' (skipping on testnet)'}`, async () => {
+    test(`Patch state${
+      process.env.NEAR_RUNNER_NETWORK !== "testnet"
+        ? ""
+        : " (skipping on testnet)"
+    }`, async () => {
       await runner.runSandbox(async ({ contract, ali }) => {
         // contract must have some state for viewState & patchState to work
-        await ali.call(contract, "set_status", { message: "hello" })
+        await ali.call(contract, "set_status", { message: "hello" });
         // Get state
         const state = await contract.viewState();
         // Get raw value
         let statusMessage = state.get("STATE", { schema, type: StatusMessage });
 
         // update contract state
-        statusMessage.records.push(new Record({ k: "alice.near", v: "hello world" }));
+        statusMessage.records.push(
+          new Record({ k: "alice.near", v: "hello world" })
+        );
 
         // serialize and patch state back to runtime
-        await contract.patchState("STATE", borsh.serialize(schema, statusMessage));
+        await contract.patchState(
+          "STATE",
+          borsh.serialize(schema, statusMessage)
+        );
 
         // Check again that the update worked
-        const result = await contract.view("get_status", { account_id: "alice.near" })
+        const result = await contract.view("get_status", {
+          account_id: "alice.near",
+        });
         expect(result).toBe("hello world");
 
         // Can also get value by passing the schema
-        const data = (await contract.viewState()).get("STATE", { schema, type: StatusMessage });
+        const data = (await contract.viewState()).get("STATE", {
+          schema,
+          type: StatusMessage,
+        });
         expect(data).toStrictEqual(statusMessage);
-      })
+      });
     });
   }
-})
+});
