@@ -27,6 +27,7 @@ const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default("1" + "0".repeat(24));
 const oneToNine = /^([0-9])\.([0-9])$/;
+// TODO: Handle any valid number
 function toYocto(amount) {
     let base;
     if (amount.startsWith("0.")) {

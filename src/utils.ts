@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
+import { KeyPair } from "./types";
 
 
 export const ONE_NEAR = new BN("1" + "0".repeat(24));
@@ -23,7 +24,7 @@ export function toYocto(amount: string): string {
 }
 
 
-export function createKeyPair(): nearAPI.KeyPair {
+export function createKeyPair(): KeyPair {
   return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
 

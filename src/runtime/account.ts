@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
+import { KeyPair } from "../types";
 import * as borsh from "borsh";
 
 type Args = { [key: string]: any };
@@ -9,9 +10,9 @@ const DEFAULT_FUNCTION_CALL_GAS = new BN(30 * 10 ** 12);
 const NO_DEPOSIT = new BN('0');
 
 export interface CallOptions {
-  gas: string | BN;
-  attachedDeposit: string | BN;
-  signWithKey?: nearAPI.KeyPair;
+  gas?: string | BN;
+  attachedDeposit?: string | BN;
+  signWithKey?: KeyPair;
 }
 
 // TODO: expose in naj
@@ -25,7 +26,7 @@ export interface AccountBalance {
 export class Account {
   constructor(
     public najAccount: nearAPI.Account
-  ) { }
+  ) {}
 
   get connection(): nearAPI.Connection {
     return this.najAccount.connection;
@@ -55,11 +56,11 @@ export class Account {
     return this.connection.provider as nearAPI.providers.JsonRpcProvider;
   }
 
-  async getKey(accountId: string): Promise<nearAPI.KeyPair> {
+  async getKey(accountId: string): Promise<KeyPair> {
     return this.keyStore.getKey(this.networkId, accountId);
   }
 
-  async setKey(accountId: string, keyPair: nearAPI.KeyPair): Promise<void> {
+  async setKey(accountId: string, keyPair: KeyPair): Promise<void> {
     await this.keyStore.setKey(this.networkId, accountId, keyPair);
   }
 
@@ -78,10 +79,14 @@ export class Account {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
-    }: Partial<CallOptions> = {}
+    }: {
+      gas?: string | BN;
+      attachedDeposit?: string | BN;
+      signWithKey?: KeyPair
+    } = {}
   ): Promise<any> {
     const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
-    let oldKey: nearAPI.KeyPair;
+    let oldKey: KeyPair;
     if (signWithKey) {
       oldKey = await this.getKey(accountId);
       await this.setKey(accountId, signWithKey);
@@ -113,7 +118,12 @@ export class Account {
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
-    }: Partial<CallOptions> = {}
+      signWithKey = undefined,
+    }:{
+      gas?: string | BN;
+      attachedDeposit?: string | BN;
+      signWithKey?: KeyPair
+    } = {}
   ): Promise<any> {
     const txResult = await this.call_raw(
       contractId,
@@ -122,6 +132,7 @@ export class Account {
       {
         gas,
         attachedDeposit,
+        signWithKey
       }
     );
     if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {

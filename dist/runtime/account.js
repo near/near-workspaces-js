@@ -92,10 +92,11 @@ class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    async call(contractId, methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, } = {}) {
+    async call(contractId, methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const txResult = await this.call_raw(contractId, methodName, args, {
             gas,
             attachedDeposit,
+            signWithKey
         });
         if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
             const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
