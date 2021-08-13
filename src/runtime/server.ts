@@ -13,7 +13,7 @@ import {
   copyDir,
   sandboxBinary,
   ensureBinary,
-} from "../utils";
+} from "./utils";
 // @ts-ignore
 import * as portCheck from "node-port-check"
 import UUID from "pure-uuid";

@@ -25,6 +25,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractState = exports.Account = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const borsh = __importStar(require("borsh"));
+// TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
+const DEFAULT_FUNCTION_CALL_GAS = new bn_js_1.default(30 * 10 ** 12);
+const NO_DEPOSIT = new bn_js_1.default('0');
 class Account {
     constructor(najAccount) {
         this.najAccount = najAccount;
@@ -32,11 +35,29 @@ class Account {
     get connection() {
         return this.najAccount.connection;
     }
+    get networkId() {
+        return this.connection.networkId;
+    }
+    get signer() {
+        return this.connection.signer;
+    }
+    get keyStore() {
+        return this.signer.keyStore;
+    }
     get accountId() {
         return this.najAccount.accountId;
     }
+    async balance() {
+        return this.najAccount.getAccountBalance();
+    }
     get provider() {
         return this.connection.provider;
+    }
+    async getKey(accountId) {
+        return this.keyStore.getKey(this.networkId, accountId);
+    }
+    async setKey(accountId, keyPair) {
+        await this.keyStore.setKey(this.networkId, accountId, keyPair);
     }
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
@@ -45,8 +66,13 @@ class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    async call_raw(contractId, methodName, args, gas = new bn_js_1.default(25 * 10 ** 12), attachedDeposit = new bn_js_1.default('0')) {
+    async call_raw(contractId, methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
+        let oldKey;
+        if (signWithKey) {
+            oldKey = await this.getKey(accountId);
+            await this.setKey(accountId, signWithKey);
+        }
         const txResult = await this.najAccount.functionCall({
             contractId: accountId,
             methodName,
@@ -54,6 +80,9 @@ class Account {
             gas: new bn_js_1.default(gas),
             attachedDeposit: new bn_js_1.default(attachedDeposit),
         });
+        if (signWithKey) {
+            await this.setKey(accountId, oldKey);
+        }
         return txResult;
     }
     /**
@@ -63,9 +92,12 @@ class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    async call(contractId, methodName, args, gas = new bn_js_1.default(30 * 10 ** 12), // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
-    attachedDeposit = new bn_js_1.default('0')) {
-        const txResult = await this.call_raw(contractId, methodName, args, gas, attachedDeposit);
+    async call(contractId, methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, signWithKey = undefined, } = {}) {
+        const txResult = await this.call_raw(contractId, methodName, args, {
+            gas,
+            attachedDeposit,
+            signWithKey
+        });
         if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
             const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
             try {

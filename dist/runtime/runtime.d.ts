@@ -1,5 +1,6 @@
 import * as nearAPI from "near-api-js";
 import { Account } from './account';
+import { KeyPair } from '../types';
 interface RuntimeArg {
     runtime: Runtime;
 }
@@ -10,7 +11,7 @@ export interface AccountArgs extends ReturnedAccounts {
     root: Account;
 }
 export declare type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
-export declare type RunnerFn = (args: AccountArgs, runtime?: Runtime) => Promise<void>;
+export declare type RunnerFn = (args: AccountArgs, runtime: Runtime) => Promise<void>;
 declare type AccountShortName = string;
 declare type AccountId = string;
 declare type UserPropName = string;
@@ -36,7 +37,7 @@ export declare abstract class Runtime {
     abstract afterRun(): Promise<void>;
     protected root: Account;
     protected near: nearAPI.Near;
-    protected masterKey: nearAPI.KeyPair;
+    protected masterKey: KeyPair;
     protected keyStore: nearAPI.keyStores.KeyStore;
     config: Config;
     protected accountsCreated: Map<AccountId, AccountShortName>;
@@ -49,7 +50,7 @@ export declare abstract class Runtime {
     get rpcAddr(): string;
     get network(): string;
     get masterAccount(): string;
-    getMasterKey(): Promise<nearAPI.KeyPair>;
+    getMasterKey(): Promise<KeyPair>;
     abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
@@ -61,10 +62,10 @@ export declare abstract class Runtime {
     createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     getRoot(): Account;
-    getAccount(name: string): Account;
+    getAccount(name: string, addSubaccountPrefix?: boolean): Account;
     isSandbox(): boolean;
     isTestnet(): boolean;
-    protected addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey>;
+    protected addKey(name: string, keyPair?: KeyPair): Promise<nearAPI.utils.PublicKey>;
 }
 export declare class TestnetRuntime extends Runtime {
     private accountArgs?;
@@ -77,7 +78,7 @@ export declare class TestnetRuntime extends Runtime {
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     afterRun(): Promise<void>;
-    createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account>;
+    createAccount(name: string, keyPair?: KeyPair): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     private ensureKeyFileFolder;
 }

@@ -27,7 +27,7 @@ const path_1 = require("path");
 const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
 const fs_1 = require("fs");
-const utils_1 = require("../utils");
+const utils_1 = require("./utils");
 // @ts-ignore
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
@@ -81,7 +81,7 @@ async function sandboxStarted(port, timeout = 20000) {
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 function initalPort() {
-    return Math.floor(Math.random() * 10000);
+    return Math.max(1024, Math.floor(Math.random() * 10000));
 }
 class SandboxServer {
     // TODO: split SandboxServer config & Runtime config

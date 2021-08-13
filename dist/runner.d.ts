@@ -7,6 +7,8 @@ export declare class Runner {
      * For example create accounts and deploy contracts that future tests will use.
      */
     static create(configOrFunction: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Promise<Runner>;
+    static networkIsTestnet(): boolean;
+    static networkIsSandbox(): boolean;
     static getNetworkFromEnv(): 'sandbox' | 'testnet';
     /**
      * Sets up the context, runs the function, and tears it down.

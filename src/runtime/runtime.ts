@@ -5,7 +5,9 @@ import { join, dirname } from "path";
 import * as os from "os";
 import { Account } from './account'
 import { SandboxServer, createDir } from './server';
-import { debug, toYocto } from '../utils';
+import { debug } from './utils';
+import { toYocto } from '../utils';
+import { KeyPair } from '../types';
 
 interface RuntimeArg {
   runtime: Runtime;
@@ -20,13 +22,13 @@ export interface AccountArgs extends ReturnedAccounts {
 }
 
 export type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
-export type RunnerFn = (args: AccountArgs, runtime?: Runtime) => Promise<void>;
+export type RunnerFn = (args: AccountArgs, runtime: Runtime) => Promise<void>;
 type AccountShortName = string;
 type AccountId = string;
 type UserPropName = string;
 type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
 
-const DEFAULT_INITIAL_DEPOSIT = toYocto("10");
+const DEFAULT_INITIAL_DEPOSIT: string = toYocto("10");
 
 function randomAccountId(): string {
   let accountId;
@@ -36,7 +38,7 @@ function randomAccountId(): string {
   return accountId;
 }
 
-async function getKeyFromFile(filePath: string, create: boolean = true): Promise<nearAPI.KeyPair> {
+async function getKeyFromFile(filePath: string, create: boolean = true): Promise<KeyPair> {
   try {
     const keyFile = require(filePath);
     return nearAPI.utils.KeyPair.fromString(
@@ -103,7 +105,7 @@ export abstract class Runtime {
 
   protected root!: Account;
   protected near!: nearAPI.Near;
-  protected masterKey!: nearAPI.KeyPair;
+  protected masterKey!: KeyPair;
   protected keyStore!: nearAPI.keyStores.KeyStore;
 
   // TODO: should probably be protected
@@ -164,7 +166,7 @@ export abstract class Runtime {
     return this.config.masterAccount!;
   }
 
-  async getMasterKey(): Promise<nearAPI.KeyPair> {
+  async getMasterKey(): Promise<KeyPair> {
     debug("reading key from file", this.keyFilePath);
     return getKeyFromFile(this.keyFilePath);
   }
@@ -283,8 +285,8 @@ export abstract class Runtime {
     return this.root;
   }
 
-  getAccount(name: string): Account {
-    const accountId = this.makeSubAccount(name);
+  getAccount(name: string, addSubaccountPrefix: boolean = true): Account {
+    const accountId = addSubaccountPrefix ? this.makeSubAccount(name): name;
     return new Account(this.near.account(accountId));
   }
 
@@ -296,7 +298,7 @@ export abstract class Runtime {
     return this.config.network == "testnet";
   }
 
-  protected async addKey(name: string, keyPair?: nearAPI.KeyPair): Promise<nearAPI.utils.PublicKey> {
+  protected async addKey(name: string, keyPair?: KeyPair): Promise<nearAPI.utils.PublicKey> {
     let pubKey: nearAPI.utils.key_pair.PublicKey;
     if (keyPair) {
       const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
@@ -393,7 +395,7 @@ export class TestnetRuntime extends Runtime {
   async afterRun(): Promise<void> { }
 
   // TODO: create temp account and track to be deleted
-  async createAccount(name: string, keyPair?: nearAPI.KeyPair): Promise<Account> {
+  async createAccount(name: string, keyPair?: KeyPair): Promise<Account> {
     // TODO: subaccount done twice
     const account = await super.createAccount(name, keyPair);
     debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId
@@ -435,7 +437,7 @@ class SandboxRuntime extends Runtime {
       network: 'sandbox',
       masterAccount: 'test.near',
       rpcAddr: `http://localhost:${port}`,
-      initialBalance: DEFAULT_INITIAL_DEPOSIT,
+      initialBalance: toYocto("100"),
     };
   }
 

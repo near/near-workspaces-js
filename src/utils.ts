@@ -1,67 +1,31 @@
-import * as fs from "fs/promises";
-import { PathLike } from "fs";
-import { promisify } from "util";
-import {ChildProcess, spawn as _spawn} from "child_process";
+import BN from "bn.js";
+import * as nearAPI from "near-api-js";
+import { KeyPair } from "./types";
 
-import { spawn as _asyncSpawn, Output }  from "promisify-child-process";
-import rimraf from "rimraf";
-// @ts-ignore
-import getBinary from "near-sandbox/getBinary";
-import fs_extra from "fs-extra";
-// @ts-ignore
-import installSandbox from "near-sandbox/install";
 
-export const rm = promisify(rimraf);
+export const ONE_NEAR = new BN("1" + "0".repeat(24));
 
-export const sandboxBinary: () => string = () => getBinary().binaryPath;
+const oneToNine = /^([0-9])\.([0-9])$/;
 
-export async function exists(d: PathLike): Promise<boolean> {
-  let file: fs.FileHandle | undefined;
-  try { 
-    file = await fs.open(d, 'r');
-  } catch (e) {
-    return false;
-  } finally {
-    await file?.close();
-  }
-  return true;
-}
-
-export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
-
-export async function asyncSpawn(...args: string[]): ChildProcessPromise {
-  debug(`Sandbox Binary found: ${sandboxBinary()}`);
-  return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
-}
-
-async function install(): Promise<void> {
-  const runPath = require.resolve("near-sandbox/install");
-  try {
-    await _asyncSpawn("node", [runPath]);
-  } catch(e){
-    console.error(e);
-    throw new Error("Failed to install binary");
-  }
-  return;
-}
-
-export {_spawn as spawn}
-
-export function debug(s: string | Buffer | null | undefined, ...args: any[]): void {
-  if (process.env["NEAR_RUNNER_DEBUG"]) {
-    console.error(s, ...args);
-  }
-}
-
-export const copyDir = promisify(fs_extra.copy);
-
+// TODO: Handle any valid number
 export function toYocto(amount: string): string {
-  return amount + "0".repeat(24);
+  let base: BN;
+  if (amount.startsWith("0.")){
+    const rightSide = amount.slice(2);
+    if (rightSide.startsWith("0")) {
+      throw new Error("current 0.0xxx is unsupported. Got: " + amount);
+    }
+    base = new BN(rightSide);
+    return base.mul(ONE_NEAR).div(new BN("10")).toString();
+  }
+  base = new BN(amount);
+  const res = base.mul(ONE_NEAR);
+  return res.toString();
 }
 
-export async function ensureBinary(): Promise<void> {
-  const binPath = sandboxBinary();
-  if (!await exists(binPath)) {
-    await install();
-  }
+
+export function createKeyPair(): KeyPair {
+  return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
+
+export function tGas(s: string) { return s + '0'.repeat(12); }
