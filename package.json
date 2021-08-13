@@ -27,7 +27,8 @@
     "test": "jest && yarn test:testnet"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "tsconfig.json"
   ],
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
