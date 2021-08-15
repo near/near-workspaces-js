@@ -3,6 +3,7 @@ import { Account } from './account';
 import { KeyPair } from '../types';
 interface RuntimeArg {
     runtime: Runtime;
+    root: Account;
 }
 export interface ReturnedAccounts {
     [key: string]: Account;

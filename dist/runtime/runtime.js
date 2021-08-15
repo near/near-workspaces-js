@@ -156,7 +156,7 @@ class Runtime {
             await fn(this.deserializeAccountArgs(args), this);
         }
         catch (e) {
-            console.error(e.stack);
+            utils_1.debug(e.stack);
             throw e; //TODO Figure out better error handling
         }
         finally {
@@ -174,10 +174,10 @@ class Runtime {
             await this.connect();
             utils_1.debug("About to call afterConnect");
             await this.afterConnect();
-            return await fn({ runtime: this });
+            return await fn({ runtime: this, root: this.getRoot() });
         }
         catch (e) {
-            console.error(e);
+            utils_1.debug(e);
             throw e; //TODO Figure out better error handling
         }
         finally {
@@ -287,7 +287,7 @@ class TestnetRuntime extends Runtime {
     async afterConnect() {
         if (this.config.initFn) {
             utils_1.debug('About to run initFn');
-            this.serializeAccountArgs(await this.config.initFn({ runtime: this }));
+            this.serializeAccountArgs(await this.config.initFn({ runtime: this, root: this.getRoot() }));
         }
     }
     // Delete any accounts created

@@ -11,6 +11,7 @@ import { KeyPair } from '../types';
 
 interface RuntimeArg {
   runtime: Runtime;
+  root: Account;
 }
 
 export interface ReturnedAccounts {
@@ -214,7 +215,7 @@ export abstract class Runtime {
         this
       );
     } catch (e) {
-      console.error(e.stack)
+      debug(e.stack)
       throw e; //TODO Figure out better error handling
     }
     finally {
@@ -233,9 +234,9 @@ export abstract class Runtime {
       await this.connect();
       debug("About to call afterConnect")
       await this.afterConnect();
-      return await fn({ runtime: this });
+      return await fn({ runtime: this, root: this.getRoot() });
     } catch (e) {
-      console.error(e)
+      debug(e)
       throw e; //TODO Figure out better error handling
     } finally {
       // Do any needed teardown
@@ -387,7 +388,7 @@ export class TestnetRuntime extends Runtime {
   async afterConnect(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
-      this.serializeAccountArgs(await this.config.initFn({ runtime: this }));
+      this.serializeAccountArgs(await this.config.initFn({ runtime: this, root: this.getRoot() }));
     }
   }
 
