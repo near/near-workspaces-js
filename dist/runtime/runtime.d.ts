@@ -1,6 +1,6 @@
 import * as nearAPI from "near-api-js";
 import { Account } from './account';
-import { KeyPair } from '../types';
+import { KeyPair, PublicKey } from '../types';
 interface RuntimeArg {
     runtime: Runtime;
     root: Account;
@@ -60,13 +60,16 @@ export declare abstract class Runtime {
     createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     protected addMasterAccountKey(): Promise<void>;
     private makeSubAccount;
-    createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account>;
+    createAccount(name: string, { keyPair, initialBalance }?: {
+        keyPair?: KeyPair;
+        initialBalance?: string;
+    }): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     getRoot(): Account;
     getAccount(name: string, addSubaccountPrefix?: boolean): Account;
     isSandbox(): boolean;
     isTestnet(): boolean;
-    protected addKey(name: string, keyPair?: KeyPair): Promise<nearAPI.utils.PublicKey>;
+    protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
 }
 export declare class TestnetRuntime extends Runtime {
     private accountArgs?;
@@ -79,7 +82,10 @@ export declare class TestnetRuntime extends Runtime {
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     afterRun(): Promise<void>;
-    createAccount(name: string, keyPair?: KeyPair): Promise<Account>;
+    createAccount(name: string, { keyPair, initialBalance }?: {
+        keyPair?: KeyPair;
+        initialBalance?: string;
+    }): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     private ensureKeyFileFolder;
 }

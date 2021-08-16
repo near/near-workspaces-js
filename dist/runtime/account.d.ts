@@ -1,7 +1,8 @@
 /// <reference types="node" />
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
-import { KeyPair } from "../types";
+import { AccessKey, KeyPair, PublicKey } from "../types";
+import { FinalExecutionOutcome } from "../provider";
 declare type Args = {
     [key: string]: any;
 };
@@ -25,9 +26,21 @@ export declare class Account {
     get keyStore(): nearAPI.keyStores.KeyStore;
     get accountId(): string;
     balance(): Promise<AccountBalance>;
+    createTransaction(receiver: Account | string): Transaction;
     get provider(): nearAPI.providers.JsonRpcProvider;
     getKey(accountId: string): Promise<KeyPair>;
     setKey(accountId: string, keyPair: KeyPair): Promise<void>;
+    addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
+    createAccount(accountId: string, { keyPair, initialBalance }: {
+        keyPair?: KeyPair;
+        initialBalance: string;
+    }): Promise<Account>;
+    createAndDeployContract(accountId: string, publicKey: string | PublicKey, code: Uint8Array, amount: BN, { method, args, gas, attachedDeposit, }: {
+        method?: string;
+        args?: object | Uint8Array;
+        gas?: string | BN;
+        attachedDeposit?: string | BN;
+    }): Promise<Account>;
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
      *
@@ -39,7 +52,7 @@ export declare class Account {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<any>;
+    }): Promise<FinalExecutionOutcome>;
     /**
      * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
      *
@@ -56,6 +69,7 @@ export declare class Account {
     view(method: string, args?: Args): Promise<any>;
     viewState(): Promise<ContractState>;
     patchState(key: string, val: any, borshSchema?: any): Promise<any>;
+    makeSubAccount(prefix: string): string;
 }
 export declare class ContractState {
     private data;
@@ -68,5 +82,28 @@ export declare class ContractState {
         type: any;
         schema: any;
     }): any;
+}
+declare class Transaction {
+    private sender;
+    private actions;
+    private receiverId;
+    constructor(sender: Account, receiver: Account | string);
+    addKey(publicKey: string | PublicKey, accessKey?: AccessKey): Transaction;
+    createAccount(): Transaction;
+    deleteAccount(beneficiaryId: string): Transaction;
+    deleteKey(publicKey: string | PublicKey): Transaction;
+    deployContract(code: Uint8Array): Transaction;
+    functionCall(methodName: string, args: object | Uint8Array, { gas, attachedDeposit, }: {
+        gas: BN | string;
+        attachedDeposit: BN | string;
+    }): Transaction;
+    stake(amount: BN | string, publicKey: PublicKey | string): Transaction;
+    transfer(amount: string | BN): Transaction;
+    /**
+     *
+     * @param keyPair Temporary key to sign transaction
+     * @returns
+     */
+    signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }
 export {};

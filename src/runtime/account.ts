@@ -1,7 +1,22 @@
 import BN from "bn.js";
 import * as nearAPI from "near-api-js";
-import { KeyPair } from "../types";
+import {
+  AccessKey,
+  Action,
+  addKey,
+  createAccount,
+  deleteAccount,
+  deleteKey,
+  deployContract,
+  fullAccessKey,
+  functionCall,
+  KeyPair,
+  PublicKey,
+  stake,
+  transfer,
+} from "../types";
 import * as borsh from "borsh";
+import { FinalExecutionOutcome } from "../provider";
 
 type Args = { [key: string]: any };
 
@@ -52,6 +67,10 @@ export class Account {
     return this.najAccount.getAccountBalance() as Promise<AccountBalance>;
   }
 
+  createTransaction(receiver: Account | string): Transaction {
+    return new Transaction(this, receiver);
+  }
+
   get provider(): nearAPI.providers.JsonRpcProvider {
     return this.connection.provider as nearAPI.providers.JsonRpcProvider;
   }
@@ -62,6 +81,64 @@ export class Account {
 
   async setKey(accountId: string, keyPair: KeyPair): Promise<void> {
     await this.keyStore.setKey(this.networkId, accountId, keyPair);
+  }
+
+  async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
+    let pubKey: PublicKey;
+    if (keyPair) {
+      const key = await nearAPI.InMemorySigner.fromKeyPair(
+        this.networkId,
+        accountId,
+        keyPair
+      );
+      pubKey = await key.getPublicKey();
+    } else {
+      pubKey = await this.signer.createKey(accountId, this.networkId);
+    }
+    return pubKey;
+  }
+
+  async createAccount(
+    accountId: string,
+    { keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance: string }
+  ): Promise<Account> {
+    accountId = this.makeSubAccount(accountId);
+    const pubKey = await this.addKey(accountId, keyPair);
+    await this.najAccount.createAccount(
+      accountId,
+      pubKey,
+      new BN(initialBalance!)
+    );
+    return new Account(new nearAPI.Account(this.connection, accountId));
+  }
+
+  async createAndDeployContract(
+    accountId: string,
+    publicKey: string | PublicKey,
+    code: Uint8Array,
+    amount: BN,
+    {
+      method,
+      args = {},
+      gas = DEFAULT_FUNCTION_CALL_GAS,
+      attachedDeposit = NO_DEPOSIT,
+    }: {
+      method?: string;
+      args?: object | Uint8Array;
+      gas?: string | BN;
+      attachedDeposit?: string | BN;
+    }
+  ): Promise<Account> {
+     let tx = this.createTransaction(accountId)
+                  .createAccount()
+                  .transfer(amount)
+                  .addKey(publicKey)
+                  .deployContract(code);
+      if (method) {
+        tx.functionCall(method, args, { gas, attachedDeposit });
+      }
+    await tx.signAndSend();
+    return new Account(new nearAPI.Account(this.connection, accountId));
   }
 
   /**
@@ -82,26 +159,12 @@ export class Account {
     }: {
       gas?: string | BN;
       attachedDeposit?: string | BN;
-      signWithKey?: KeyPair
+      signWithKey?: KeyPair;
     } = {}
-  ): Promise<any> {
-    const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
-    let oldKey: KeyPair;
-    if (signWithKey) {
-      oldKey = await this.getKey(accountId);
-      await this.setKey(accountId, signWithKey);
-    }
-    const txResult = await this.najAccount.functionCall({
-      contractId: accountId,
-      methodName,
-      args,
-      gas: new BN(gas),
-      attachedDeposit: new BN(attachedDeposit),
-    });
-    if (signWithKey) {
-      await this.setKey(accountId, oldKey!);
-    }
-    return txResult;
+  ): Promise<FinalExecutionOutcome> {
+    return this.createTransaction(contractId)
+               .functionCall(methodName, args, {gas, attachedDeposit})
+               .signAndSend(signWithKey);
   }
 
   /**
@@ -146,8 +209,6 @@ export class Account {
     throw JSON.stringify(txResult.status);
   }
 
-  // async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
-  //   const res: CodeResult = await this.connection.provider.query({
   async view_raw(method: string, args: Args = {}): Promise<any> {
     const res: any = await this.connection.provider.query({
       request_type: 'call_function',
@@ -185,8 +246,11 @@ export class Account {
             value
           }
         }
-      ]
-    })
+      ]});
+    }
+
+  makeSubAccount(prefix: string): string {
+    return `${prefix}.${this.accountId}`;
   }
 }
 export class ContractState {
@@ -209,5 +273,86 @@ export class ContractState {
     }
     return value.toJSON();
   }
+}
 
+class Transaction {
+  private actions: Action[] = [];
+  private receiverId: string;
+  constructor(private sender: Account, receiver: Account | string) {
+    this.receiverId =
+      typeof receiver === "string" ? receiver : receiver.accountId;
+  }
+
+  addKey(publicKey: string | PublicKey, accessKey: AccessKey = fullAccessKey()): Transaction {
+    this.actions.push(addKey(PublicKey.from(publicKey), accessKey));
+    return this;
+  }
+
+  createAccount(): Transaction {
+    this.actions.push(createAccount());
+    return this;
+  }
+
+  deleteAccount(beneficiaryId: string): Transaction {
+    this.actions.push(deleteAccount(beneficiaryId));
+    return this;
+  }
+
+  deleteKey(publicKey: string | PublicKey): Transaction {
+    this.actions.push(deleteKey(PublicKey.from(publicKey)));
+    return this;
+  }
+
+  deployContract(code: Uint8Array): Transaction {
+    this.actions.push(deployContract(code));
+    return this;
+  }
+
+  functionCall(
+    methodName: string,
+    args: object | Uint8Array,
+    {
+      gas = DEFAULT_FUNCTION_CALL_GAS,
+      attachedDeposit = NO_DEPOSIT,
+    }: { gas: BN | string; attachedDeposit: BN | string }
+  ): Transaction {
+    this.actions.push(
+      functionCall(methodName, args, new BN(gas), new BN(attachedDeposit))
+    );
+    return this;
+  }
+
+  stake(amount: BN | string, publicKey: PublicKey | string): Transaction {
+    this.actions.push(stake(new BN(amount), PublicKey.from(publicKey)));
+    return this;
+  }
+
+  transfer(amount: string | BN): Transaction {
+    this.actions.push(transfer(new BN(amount)));
+    return this;
+  }
+
+  // TODO: expose signAndSend in naj
+  /**
+   * 
+   * @param keyPair Temporary key to sign transaction
+   * @returns 
+   */
+  async signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
+    let oldKey: KeyPair;
+    if (keyPair) {
+      oldKey = await this.sender.getKey(this.sender.accountId);
+      await this.sender.setKey(this.sender.accountId, keyPair);
+    }
+    // Learned that this comment will cause it to compile after we fix the interface!
+    // @ts-expect-error
+    const res = await this.sender.najAccount.signAndSendTransaction({
+      receiverId: this.receiverId,
+      actions: this.actions,
+    });
+    if (keyPair) {
+      await this.sender.setKey(this.sender.accountId, oldKey!);
+    }
+    return res;
+  }
 }

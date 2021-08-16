@@ -7,7 +7,7 @@ import { Account } from './account'
 import { SandboxServer, createDir } from './server';
 import { debug } from './utils';
 import { toYocto } from '../utils';
-import { KeyPair } from '../types';
+import { KeyPair, PublicKey } from '../types';
 
 interface RuntimeArg {
   runtime: Runtime;
@@ -254,20 +254,13 @@ export abstract class Runtime {
   }
 
   private makeSubAccount(name: string): string {
-    return `${name}.${this.masterAccount}`;
+    return this.root.makeSubAccount(name);
   }
 
-  async createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> {
-    const accountId = this.makeSubAccount(name);
-    const pubKey = await this.addKey(accountId, keyPair);
-    await this.root.najAccount.createAccount(
-      accountId,
-      pubKey,
-      new BN(this.config.initialBalance!)
-    )
-    const account = this.getAccount(name);
-    this.accountsCreated.set(accountId, name);
-    return account;
+  async createAccount(name: string, {keyPair,initialBalance = this.config.initialBalance!}: {keyPair?: KeyPair, initialBalance?: string} = {}): Promise<Account> {
+    const newAccount = await this.root.createAccount(name, {keyPair, initialBalance});
+    this.accountsCreated.set(newAccount.accountId, name);
+    return newAccount;
   }
 
   async createAndDeploy(
@@ -299,18 +292,8 @@ export abstract class Runtime {
     return this.config.network == "testnet";
   }
 
-  protected async addKey(name: string, keyPair?: KeyPair): Promise<nearAPI.utils.PublicKey> {
-    let pubKey: nearAPI.utils.key_pair.PublicKey;
-    if (keyPair) {
-      const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
-      pubKey = await key.getPublicKey();
-    } else {
-      pubKey = await this.near.connection.signer.createKey(
-        name,
-        this.config.network
-      );
-    }
-    return pubKey;
+  protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
+    return this.root.addKey(accountId, keyPair);
   }
 }
 
@@ -396,9 +379,9 @@ export class TestnetRuntime extends Runtime {
   async afterRun(): Promise<void> { }
 
   // TODO: create temp account and track to be deleted
-  async createAccount(name: string, keyPair?: KeyPair): Promise<Account> {
+  async createAccount(name: string, {keyPair, initialBalance = this.config.initialBalance!}: {keyPair?: KeyPair, initialBalance?: string} = {}): Promise<Account> {
     // TODO: subaccount done twice
-    const account = await super.createAccount(name, keyPair);
+    const account = await super.createAccount(name, {keyPair, initialBalance});
     debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId
       }`);
     return account

@@ -18,13 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestnetRuntime = exports.Runtime = void 0;
 const fs_1 = require("fs");
-const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const path_1 = require("path");
 const os = __importStar(require("os"));
@@ -190,15 +186,12 @@ class Runtime {
         await this.keyStore.setKey(this.config.network, this.masterAccount, masterKey);
     }
     makeSubAccount(name) {
-        return `${name}.${this.masterAccount}`;
+        return this.root.makeSubAccount(name);
     }
-    async createAccount(name, keyPair) {
-        const accountId = this.makeSubAccount(name);
-        const pubKey = await this.addKey(accountId, keyPair);
-        await this.root.najAccount.createAccount(accountId, pubKey, new bn_js_1.default(this.config.initialBalance));
-        const account = this.getAccount(name);
-        this.accountsCreated.set(accountId, name);
-        return account;
+    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance } = {}) {
+        const newAccount = await this.root.createAccount(name, { keyPair, initialBalance });
+        this.accountsCreated.set(newAccount.accountId, name);
+        return newAccount;
     }
     async createAndDeploy(name, wasm) {
         const account = await this.createAccount(name);
@@ -221,16 +214,8 @@ class Runtime {
     isTestnet() {
         return this.config.network == "testnet";
     }
-    async addKey(name, keyPair) {
-        let pubKey;
-        if (keyPair) {
-            const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
-            pubKey = await key.getPublicKey();
-        }
-        else {
-            pubKey = await this.near.connection.signer.createKey(name, this.config.network);
-        }
-        return pubKey;
+    async addKey(accountId, keyPair) {
+        return this.root.addKey(accountId, keyPair);
     }
 }
 exports.Runtime = Runtime;
@@ -293,9 +278,9 @@ class TestnetRuntime extends Runtime {
     // Delete any accounts created
     async afterRun() { }
     // TODO: create temp account and track to be deleted
-    async createAccount(name, keyPair) {
+    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance } = {}) {
         // TODO: subaccount done twice
-        const account = await super.createAccount(name, keyPair);
+        const account = await super.createAccount(name, { keyPair, initialBalance });
         utils_1.debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
         return account;
     }
