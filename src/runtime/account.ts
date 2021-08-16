@@ -137,7 +137,7 @@ export class Account {
       if (method) {
         tx.functionCall(method, args, { gas, attachedDeposit });
       }
-    await tx.signAndSend();
+    debug(await tx.signAndSend());
     return new Account(new nearAPI.Account(this.connection, accountId));
   }
 
@@ -344,7 +344,6 @@ export class Transaction {
       oldKey = await this.sender.getKey(this.sender.accountId);
       await this.sender.setKey(this.sender.accountId, keyPair);
     }
-    // Learned that this comment will cause it to compile after we fix the interface!
     // @ts-expect-error
     const res = await this.sender.najAccount.signAndSendTransaction({
       receiverId: this.receiverId,
