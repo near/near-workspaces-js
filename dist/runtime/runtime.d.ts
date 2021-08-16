@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as nearAPI from "near-api-js";
 import { Account } from './account';
 import { KeyPair, PublicKey } from '../types';
@@ -33,7 +34,7 @@ export interface Config {
     initFn?: CreateRunnerFn;
 }
 export declare abstract class Runtime {
-    static create(config: Partial<Config>, f?: CreateRunnerFn): Promise<Runtime>;
+    static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<Runtime>;
     abstract get keyFilePath(): string;
     abstract afterRun(): Promise<void>;
     protected root: Account;
@@ -54,17 +55,17 @@ export declare abstract class Runtime {
     getMasterKey(): Promise<KeyPair>;
     abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     beforeConnect(): Promise<void>;
-    afterConnect(): Promise<void>;
+    abstract afterConnect(): Promise<void>;
     connect(): Promise<void>;
     run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void>;
     createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     protected addMasterAccountKey(): Promise<void>;
     private makeSubAccount;
-    createAccount(name: string, { keyPair, initialBalance }?: {
+    createAccount(name: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string;
     }): Promise<Account>;
-    createAndDeploy(name: string, wasm: string): Promise<Account>;
+    createAndDeploy(name: string, wasm: string | Buffer): Promise<Account>;
     getRoot(): Account;
     getAccount(name: string, addSubaccountPrefix?: boolean): Account;
     isSandbox(): boolean;
@@ -73,8 +74,13 @@ export declare abstract class Runtime {
 }
 export declare class TestnetRuntime extends Runtime {
     private accountArgs?;
-    static createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts): TestnetRuntime;
+    static create(config: Partial<Config>, _fn?: CreateRunnerFn): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
+    static get provider(): nearAPI.providers.JsonRpcProvider;
+    /**
+     * Get most recent Wasm Binary of given account.
+     * */
+    static viewCode(account_id: string): Promise<Buffer>;
     get keyFilePath(): string;
     getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
     serializeAccountArgs(args: ReturnedAccounts): void;
@@ -88,5 +94,18 @@ export declare class TestnetRuntime extends Runtime {
     }): Promise<Account>;
     createAndDeploy(name: string, wasm: string): Promise<Account>;
     private ensureKeyFileFolder;
+}
+export declare class SandboxRuntime extends Runtime {
+    private static readonly LINKDROP_PATH;
+    private server;
+    static defaultConfig(): Promise<Config>;
+    static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<SandboxRuntime>;
+    get keyFilePath(): string;
+    getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+    get rpcAddr(): string;
+    afterConnect(): Promise<void>;
+    beforeConnect(): Promise<void>;
+    afterRun(): Promise<void>;
+    createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
 }
 export {};

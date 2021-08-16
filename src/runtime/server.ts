@@ -18,11 +18,6 @@ import {
 import * as portCheck from "node-port-check"
 import UUID from "pure-uuid";
 
-export function createDir(): string {
-  return join(tmpDir, "sandbox", (new UUID(4).toString()));
-}
-
-
 const pollData = JSON.stringify({
   jsonrpc: "2.0",
   id: "dontcare",
@@ -176,5 +171,9 @@ export class SandboxServer {
   static async nextPort(): Promise<number> {
     this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0")
     return this.lastPort;
+  }
+
+  static randomHomeDir(): string {
+    return join(tmpDir, "sandbox", (new UUID(4).toString()));
   }
 }

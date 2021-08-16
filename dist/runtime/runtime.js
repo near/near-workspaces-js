@@ -18,13 +18,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TestnetRuntime = exports.Runtime = void 0;
+exports.SandboxRuntime = exports.TestnetRuntime = exports.Runtime = void 0;
 const fs_1 = require("fs");
 const nearAPI = __importStar(require("near-api-js"));
 const path_1 = require("path");
 const os = __importStar(require("os"));
 const account_1 = require("./account");
+const temp_dir_1 = __importDefault(require("temp-dir"));
 const server_1 = require("./server");
 const utils_1 = require("./utils");
 const utils_2 = require("../utils");
@@ -59,32 +63,21 @@ class Runtime {
         this.config = config;
         this.resultArgs = resultArgs;
     }
-    static async create(config, f) {
+    static async create(config, fn) {
         switch (config.network) {
-            case 'testnet': {
-                if (f) {
-                    utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
-                }
-                return TestnetRuntime.createRuntime(config);
-            }
-            case 'sandbox': {
-                const runtime = await SandboxRuntime.createRuntime(config);
-                if (f) {
-                    utils_1.debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
-                    const args = await runtime.createRun(f);
-                    runtime.serializeAccountArgs(args);
-                    return runtime;
-                }
-                return runtime;
-            }
+            case "testnet":
+                return TestnetRuntime.create(config);
+            case "sandbox":
+                return SandboxRuntime.create(config, fn);
             default:
                 throw new Error(`config.network = '${config.network}' invalid; ` +
-                    "must be 'testnet' or 'sandbox' (the default)");
+                    "must be 'testnet' or 'sandbox' (the default). Soon 'mainnet'");
         }
     }
     serializeAccountArgs(args) {
         this.resultArgs = new Map(Object.entries(args).map(([argName, account]) => [
-            argName, this.accountsCreated.get(account.accountId)
+            argName,
+            this.accountsCreated.get(account.accountId),
         ]));
     }
     deserializeAccountArgs(args) {
@@ -96,8 +89,8 @@ class Runtime {
             ...ret,
             ...Object.fromEntries(Array.from(encodedArgs.entries()).map(([argName, accountShortName]) => [
                 argName,
-                this.getAccount(accountShortName)
-            ]))
+                this.getAccount(accountShortName),
+            ])),
         };
     }
     get homeDir() {
@@ -121,8 +114,6 @@ class Runtime {
     }
     // Hook that child classes can override to add functionality before `connect` call
     async beforeConnect() { }
-    // Hook that child classes can override to add functionality after `connect` call
-    async afterConnect() { }
     async connect() {
         this.near = await nearAPI.connect({
             deps: {
@@ -138,7 +129,7 @@ class Runtime {
         this.root = new account_1.Account(new nearAPI.Account(this.near.connection, this.masterAccount));
     }
     async run(fn, args) {
-        utils_1.debug('About to runtime.run with config', this.config);
+        utils_1.debug("About to runtime.run with config", this.config);
         try {
             this.keyStore = await this.getKeyStore();
             utils_1.debug("About to call beforeConnect");
@@ -161,7 +152,7 @@ class Runtime {
         }
     }
     async createRun(fn) {
-        utils_1.debug('About to runtime.createRun with config', this.config);
+        utils_1.debug("About to runtime.createRun with config", this.config);
         try {
             this.keyStore = await this.getKeyStore();
             utils_1.debug("About to call beforeConnect");
@@ -188,8 +179,11 @@ class Runtime {
     makeSubAccount(name) {
         return this.root.makeSubAccount(name);
     }
-    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance } = {}) {
-        const newAccount = await this.root.createAccount(name, { keyPair, initialBalance });
+    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance, } = {}) {
+        const newAccount = await this.root.createAccount(name, {
+            keyPair,
+            initialBalance,
+        });
         this.accountsCreated.set(newAccount.accountId, name);
         return newAccount;
     }
@@ -220,8 +214,9 @@ class Runtime {
 }
 exports.Runtime = Runtime;
 class TestnetRuntime extends Runtime {
-    static createRuntime(config, resultArgs) {
-        return new TestnetRuntime({ ...this.defaultConfig, ...config }, resultArgs);
+    static async create(config, _fn) {
+        utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
+        return new TestnetRuntime({ ...this.defaultConfig, ...config });
     }
     static get defaultConfig() {
         return {
@@ -238,8 +233,22 @@ class TestnetRuntime extends Runtime {
             initialBalance: DEFAULT_INITIAL_DEPOSIT,
         };
     }
+    static get provider() {
+        return new nearAPI.providers.JsonRpcProvider(this.defaultConfig.rpcAddr);
+    }
+    /**
+     * Get most recent Wasm Binary of given account.
+     * */
+    static async viewCode(account_id) {
+        const res = await this.provider.query({
+            request_type: 'view_code',
+            finality: 'final',
+            account_id
+        });
+        return Buffer.from(res.code_base64, 'base64');
+    }
     get keyFilePath() {
-        return path_1.join(os.homedir(), `.near-credentials`, `testnet`, `${this.masterAccount}.json`);
+        return path_1.join(os.homedir(), `.near-credentials`, `${this.network}`, `${this.masterAccount}.json`);
     }
     async getKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path_1.join(os.homedir(), `.near-credentials`));
@@ -255,12 +264,7 @@ class TestnetRuntime extends Runtime {
         await this.ensureKeyFileFolder();
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
         this.config.helperUrl);
-        if (this.config.masterAccount) {
-            throw new Error('custom masterAccount not yet supported on testnet ' + this.config.masterAccount);
-            // create sub-accounts of it with random IDs
-            this.config.masterAccount = `${randomAccountId()}.something`;
-        }
-        else {
+        if (!this.config.masterAccount) {
             // create new `dev-deploy`-style account (or reuse existing)
             this.config.masterAccount = randomAccountId();
         }
@@ -275,13 +279,13 @@ class TestnetRuntime extends Runtime {
             this.serializeAccountArgs(await this.config.initFn({ runtime: this, root: this.getRoot() }));
         }
     }
-    // Delete any accounts created
+    // TODO: Delete any accounts created
     async afterRun() { }
     // TODO: create temp account and track to be deleted
     async createAccount(name, { keyPair, initialBalance = this.config.initialBalance } = {}) {
         // TODO: subaccount done twice
         const account = await super.createAccount(name, { keyPair, initialBalance });
-        utils_1.debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId}`);
+        utils_1.debug(`New Account: ${this.config.explorerUrl}/accounts/${account.accountId}`);
         return account;
     }
     async createAndDeploy(name, wasm) {
@@ -305,7 +309,7 @@ class SandboxRuntime extends Runtime {
     static async defaultConfig() {
         const port = await server_1.SandboxServer.nextPort();
         return {
-            homeDir: server_1.createDir(),
+            homeDir: server_1.SandboxServer.randomHomeDir(),
             port,
             init: true,
             rm: false,
@@ -316,9 +320,14 @@ class SandboxRuntime extends Runtime {
             initialBalance: utils_2.toYocto("100"),
         };
     }
-    static async createRuntime(config, resultArgs) {
+    static async create(config, fn) {
         const defaultConfig = await this.defaultConfig();
-        return new SandboxRuntime({ ...defaultConfig, ...config }, resultArgs);
+        const sandbox = new SandboxRuntime({ ...defaultConfig, ...config });
+        if (fn) {
+            utils_1.debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
+            await sandbox.createRun(fn);
+        }
+        return sandbox;
     }
     get keyFilePath() {
         return path_1.join(this.homeDir, "validator_key.json");
@@ -330,7 +339,16 @@ class SandboxRuntime extends Runtime {
     get rpcAddr() {
         return `http://localhost:${this.config.port}`;
     }
+    async afterConnect() {
+        if (this.config.init) {
+            await this.createAndDeploy("sandbox", SandboxRuntime.LINKDROP_PATH);
+            utils_1.debug("Deployed 'sandbox' linkdrop contract");
+        }
+    }
     async beforeConnect() {
+        if (!(await utils_1.exists(SandboxRuntime.LINKDROP_PATH))) {
+            await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode("testnet"));
+        }
         this.server = await server_1.SandboxServer.init(this.config);
         if (this.init)
             await this.addMasterAccountKey();
@@ -340,5 +358,12 @@ class SandboxRuntime extends Runtime {
         utils_1.debug("Closing server with port " + this.config.port);
         this.server.close();
     }
+    async createRun(fn) {
+        const accounts = await super.createRun(fn);
+        this.serializeAccountArgs(accounts);
+        return accounts;
+    }
 }
+exports.SandboxRuntime = SandboxRuntime;
+SandboxRuntime.LINKDROP_PATH = path_1.join(temp_dir_1.default, 'sandbox', "linkdrop.wasm");
 //# sourceMappingURL=runtime.js.map

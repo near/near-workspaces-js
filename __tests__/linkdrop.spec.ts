@@ -26,7 +26,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   });
 
   test("Use `create_account_and_claim` to create a new account", async () => {
-    await runner.run(async ({ root, linkdrop }) => {
+    await runner.run(async ({ root, linkdrop }, runtime) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
@@ -58,11 +58,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           gas: tGas("50"),
         }
       );
-      // @ts-ignore
+      const bob = runtime.getAccount(new_account_id, false);
+      const balance = await bob.balance();
+      expect(balance.available).toBe("998180000000000000000000");
+
       console.log(
-        res.receipts_outcome
-          .map((o: any) => o.outcome.logs)
-          .filter((x: any) => x.length > 0)[0]
+        `Account ${new_account_id} claim and has ${balance.available} yoctoNear`
       );
     });
   });
@@ -101,8 +102,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       );
 
       const newBalance = await bob.balance();
-
-      console.log(res);
       const originalAvaiable = new BN(originalBalance.available);
       const newAvaiable = new BN(newBalance.available);
       expect(originalAvaiable.lt(newAvaiable)).toBeTruthy();

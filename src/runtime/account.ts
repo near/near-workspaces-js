@@ -275,7 +275,7 @@ export class ContractState {
   }
 }
 
-class Transaction {
+export class Transaction {
   private actions: Action[] = [];
   private receiverId: string;
   constructor(private sender: Account, receiver: Account | string) {

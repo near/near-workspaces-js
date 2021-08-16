@@ -83,7 +83,7 @@ export declare class ContractState {
         schema: any;
     }): any;
 }
-declare class Transaction {
+export declare class Transaction {
     private sender;
     private actions;
     private receiverId;

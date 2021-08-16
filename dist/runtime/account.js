@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContractState = exports.Account = void 0;
+exports.Transaction = exports.ContractState = exports.Account = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const types_1 = require("../types");
@@ -253,4 +253,5 @@ class Transaction {
         return res;
     }
 }
+exports.Transaction = Transaction;
 //# sourceMappingURL=account.js.map
