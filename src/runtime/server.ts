@@ -1,8 +1,18 @@
-import { join } from "path";
-import * as http from "http";
-import tmpDir from "temp-dir";
-import { openSync } from "fs";
-import { Config } from './runtime';
+import {
+  ChildProcessWithoutNullStreams,
+  SpawnOptionsWithStdioTuple,
+  StdioNull,
+  StdioPipe,
+} from 'node:child_process';
+import {join} from 'node:path';
+import process from 'node:process';
+import * as http from 'node:http';
+import {openSync} from 'node:fs';
+import {Buffer} from 'node:buffer';
+import tmpDir from 'temp-dir';
+import * as portCheck from 'node-port-check';
+import UUID from 'pure-uuid';
+import {Config} from './runtime';
 import {
   debug,
   asyncSpawn,
@@ -13,76 +23,82 @@ import {
   copyDir,
   sandboxBinary,
   ensureBinary,
-} from "./utils";
-// @ts-ignore
-import * as portCheck from "node-port-check"
-import UUID from "pure-uuid";
+} from './utils';
 
 export function createDir(): string {
-  return join(tmpDir, "sandbox", (new UUID(4).toString()));
+  return join(tmpDir, 'sandbox', (new UUID(4).toString()));
 }
 
-
 const pollData = JSON.stringify({
-  jsonrpc: "2.0",
-  id: "dontcare",
-  method: "block",
-  params: { finality: "final" },
+  jsonrpc: '2.0',
+  id: 'dontcare',
+  method: 'block',
+  params: {finality: 'final'},
 });
 
-function pingServer(port: number): Promise<boolean> {
+async function pingServer(port: number): Promise<boolean> {
   const options = {
-    hostname: `0.0.0.0`,
+    hostname: '0.0.0.0',
     port,
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "Content-Length": Buffer.byteLength(pollData),
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(pollData),
     },
   };
-  return new Promise((resolve, _) => {
-    const req = http.request(options, (res) => {
-      if (res.statusCode == 200) {
+  return new Promise(resolve => {
+    const request = http.request(options, response => {
+      if (response.statusCode === 200) {
         resolve(true);
       } else {
-        debug(`Sandbox running but got non-200 response: ${JSON.stringify(res)}`)
+        debug(`Sandbox running but got non-200 response: ${JSON.stringify(response)}`);
         resolve(false);
       }
     });
-    req.on('error', (e) => {
-      debug(e.toString());
+    request.on('error', error => {
+      debug(error.message);
       resolve(false);
     });
 
     // Write data to request body
-    req.write(pollData);
+    request.write(pollData);
     debug(`polling server at port ${options.port}`);
-    req.end();
-  })
+    request.end();
+  });
 }
 
-async function sandboxStarted(port: number, timeout: number = 20_000): Promise<void> {
+async function sandboxStarted(port: number, timeout = 20_000): Promise<void> {
   const checkUntil = Date.now() + timeout + 250;
   do {
-    if (await pingServer(port)) return;
-    await new Promise(res => setTimeout(() => res(true), 250));
-  } while (Date.now() < checkUntil)
+    if (await pingServer(port)) { // eslint-disable-line no-await-in-loop
+      return;
+    }
+
+    await new Promise(resolve => { // eslint-disable-line no-await-in-loop
+      setTimeout(() => resolve(true), 250); // eslint-disable-line @typescript-eslint/no-confusing-void-expression
+    });
+  } while (Date.now() < checkUntil);
+
   throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 
-function initalPort(): number {
-  return Math.max(1024, Math.floor(Math.random() * 10000));
+function initialPort(): number {
+  return Math.max(1024, Math.floor(Math.random() * 10_000));
 }
 
 export class SandboxServer {
-  private subprocess!: any;
-  private static lastPort: number = initalPort();
-  private readyToDie: boolean = false;
-  private config: Config;
+  private static lastPort: number = initialPort();
+  private subprocess!: ChildProcessWithoutNullStreams;
+  private readyToDie = false;
+  private readonly config: Config;
 
-  // TODO: split SandboxServer config & Runtime config
   private constructor(config: Config) {
     this.config = config;
+  }
+
+  static async nextPort(): Promise<number> {
+    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
+    return this.lastPort;
   }
 
   get homeDir(): string {
@@ -97,10 +113,6 @@ export class SandboxServer {
     return `http://localhost:${this.port}`;
   }
 
-  private get internalRpcAddr(): string {
-    return `0.0.0.0:${this.port}`;
-  }
-
   static async init(config: Config): Promise<SandboxServer> {
     await ensureBinary();
     const server = new SandboxServer(config);
@@ -108,52 +120,51 @@ export class SandboxServer {
       await rm(server.homeDir);
       await copyDir(server.config.refDir, server.config.homeDir);
     }
+
     if ((await exists(server.homeDir)) && server.config.init) {
       await rm(server.homeDir);
     }
+
     if (server.config.init) {
       try {
-        let { stderr, code } = await server.spawn("init");
+        const {stderr, code} = await server.spawn('init');
         debug(stderr);
         if (code && code < 0) {
-          throw new Error("Failed to spawn sandbox server");
+          throw new Error('Failed to spawn sandbox server');
         }
-      } catch (e) {
-        // TODO: should this throw?
-        console.error(e);
+      } catch (error: unknown) {
+        console.error(error);
       }
     }
-    debug("created " + server.homeDir);
-    return server;
-  }
 
-  private async spawn(command: string): ChildProcessPromise {
-    return asyncSpawn("--home", this.homeDir, command);
+    debug('created ' + server.homeDir);
+    return server;
   }
 
   async start(): Promise<SandboxServer> {
     const args = [
-      "--home",
+      '--home',
       this.homeDir,
-      "run",
-      "--rpc-addr",
+      'run',
+      '--rpc-addr',
       this.internalRpcAddr,
     ];
-    debug(`sending args, ${args.join(" ")}`);
-    const options: any = {
-      stdio: ['ignore', 'ignore', 'ignore']
+    debug(`sending args, ${args.join(' ')}`);
+    const options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioNull | StdioPipe> = {
+      stdio: ['ignore', 'ignore', 'ignore'],
     };
-    if (process.env["NEAR_RUNNER_DEBUG"]) {
+    if (process.env.NEAR_RUNNER_DEBUG) {
       const filePath = join(this.homeDir, 'sandboxServer.log');
-      debug(`near-sandbox logs writing to file: ${filePath}`)
+      debug(`near-sandbox logs writing to file: ${filePath}`);
       options.stdio[2] = openSync(filePath, 'a');
-      options.env = { RUST_BACKTRACE: 'full' };
+      options.env = {RUST_BACKTRACE: 'full'};
     }
+
     this.subprocess = spawn(sandboxBinary(), args, options);
-    this.subprocess.on("exit", () => {
+    this.subprocess.on('exit', () => {
       debug(
-        `Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"
-        }`
+        `Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'
+        }`,
       );
     });
     await sandboxStarted(this.port);
@@ -161,20 +172,24 @@ export class SandboxServer {
     return this;
   }
 
-  close(): void {
+  async close(): Promise<void> {
     this.readyToDie = true;
-    if (!this.subprocess.kill("SIGINT")) {
+    if (!this.subprocess.kill('SIGINT')) {
       console.error(
-        `Failed to kill child process with PID: ${this.subprocess.pid}`
+        `Failed to kill child process with PID: ${this.subprocess.pid ?? 'unknown'}`,
       );
     }
+
     if (this.config.rm) {
-      rm(this.homeDir);
+      await rm(this.homeDir);
     }
   }
 
-  static async nextPort(): Promise<number> {
-    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0")
-    return this.lastPort;
+  private async spawn(command: string): ChildProcessPromise {
+    return asyncSpawn('--home', this.homeDir, command);
+  }
+
+  private get internalRpcAddr(): string {
+    return `0.0.0.0:${this.port}`;
   }
 }

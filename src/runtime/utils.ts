@@ -1,26 +1,30 @@
-import * as fs from "fs/promises";
-import { PathLike } from "fs";
-import { promisify } from "util";
-import {ChildProcess, spawn as _spawn} from "child_process";
-import { spawn as _asyncSpawn, Output }  from "promisify-child-process";
-import rimraf from "rimraf";
-// @ts-ignore
-import getBinary from "near-sandbox/getBinary";
-import fs_extra from "fs-extra";
+import {Buffer} from 'node:buffer';
+import process from 'node:process';
+import * as fs from 'node:fs/promises';
+import {PathLike} from 'node:fs';
+import {promisify} from 'node:util';
+import {ChildProcess, spawn as _spawn} from 'node:child_process';
+import {spawn as _asyncSpawn, Output} from 'promisify-child-process';
+import rimraf from 'rimraf';
+// @ts-expect-error no typings
+import getBinary from 'near-sandbox/getBinary';
+// @ts-expect-error no typings
+import runPath from 'near-sandbox/install';
+import fs_extra from 'fs-extra';
 
 export const rm = promisify(rimraf);
-export const sandboxBinary: () => string = () => getBinary().binaryPath;
-
+export const sandboxBinary: () => string = () => getBinary().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
 
 export async function exists(d: PathLike): Promise<boolean> {
   let file: fs.FileHandle | undefined;
-  try { 
+  try {
     file = await fs.open(d, 'r');
-  } catch (e) {
+  } catch {
     return false;
   } finally {
     await file?.close();
   }
+
   return true;
 }
 
@@ -32,20 +36,18 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
 }
 
 async function install(): Promise<void> {
-  const runPath = require.resolve("near-sandbox/install");
   try {
-    await _asyncSpawn("node", [runPath]);
-  } catch(e){
-    console.error(e);
-    throw new Error("Failed to install binary");
+    await _asyncSpawn('node', [runPath]);
+  } catch (error: unknown) {
+    console.error(error);
+    throw new Error('Failed to install binary');
   }
-  return;
 }
 
-export {_spawn as spawn}
+export {_spawn as spawn};
 
 export function debug(s: string | Buffer | null | undefined, ...args: any[]): void {
-  if (process.env["NEAR_RUNNER_DEBUG"]) {
+  if (process.env.NEAR_RUNNER_DEBUG) {
     console.error(s, ...args);
   }
 }

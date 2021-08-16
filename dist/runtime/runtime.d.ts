@@ -1,12 +1,10 @@
-import * as nearAPI from "near-api-js";
-import { Account } from './account';
+import * as nearAPI from 'near-api-js';
 import { KeyPair } from '../types';
+import { Account } from './account';
 interface RuntimeArg {
     runtime: Runtime;
 }
-export interface ReturnedAccounts {
-    [key: string]: Account;
-}
+export declare type ReturnedAccounts = Record<string, Account>;
 export interface AccountArgs extends ReturnedAccounts {
     root: Account;
 }

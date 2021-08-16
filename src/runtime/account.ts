@@ -1,9 +1,9 @@
-import BN from "bn.js";
-import * as nearAPI from "near-api-js";
-import { KeyPair } from "../types";
-import * as borsh from "borsh";
+import BN from 'bn.js';
+import * as nearAPI from 'near-api-js';
+import * as borsh from 'borsh';
+import {KeyPair} from '../types';
 
-type Args = { [key: string]: any };
+type Args = Record<string, any>;
 
 // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
 const DEFAULT_FUNCTION_CALL_GAS = new BN(30 * 10 ** 12);
@@ -25,15 +25,15 @@ export interface AccountBalance {
 
 export class Account {
   constructor(
-    public najAccount: nearAPI.Account
+    public najAccount: nearAPI.Account,
   ) {}
 
   get connection(): nearAPI.Connection {
     return this.najAccount.connection;
   }
 
-  get networkId(): string { 
-    return this.connection.networkId; 
+  get networkId(): string {
+    return this.connection.networkId;
   }
 
   get signer(): nearAPI.InMemorySigner {
@@ -74,7 +74,7 @@ export class Account {
   async call_raw(
     contractId: Account | string,
     methodName: string,
-    args: object,
+    args: Record<string, unknown>,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
@@ -82,15 +82,16 @@ export class Account {
     }: {
       gas?: string | BN;
       attachedDeposit?: string | BN;
-      signWithKey?: KeyPair
-    } = {}
+      signWithKey?: KeyPair;
+    } = {},
   ): Promise<any> {
-    const accountId = typeof contractId === "string" ? contractId : contractId.accountId;
+    const accountId = typeof contractId === 'string' ? contractId : contractId.accountId;
     let oldKey: KeyPair;
     if (signWithKey) {
       oldKey = await this.getKey(accountId);
       await this.setKey(accountId, signWithKey);
     }
+
     const txResult = await this.najAccount.functionCall({
       contractId: accountId,
       methodName,
@@ -101,6 +102,7 @@ export class Account {
     if (signWithKey) {
       await this.setKey(accountId, oldKey!);
     }
+
     return txResult;
   }
 
@@ -114,16 +116,16 @@ export class Account {
   async call(
     contractId: Account | string,
     methodName: string,
-    args: object,
+    args: Record<string, unknown>,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
-    }:{
+    }: {
       gas?: string | BN;
       attachedDeposit?: string | BN;
-      signWithKey?: KeyPair
-    } = {}
+      signWithKey?: KeyPair;
+    } = {},
   ): Promise<any> {
     const txResult = await this.call_raw(
       contractId,
@@ -132,21 +134,22 @@ export class Account {
       {
         gas,
         attachedDeposit,
-        signWithKey
-      }
+        signWithKey,
+      },
     );
     if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
       const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
       try {
         return JSON.parse(value);
-      } catch (e) {
+      } catch {
         return value;
       }
     }
+
     throw JSON.stringify(txResult.status);
   }
 
-  // async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
+  // Async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
   //   const res: CodeResult = await this.connection.provider.query({
   async view_raw(method: string, args: Args = {}): Promise<any> {
     const res: any = await this.connection.provider.query({
@@ -154,7 +157,7 @@ export class Account {
       account_id: this.accountId,
       method_name: method,
       args_base64: Buffer.from(JSON.stringify(args)).toString('base64'),
-      finality: 'optimistic'
+      finality: 'optimistic',
     });
     return res;
   }
@@ -162,52 +165,53 @@ export class Account {
   async view(method: string, args: Args = {}): Promise<any> {
     const res = await this.view_raw(method, args);
     if (res.result) {
-      return JSON.parse(Buffer.from(res.result).toString())
+      return JSON.parse(Buffer.from(res.result).toString());
     }
+
     return res.result;
   }
 
   async viewState(): Promise<ContractState> {
-    return new ContractState(await this.najAccount.viewState(""));
+    return new ContractState(await this.najAccount.viewState(''));
   }
 
-  async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
+  async patchState(key: string, value_: any, borshSchema?: any): Promise<any> {
     const data_key = Buffer.from(key).toString('base64');
-    let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
+    let value = (borshSchema) ? borsh.serialize(borshSchema, value_) : value_;
     value = Buffer.from(value).toString('base64');
     const account_id = this.accountId;
-    return this.provider.sendJsonRpc("sandbox_patch_state", {
+    return this.provider.sendJsonRpc('sandbox_patch_state', {
       records: [
         {
-          "Data": {
+          Data: {
             account_id,
             data_key,
-            value
-          }
-        }
-      ]
-    })
+            value,
+          },
+        },
+      ],
+    });
   }
 }
 export class ContractState {
-  private data: Map<string, Buffer>;
-  constructor(dataArray: Array<{ key: Buffer; value: Buffer; }>) {
+  private readonly data: Map<string, Buffer>;
+  constructor(dataArray: Array<{key: Buffer; value: Buffer}>) {
     this.data = new Map();
-    dataArray.forEach(({ key, value }) => {
+    for (const {key, value} of dataArray) {
       this.data.set(key.toString(), value);
-    });
+    }
   }
 
   get_raw(key: string): Buffer {
-    return this.data.get(key) || Buffer.from("");
+    return this.data.get(key) || Buffer.from('');
   }
 
-  get(key: string, borshSchema?: { type: any, schema: any }): any {
+  get(key: string, borshSchema?: {type: any; schema: any}): any {
     const value = this.get_raw(key);
     if (borshSchema) {
       return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
     }
+
     return value.toJSON();
   }
-
 }

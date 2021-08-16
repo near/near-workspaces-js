@@ -23,16 +23,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
-const fs = __importStar(require("fs/promises"));
-const util_1 = require("util");
-const child_process_1 = require("child_process");
-Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
+const fs = __importStar(require("node:fs/promises"));
+const node_util_1 = require("node:util");
+const node_child_process_1 = require("node:child_process");
+Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return node_child_process_1.spawn; } });
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
-// @ts-ignore
+// @ts-expect-error
 const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
-exports.rm = util_1.promisify(rimraf_1.default);
+exports.rm = node_util_1.promisify(rimraf_1.default);
 const sandboxBinary = () => getBinary_1.default().binaryPath;
 exports.sandboxBinary = sandboxBinary;
 async function exists(d) {
@@ -40,7 +40,7 @@ async function exists(d) {
     try {
         file = await fs.open(d, 'r');
     }
-    catch (e) {
+    catch {
         return false;
     }
     finally {
@@ -55,23 +55,22 @@ async function asyncSpawn(...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 async function install() {
-    const runPath = require.resolve("near-sandbox/install");
+    const runPath = require.resolve('near-sandbox/install');
     try {
-        await promisify_child_process_1.spawn("node", [runPath]);
+        await promisify_child_process_1.spawn('node', [runPath]);
     }
-    catch (e) {
-        console.error(e);
-        throw new Error("Failed to install binary");
+    catch (error) {
+        console.error(error);
+        throw new Error('Failed to install binary');
     }
-    return;
 }
 function debug(s, ...args) {
-    if (process.env["NEAR_RUNNER_DEBUG"]) {
+    if (process.env.NEAR_RUNNER_DEBUG) {
         console.error(s, ...args);
     }
 }
 exports.debug = debug;
-exports.copyDir = util_1.promisify(fs_extra_1.default.copy);
+exports.copyDir = node_util_1.promisify(fs_extra_1.default.copy);
 async function ensureBinary() {
     const binPath = exports.sandboxBinary();
     if (!await exists(binPath)) {

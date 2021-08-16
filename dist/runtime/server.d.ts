@@ -4,7 +4,7 @@ export declare class SandboxServer {
     private subprocess;
     private static lastPort;
     private readyToDie;
-    private config;
+    private readonly config;
     private constructor();
     get homeDir(): string;
     get port(): number;

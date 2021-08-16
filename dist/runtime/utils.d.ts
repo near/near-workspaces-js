@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { PathLike } from "fs";
-import { ChildProcess, spawn as _spawn } from "child_process";
-import { Output } from "promisify-child-process";
+import { PathLike } from 'node:fs';
+import { ChildProcess, spawn as _spawn } from 'node:child_process';
+import { Output } from 'promisify-child-process';
 export declare const rm: (arg1: string) => Promise<void>;
 export declare const sandboxBinary: () => string;
 export declare function exists(d: PathLike): Promise<boolean>;

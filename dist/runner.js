@@ -18,7 +18,7 @@ class Runner {
             ...config,
             init: false,
             refDir: runtime.config.homeDir,
-            initFn: fn
+            initFn: fn,
         }, runtime.resultArgs);
     }
     static networkIsTestnet() {
@@ -36,8 +36,8 @@ class Runner {
             case undefined:
                 return 'sandbox';
             default:
-                throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; ` +
-                    "use 'testnet' or 'sandbox' (the default)");
+                throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+                    + 'use \'testnet\' or \'sandbox\' (the default)');
         }
     }
     /**
@@ -56,7 +56,7 @@ class Runner {
      * @returns
      */
     async runSandbox(fn) {
-        if ('sandbox' === this.config.network) {
+        if (this.config.network === 'sandbox') {
             return this.run(fn);
         }
         return null;
@@ -67,14 +67,14 @@ function getConfigAndFn(configOrFunction, f) {
     const type1 = typeof configOrFunction;
     const type2 = typeof f;
     if (type1 === 'function' && type2 === 'undefined') {
-        // @ts-ignore Type this|that not assignable to that
+        // @ts-expect-error Type this|that not assignable to that
         return { config: {}, fn: configOrFunction };
     }
     if (type1 === 'object' && type2 === 'function') {
-        // @ts-ignore Type this|that not assignable to that
+        // @ts-expect-error Type this|that not assignable to that
         return { config: configOrFunction, fn: f };
     }
-    throw new Error("Invalid arguments! " +
-        "Expected `(config, runFunction)` or just `(runFunction)`");
+    throw new Error('Invalid arguments! '
+        + 'Expected `(config, runFunction)` or just `(runFunction)`');
 }
 //# sourceMappingURL=runner.js.map

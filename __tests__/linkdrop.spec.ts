@@ -1,4 +1,5 @@
-import { Runner, toYocto, createKeyPair, BN, tGas } from "..";
+import path from 'node:path';
+import {Runner, toYocto, createKeyPair, BN, tGas} from '..';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -13,20 +14,20 @@ impl Linkdrop {
 */
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-  jest.setTimeout(60000);
+  jest.setTimeout(60_000);
   let runner: Runner;
 
   beforeAll(async () => {
-    runner = await Runner.create(async ({ runtime }) => ({
+    runner = await Runner.create(async ({runtime}) => ({
       linkdrop: await runtime.createAndDeploy(
-        "linkdrop",
-        `${__dirname}/build/debug/linkdrop.wasm`
+        'linkdrop',
+        path.resolve('/build/debug/linkdrop.wasm'),
       ),
     }));
   });
 
-  test("Use `create_account_and_claim` to create a new account", async () => {
-    await runner.run(async ({ root, linkdrop }) => {
+  test('Use `create_account_and_claim` to create a new account', async () => {
+    await runner.run(async ({root, linkdrop}) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
@@ -34,42 +35,42 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       // This adds the key as a function access key on `create_account_and_claim`
       await root.call(
         linkdrop,
-        "send",
+        'send',
         {
           public_key,
         },
         {
-          attachedDeposit: toYocto("2"),
-        }
+          attachedDeposit: toYocto('2'),
+        },
       );
       const new_account_id = `bob.${linkdrop.accountId}`;
       const actualKey = createKeyPair();
       const new_public_key = actualKey.getPublicKey().toString();
 
-      let res = await linkdrop.call_raw(
+      const res = await linkdrop.call_raw(
         linkdrop,
-        "create_account_and_claim",
+        'create_account_and_claim',
         {
           new_account_id,
           new_public_key,
         },
         {
           signWithKey: senderKey,
-          gas: tGas("50"),
-        }
+          gas: tGas('50'),
+        },
       );
-      // @ts-ignore
+      // @ts-expect-error
       console.log(
         res.receipts_outcome
           .map((o: any) => o.outcome.logs)
-          .filter((x: any) => x.length > 0)[0]
+          .find((x: any) => x.length > 0),
       );
     });
   });
 
-  test("Use `claim` to transfer to an existing account", async () => {
-    await runner.run(async ({ root, linkdrop }, runtime) => {
-      const bob = await runtime.createAccount("bob");
+  test('Use `claim` to transfer to an existing account', async () => {
+    await runner.run(async ({root, linkdrop}, runtime) => {
+      const bob = await runtime.createAccount('bob');
       const originalBalance = await bob.balance();
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
@@ -78,26 +79,26 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       // This adds the key as a function access key on `create_account_and_claim`
       await root.call(
         linkdrop,
-        "send",
+        'send',
         {
           public_key,
         },
         {
-          attachedDeposit: toYocto("2"),
-        }
+          attachedDeposit: toYocto('2'),
+        },
       );
-      // can only create subaccounts
+      // Can only create subaccounts
 
-      let res = await linkdrop.call_raw(
+      const res = await linkdrop.call_raw(
         linkdrop,
-        "claim",
+        'claim',
         {
           account_id: bob.accountId,
         },
         {
           signWithKey: senderKey,
-          gas: tGas("50"),
-        }
+          gas: tGas('50'),
+        },
       );
 
       const newBalance = await bob.balance();
@@ -110,7 +111,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       console.log(
         `${bob.accountId} claimed ${newAvaiable
           .sub(originalAvaiable)
-          .toString()} yoctoNear`
+          .toString()} yoctoNear`,
       );
     });
   });

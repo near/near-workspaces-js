@@ -20,11 +20,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "lint": "xo",
     "pretest": "yarn build",
     "prepublishOnly": "yarn build",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest",
     "test:sandbox": "yarn build && jest",
-    "test": "jest && yarn test:testnet"
+    "test": "yarn test:sandbox && yarn test:testnet"
   },
   "files": [
     "dist/",
@@ -39,10 +40,25 @@
     "jest": "^27.0.6",
     "ts-jest": "^27.0.4",
     "ts-node": "^10.1.0",
-    "typescript": "^4.3.5"
+    "typescript": "^4.3.5",
+    "xo": "^0.44.0"
   },
   "engines": {
     "node": ">= 14.0.0",
     "npm": ">= 6.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/*.spec.ts"
+    ],
+    "testPathIgnorePatterns": [
+      "/assembly/",
+      "/node_modules/"
+    ]
+  },
+  "xo": {
+    "space": true
   }
 }

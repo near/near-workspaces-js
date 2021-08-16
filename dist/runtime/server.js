@@ -23,36 +23,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxServer = exports.createDir = void 0;
-const path_1 = require("path");
-const http = __importStar(require("http"));
+const node_path_1 = require("node:path");
+const http = __importStar(require("node:http"));
+const node_fs_1 = require("node:fs");
 const temp_dir_1 = __importDefault(require("temp-dir"));
-const fs_1 = require("fs");
-const utils_1 = require("./utils");
 // @ts-ignore
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
+const utils_1 = require("./utils");
 function createDir() {
-    return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(4).toString()));
+    return node_path_1.join(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
 }
 exports.createDir = createDir;
 const pollData = JSON.stringify({
-    jsonrpc: "2.0",
-    id: "dontcare",
-    method: "block",
-    params: { finality: "final" },
+    jsonrpc: '2.0',
+    id: 'dontcare',
+    method: 'block',
+    params: { finality: 'final' },
 });
-function pingServer(port) {
+async function pingServer(port) {
     const options = {
-        hostname: `0.0.0.0`,
+        hostname: '0.0.0.0',
         port,
-        method: "POST",
+        method: 'POST',
         headers: {
-            "Content-Type": "application/json",
-            "Content-Length": Buffer.byteLength(pollData),
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(pollData),
         },
     };
     return new Promise((resolve, _) => {
-        const req = http.request(options, (res) => {
+        const request = http.request(options, res => {
             if (res.statusCode == 200) {
                 resolve(true);
             }
@@ -61,22 +61,25 @@ function pingServer(port) {
                 resolve(false);
             }
         });
-        req.on('error', (e) => {
+        request.on('error', e => {
             utils_1.debug(e.toString());
             resolve(false);
         });
         // Write data to request body
-        req.write(pollData);
+        request.write(pollData);
         utils_1.debug(`polling server at port ${options.port}`);
-        req.end();
+        request.end();
     });
 }
 async function sandboxStarted(port, timeout = 20000) {
     const checkUntil = Date.now() + timeout + 250;
     do {
-        if (await pingServer(port))
+        if (await pingServer(port)) {
             return;
-        await new Promise(res => setTimeout(() => res(true), 250));
+        }
+        await new Promise(res => setTimeout(() => {
+            res(true);
+        }, 250));
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
@@ -113,44 +116,44 @@ class SandboxServer {
         }
         if (server.config.init) {
             try {
-                let { stderr, code } = await server.spawn("init");
+                const { stderr, code } = await server.spawn('init');
                 utils_1.debug(stderr);
                 if (code && code < 0) {
-                    throw new Error("Failed to spawn sandbox server");
+                    throw new Error('Failed to spawn sandbox server');
                 }
             }
-            catch (e) {
+            catch (error) {
                 // TODO: should this throw?
-                console.error(e);
+                console.error(error);
             }
         }
-        utils_1.debug("created " + server.homeDir);
+        utils_1.debug('created ' + server.homeDir);
         return server;
     }
     async spawn(command) {
-        return utils_1.asyncSpawn("--home", this.homeDir, command);
+        return utils_1.asyncSpawn('--home', this.homeDir, command);
     }
     async start() {
         const args = [
-            "--home",
+            '--home',
             this.homeDir,
-            "run",
-            "--rpc-addr",
+            'run',
+            '--rpc-addr',
             this.internalRpcAddr,
         ];
-        utils_1.debug(`sending args, ${args.join(" ")}`);
+        utils_1.debug(`sending args, ${args.join(' ')}`);
         const options = {
-            stdio: ['ignore', 'ignore', 'ignore']
+            stdio: ['ignore', 'ignore', 'ignore'],
         };
-        if (process.env["NEAR_RUNNER_DEBUG"]) {
-            const filePath = path_1.join(this.homeDir, 'sandboxServer.log');
+        if (process.env.NEAR_RUNNER_DEBUG) {
+            const filePath = node_path_1.join(this.homeDir, 'sandboxServer.log');
             utils_1.debug(`near-sandbox logs writing to file: ${filePath}`);
-            options.stdio[2] = fs_1.openSync(filePath, 'a');
+            options.stdio[2] = node_fs_1.openSync(filePath, 'a');
             options.env = { RUST_BACKTRACE: 'full' };
         }
         this.subprocess = utils_1.spawn(utils_1.sandboxBinary(), args, options);
-        this.subprocess.on("exit", () => {
-            utils_1.debug(`Server with port ${this.port}: Died ${this.readyToDie ? "gracefully" : "horribly"}`);
+        this.subprocess.on('exit', () => {
+            utils_1.debug(`Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'}`);
         });
         await sandboxStarted(this.port);
         utils_1.debug(`Connected to server at ${this.internalRpcAddr}`);
@@ -158,7 +161,7 @@ class SandboxServer {
     }
     close() {
         this.readyToDie = true;
-        if (!this.subprocess.kill("SIGINT")) {
+        if (!this.subprocess.kill('SIGINT')) {
             console.error(`Failed to kill child process with PID: ${this.subprocess.pid}`);
         }
         if (this.config.rm) {
@@ -166,7 +169,7 @@ class SandboxServer {
         }
     }
     static async nextPort() {
-        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0");
+        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
         return this.lastPort;
     }
 }

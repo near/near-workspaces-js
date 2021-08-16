@@ -1,10 +1,8 @@
 /// <reference types="node" />
-import BN from "bn.js";
-import * as nearAPI from "near-api-js";
-import { KeyPair } from "../types";
-declare type Args = {
-    [key: string]: any;
-};
+import BN from 'bn.js';
+import * as nearAPI from 'near-api-js';
+import { KeyPair } from '../types';
+declare type Args = Record<string, any>;
 export interface CallOptions {
     gas?: string | BN;
     attachedDeposit?: string | BN;
@@ -35,7 +33,7 @@ export declare class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: Account | string, methodName: string, args: object, { gas, attachedDeposit, signWithKey, }?: {
+    call_raw(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -47,7 +45,7 @@ export declare class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call(contractId: Account | string, methodName: string, args: object, { gas, attachedDeposit, signWithKey, }?: {
+    call(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -55,10 +53,10 @@ export declare class Account {
     view_raw(method: string, args?: Args): Promise<any>;
     view(method: string, args?: Args): Promise<any>;
     viewState(): Promise<ContractState>;
-    patchState(key: string, val: any, borshSchema?: any): Promise<any>;
+    patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
 }
 export declare class ContractState {
-    private data;
+    private readonly data;
     constructor(dataArray: Array<{
         key: Buffer;
         value: Buffer;
