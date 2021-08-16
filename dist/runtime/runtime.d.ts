@@ -77,7 +77,6 @@ export declare abstract class Runtime {
     addAccountCreated(accountId: string, sender: Account): void;
 }
 export declare class TestnetRuntime extends Runtime {
-    private accountArgs?;
     static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime>;
     createFrom(): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
@@ -89,8 +88,6 @@ export declare class TestnetRuntime extends Runtime {
     get baseAccountId(): string;
     get keyFilePath(): string;
     getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-    serializeAccountArgs(args: ReturnedAccounts): void;
-    deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs;
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     afterRun(): Promise<void>;

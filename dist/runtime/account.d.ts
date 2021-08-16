@@ -36,11 +36,11 @@ export declare class Account {
     getKey(accountId: string): Promise<KeyPair>;
     setKey(accountId: string, keyPair: KeyPair): Promise<void>;
     addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
-    createAccount(accountId: string, { keyPair, initialBalance }: {
+    createAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
-        initialBalance: string;
+        initialBalance?: string;
     }): Promise<Account>;
-    internalCreateAccount(accountId: string, { keyPair, initialBalance }: {
+    internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
         initialBalance?: string | BN;
     }): Promise<Transaction>;

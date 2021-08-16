@@ -273,8 +273,6 @@ export abstract class Runtime {
 }
 
 export class TestnetRuntime extends Runtime {
-  private accountArgs?: ReturnedAccounts;
-
   static async create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime> {
     debug('Skipping initialization function for testnet; will run before each `runner.run`');
     return new TestnetRuntime({...this.defaultConfig, ...{initFn: fn}, ...config});
@@ -331,14 +329,6 @@ export class TestnetRuntime extends Runtime {
     return keyStore;
   }
 
-  serializeAccountArgs(args: ReturnedAccounts): void {
-    this.accountArgs = args;
-  }
-
-  deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs {
-    return { root: this.getRoot(), ...this.accountArgs };
-  }
-
   async beforeConnect(): Promise<void> {
     await this.ensureKeyFileFolder();
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
@@ -367,7 +357,7 @@ export class TestnetRuntime extends Runtime {
   async afterConnect(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
-      this.serializeAccountArgs(await this.config.initFn({ runtime: this, root: this.getRoot() }));
+      this.createdAccounts = await this.config.initFn({ runtime: this, root: this.getRoot()})
     }
   }
 

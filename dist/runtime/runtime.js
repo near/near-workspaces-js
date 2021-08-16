@@ -248,12 +248,6 @@ class TestnetRuntime extends Runtime {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path_1.join(os.homedir(), `.near-credentials`));
         return keyStore;
     }
-    serializeAccountArgs(args) {
-        this.accountArgs = args;
-    }
-    deserializeAccountArgs(args) {
-        return { root: this.getRoot(), ...this.accountArgs };
-    }
     async beforeConnect() {
         await this.ensureKeyFileFolder();
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
@@ -270,7 +264,7 @@ class TestnetRuntime extends Runtime {
     async afterConnect() {
         if (this.config.initFn) {
             utils_1.debug('About to run initFn');
-            this.serializeAccountArgs(await this.config.initFn({ runtime: this, root: this.getRoot() }));
+            this.createdAccounts = await this.config.initFn({ runtime: this, root: this.getRoot() });
         }
     }
     // TODO: Delete any accounts created

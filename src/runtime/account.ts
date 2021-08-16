@@ -115,14 +115,14 @@ export class Account {
 
   async createAccount(
     accountId: string,
-    { keyPair, initialBalance = this.runtime.config.initialBalance! }: { keyPair?: KeyPair; initialBalance: string }
+    { keyPair, initialBalance = this.runtime.config.initialBalance! }: { keyPair?: KeyPair; initialBalance?: string } = {}
   ): Promise<Account> {
     const tx = await this.internalCreateAccount(accountId, {keyPair, initialBalance});
     await tx.signAndSend();
     return this.getAccount(accountId);
   }
 
-  async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN }): Promise<Transaction> {
+  async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN } = {}): Promise<Transaction> {
     let newAccountId = this.makeSubAccount(accountId);
     const pubKey = await this.addKey(newAccountId, keyPair); 
     const amount = new BN(initialBalance || this.runtime.config.initialBalance!);

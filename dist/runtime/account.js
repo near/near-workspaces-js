@@ -85,12 +85,12 @@ class Account {
         }
         return pubKey;
     }
-    async createAccount(accountId, { keyPair, initialBalance = this.runtime.config.initialBalance }) {
+    async createAccount(accountId, { keyPair, initialBalance = this.runtime.config.initialBalance } = {}) {
         const tx = await this.internalCreateAccount(accountId, { keyPair, initialBalance });
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    async internalCreateAccount(accountId, { keyPair, initialBalance }) {
+    async internalCreateAccount(accountId, { keyPair, initialBalance } = {}) {
         let newAccountId = this.makeSubAccount(accountId);
         const pubKey = await this.addKey(newAccountId, keyPair);
         const amount = new bn_js_1.default(initialBalance || this.runtime.config.initialBalance);
