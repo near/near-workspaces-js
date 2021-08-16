@@ -3,6 +3,7 @@ import BN from "bn.js";
 import * as nearAPI from "near-api-js";
 import { AccessKey, KeyPair, PublicKey } from "../types";
 import { FinalExecutionOutcome } from "../provider";
+import { Runtime } from "./runtime";
 declare type Args = {
     [key: string]: any;
 };
@@ -18,13 +19,17 @@ export interface AccountBalance {
     available: string;
 }
 export declare class Account {
-    najAccount: nearAPI.Account;
-    constructor(najAccount: nearAPI.Account);
+    private readonly _accountId;
+    private runtime;
+    private levelUp?;
+    constructor(_accountId: string, runtime: Runtime, levelUp?: string | undefined);
+    get najAccount(): nearAPI.Account;
     get connection(): nearAPI.Connection;
     get networkId(): string;
     get signer(): nearAPI.InMemorySigner;
     get keyStore(): nearAPI.keyStores.KeyStore;
     get accountId(): string;
+    get prefix(): string;
     balance(): Promise<AccountBalance>;
     createTransaction(receiver: Account | string): Transaction;
     get provider(): nearAPI.providers.JsonRpcProvider;
@@ -35,11 +40,19 @@ export declare class Account {
         keyPair?: KeyPair;
         initialBalance: string;
     }): Promise<Account>;
-    createAndDeployContract(accountId: string, publicKey: string | PublicKey, code: Uint8Array, amount: BN, { method, args, gas, attachedDeposit, }: {
+    internalCreateAccount(accountId: string, { keyPair, initialBalance }: {
+        keyPair?: KeyPair;
+        initialBalance?: string | BN;
+    }): Promise<Transaction>;
+    /** Adds suffix to accountId if account isn't sub account or have full including top level account */
+    getAccount(accountId: string): Account;
+    createAndDeploy(accountId: string, wasm: Uint8Array | string, { keyPair, initialBalance, method, args, gas, attachedDeposit, }?: {
         method?: string;
         args?: object | Uint8Array;
         gas?: string | BN;
         attachedDeposit?: string | BN;
+        initialBalance?: BN | string;
+        keyPair?: KeyPair;
     }): Promise<Account>;
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
@@ -69,7 +82,8 @@ export declare class Account {
     view(method: string, args?: Args): Promise<any>;
     viewState(): Promise<ContractState>;
     patchState(key: string, val: any, borshSchema?: any): Promise<any>;
-    makeSubAccount(prefix: string): string;
+    makeSubAccount(accountId: string): string;
+    isSubAccount(accountId: string): boolean;
 }
 export declare class ContractState {
     private data;
@@ -84,14 +98,15 @@ export declare class ContractState {
     }): any;
 }
 export declare class Transaction {
-    private sender;
+    protected sender: Account;
     private actions;
-    private receiverId;
+    protected receiverId: string;
     constructor(sender: Account, receiver: Account | string);
     addKey(publicKey: string | PublicKey, accessKey?: AccessKey): Transaction;
     createAccount(): Transaction;
     deleteAccount(beneficiaryId: string): Transaction;
     deleteKey(publicKey: string | PublicKey): Transaction;
+    deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction>;
     deployContract(code: Uint8Array): Transaction;
     functionCall(methodName: string, args: object | Uint8Array, { gas, attachedDeposit, }: {
         gas: BN | string;
@@ -104,6 +119,12 @@ export declare class Transaction {
      * @param keyPair Temporary key to sign transaction
      * @returns
      */
+    signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
+}
+export declare class RuntimeTransaction extends Transaction {
+    private runtime;
+    constructor(runtime: Runtime, sender: Account, receiver: Account | string);
+    createAccount(): Transaction;
     signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }
 export {};

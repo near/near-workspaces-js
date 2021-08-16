@@ -58,7 +58,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           gas: tGas("50"),
         }
       );
-      const bob = runtime.getAccount(new_account_id, false);
+      const bob = runtime.getAccount(new_account_id);
       const balance = await bob.balance();
       expect(balance.available).toBe("998180000000000000000000");
 

@@ -22,17 +22,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Transaction = exports.ContractState = exports.Account = void 0;
+exports.RuntimeTransaction = exports.Transaction = exports.ContractState = exports.Account = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const types_1 = require("../types");
 const borsh = __importStar(require("borsh"));
+const fs = __importStar(require("fs/promises"));
 // TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
 const DEFAULT_FUNCTION_CALL_GAS = new bn_js_1.default(30 * 10 ** 12);
 const NO_DEPOSIT = new bn_js_1.default('0');
 class Account {
-    constructor(najAccount) {
-        this.najAccount = najAccount;
+    constructor(_accountId, runtime, levelUp) {
+        this._accountId = _accountId;
+        this.runtime = runtime;
+        this.levelUp = levelUp;
+    }
+    get najAccount() {
+        return new nearAPI.Account(this.runtime.near.connection, this.accountId);
     }
     get connection() {
         return this.najAccount.connection;
@@ -47,51 +53,62 @@ class Account {
         return this.signer.keyStore;
     }
     get accountId() {
-        return this.najAccount.accountId;
+        return this._accountId;
+    }
+    get prefix() {
+        return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, "") : this.accountId;
     }
     async balance() {
         return this.najAccount.getAccountBalance();
     }
     createTransaction(receiver) {
-        return new Transaction(this, receiver);
+        return new RuntimeTransaction(this.runtime, this, receiver);
     }
     get provider() {
         return this.connection.provider;
     }
     async getKey(accountId) {
-        return this.keyStore.getKey(this.networkId, accountId);
+        return this.keyStore.getKey(this.networkId, this.makeSubAccount(accountId));
     }
     async setKey(accountId, keyPair) {
-        await this.keyStore.setKey(this.networkId, accountId, keyPair);
+        await this.keyStore.setKey(this.networkId, this.makeSubAccount(accountId), keyPair);
     }
     async addKey(accountId, keyPair) {
+        const id = this.makeSubAccount(accountId);
         let pubKey;
         if (keyPair) {
-            const key = await nearAPI.InMemorySigner.fromKeyPair(this.networkId, accountId, keyPair);
+            const key = await nearAPI.InMemorySigner.fromKeyPair(this.networkId, id, keyPair);
             pubKey = await key.getPublicKey();
         }
         else {
-            pubKey = await this.signer.createKey(accountId, this.networkId);
+            pubKey = await this.signer.createKey(id, this.networkId);
         }
         return pubKey;
     }
-    async createAccount(accountId, { keyPair, initialBalance }) {
-        accountId = this.makeSubAccount(accountId);
-        const pubKey = await this.addKey(accountId, keyPair);
-        await this.najAccount.createAccount(accountId, pubKey, new bn_js_1.default(initialBalance));
-        return new Account(new nearAPI.Account(this.connection, accountId));
+    async createAccount(accountId, { keyPair, initialBalance = this.runtime.config.initialBalance }) {
+        const tx = await this.internalCreateAccount(accountId, { keyPair, initialBalance });
+        await tx.signAndSend();
+        return this.getAccount(accountId);
     }
-    async createAndDeployContract(accountId, publicKey, code, amount, { method, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, }) {
-        let tx = this.createTransaction(accountId)
-            .createAccount()
-            .transfer(amount)
-            .addKey(publicKey)
-            .deployContract(code);
+    async internalCreateAccount(accountId, { keyPair, initialBalance }) {
+        let newAccountId = this.makeSubAccount(accountId);
+        const pubKey = await this.addKey(newAccountId, keyPair);
+        const amount = new bn_js_1.default(initialBalance || this.runtime.config.initialBalance);
+        return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
+    }
+    /** Adds suffix to accountId if account isn't sub account or have full including top level account */
+    getAccount(accountId) {
+        const id = this.makeSubAccount(accountId);
+        return new Account(id, this.runtime);
+    }
+    async createAndDeploy(accountId, wasm, { keyPair, initialBalance, method, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, } = {}) {
+        let tx = (await this.internalCreateAccount(accountId, { keyPair, initialBalance }));
+        tx = await tx.deployContractFile(wasm);
         if (method) {
             tx.functionCall(method, args, { gas, attachedDeposit });
         }
         await tx.signAndSend();
-        return new Account(new nearAPI.Account(this.connection, accountId));
+        return this.getAccount(accountId);
     }
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
@@ -166,8 +183,13 @@ class Account {
             ]
         });
     }
-    makeSubAccount(prefix) {
-        return `${prefix}.${this.accountId}`;
+    makeSubAccount(accountId) {
+        if (this.isSubAccount(accountId) || this.runtime.getRoot().isSubAccount(accountId))
+            return accountId;
+        return `${accountId}.${this.accountId}`;
+    }
+    isSubAccount(accountId) {
+        return accountId.endsWith(`.${this.accountId}`);
     }
 }
 exports.Account = Account;
@@ -213,6 +235,9 @@ class Transaction {
         this.actions.push(types_1.deleteKey(types_1.PublicKey.from(publicKey)));
         return this;
     }
+    async deployContractFile(code) {
+        return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
+    }
     deployContract(code) {
         this.actions.push(types_1.deployContract(code));
         return this;
@@ -241,7 +266,6 @@ class Transaction {
             oldKey = await this.sender.getKey(this.sender.accountId);
             await this.sender.setKey(this.sender.accountId, keyPair);
         }
-        // Learned that this comment will cause it to compile after we fix the interface!
         // @ts-expect-error
         const res = await this.sender.najAccount.signAndSendTransaction({
             receiverId: this.receiverId,
@@ -254,4 +278,18 @@ class Transaction {
     }
 }
 exports.Transaction = Transaction;
+class RuntimeTransaction extends Transaction {
+    constructor(runtime, sender, receiver) {
+        super(sender, receiver);
+        this.runtime = runtime;
+    }
+    createAccount() {
+        this.runtime.addAccountCreated(this.receiverId, this.sender);
+        return super.createAccount();
+    }
+    async signAndSend(keyPair) {
+        return this.runtime.executeTrasnaction(async () => super.signAndSend(keyPair));
+    }
+}
+exports.RuntimeTransaction = RuntimeTransaction;
 //# sourceMappingURL=account.js.map

@@ -17,6 +17,9 @@ import {
 } from "../types";
 import * as borsh from "borsh";
 import { FinalExecutionOutcome } from "../provider";
+import { debug } from "./utils";
+import { Runtime } from "./runtime";
+import * as fs from "fs/promises";
 
 type Args = { [key: string]: any };
 
@@ -39,9 +42,16 @@ export interface AccountBalance {
 }
 
 export class Account {
+  
   constructor(
-    public najAccount: nearAPI.Account
+    private readonly _accountId: string,
+    private runtime: Runtime,
+    private levelUp?: string,
   ) {}
+
+  get najAccount(): nearAPI.Account {
+    return new nearAPI.Account(this.runtime.near.connection, this.accountId)
+  }
 
   get connection(): nearAPI.Connection {
     return this.najAccount.connection;
@@ -60,7 +70,11 @@ export class Account {
   }
 
   get accountId(): string {
-    return this.najAccount.accountId;
+    return this._accountId;
+  }
+
+  get prefix(): string {
+    return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, "") : this.accountId;
   }
 
   async balance(): Promise<AccountBalance> {
@@ -68,7 +82,7 @@ export class Account {
   }
 
   createTransaction(receiver: Account | string): Transaction {
-    return new Transaction(this, receiver);
+    return new RuntimeTransaction(this.runtime, this, receiver);
   }
 
   get provider(): nearAPI.providers.JsonRpcProvider {
@@ -76,48 +90,57 @@ export class Account {
   }
 
   async getKey(accountId: string): Promise<KeyPair> {
-    return this.keyStore.getKey(this.networkId, accountId);
+    return this.keyStore.getKey(this.networkId, this.makeSubAccount(accountId));
   }
 
   async setKey(accountId: string, keyPair: KeyPair): Promise<void> {
-    await this.keyStore.setKey(this.networkId, accountId, keyPair);
+    await this.keyStore.setKey(this.networkId, this.makeSubAccount(accountId), keyPair);
   }
 
   async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
+    const id = this.makeSubAccount(accountId);
     let pubKey: PublicKey;
     if (keyPair) {
       const key = await nearAPI.InMemorySigner.fromKeyPair(
         this.networkId,
-        accountId,
+        id,
         keyPair
       );
       pubKey = await key.getPublicKey();
     } else {
-      pubKey = await this.signer.createKey(accountId, this.networkId);
+      pubKey = await this.signer.createKey(id, this.networkId);
     }
     return pubKey;
   }
 
   async createAccount(
     accountId: string,
-    { keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance: string }
+    { keyPair, initialBalance = this.runtime.config.initialBalance! }: { keyPair?: KeyPair; initialBalance: string }
   ): Promise<Account> {
-    accountId = this.makeSubAccount(accountId);
-    const pubKey = await this.addKey(accountId, keyPair);
-    await this.najAccount.createAccount(
-      accountId,
-      pubKey,
-      new BN(initialBalance!)
-    );
-    return new Account(new nearAPI.Account(this.connection, accountId));
+    const tx = await this.internalCreateAccount(accountId, {keyPair, initialBalance});
+    await tx.signAndSend();
+    return this.getAccount(accountId);
   }
 
-  async createAndDeployContract(
+  async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN }): Promise<Transaction> {
+    let newAccountId = this.makeSubAccount(accountId);
+    const pubKey = await this.addKey(newAccountId, keyPair); 
+    const amount = new BN(initialBalance || this.runtime.config.initialBalance!);
+    return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
+  }
+
+  /** Adds suffix to accountId if account isn't sub account or have full including top level account */
+  getAccount(accountId: string): Account {
+    const id = this.makeSubAccount(accountId);
+    return new Account(id, this.runtime);
+  }
+
+  async createAndDeploy(
     accountId: string,
-    publicKey: string | PublicKey,
-    code: Uint8Array,
-    amount: BN,
+    wasm: Uint8Array | string,
     {
+      keyPair,
+      initialBalance,
       method,
       args = {},
       gas = DEFAULT_FUNCTION_CALL_GAS,
@@ -127,18 +150,17 @@ export class Account {
       args?: object | Uint8Array;
       gas?: string | BN;
       attachedDeposit?: string | BN;
-    }
+      initialBalance?: BN | string;
+      keyPair?: KeyPair;
+    } = {}
   ): Promise<Account> {
-     let tx = this.createTransaction(accountId)
-                  .createAccount()
-                  .transfer(amount)
-                  .addKey(publicKey)
-                  .deployContract(code);
-      if (method) {
-        tx.functionCall(method, args, { gas, attachedDeposit });
-      }
-    debug(await tx.signAndSend());
-    return new Account(new nearAPI.Account(this.connection, accountId));
+     let tx = (await this.internalCreateAccount(accountId, {keyPair, initialBalance}))
+     tx = await tx.deployContractFile(wasm);
+     if (method) {
+       tx.functionCall(method, args, { gas, attachedDeposit });
+     }
+    await tx.signAndSend();
+    return this.getAccount(accountId);
   }
 
   /**
@@ -249,8 +271,13 @@ export class Account {
       ]});
     }
 
-  makeSubAccount(prefix: string): string {
-    return `${prefix}.${this.accountId}`;
+  makeSubAccount(accountId: string): string {
+    if (this.isSubAccount(accountId) || this.runtime.getRoot().isSubAccount(accountId)) return accountId
+    return `${accountId}.${this.accountId}`;
+  }
+
+  isSubAccount(accountId: string): boolean {
+    return accountId.endsWith(`.${this.accountId}`);
   }
 }
 export class ContractState {
@@ -277,8 +304,8 @@ export class ContractState {
 
 export class Transaction {
   private actions: Action[] = [];
-  private receiverId: string;
-  constructor(private sender: Account, receiver: Account | string) {
+  protected receiverId: string;
+  constructor(protected sender: Account, receiver: Account | string) {
     this.receiverId =
       typeof receiver === "string" ? receiver : receiver.accountId;
   }
@@ -301,6 +328,10 @@ export class Transaction {
   deleteKey(publicKey: string | PublicKey): Transaction {
     this.actions.push(deleteKey(PublicKey.from(publicKey)));
     return this;
+  }
+
+  async deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction> {
+    return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
   }
 
   deployContract(code: Uint8Array): Transaction {
@@ -353,5 +384,21 @@ export class Transaction {
       await this.sender.setKey(this.sender.accountId, oldKey!);
     }
     return res;
+  }
+}
+
+export class RuntimeTransaction extends Transaction {
+
+  constructor(private runtime: Runtime, sender:Account, receiver: Account | string){
+    super(sender, receiver);
+  }
+
+  createAccount(): Transaction {
+    this.runtime.addAccountCreated(this.receiverId, this.sender)
+    return super.createAccount();
+  }
+
+  async signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
+    return this.runtime.executeTrasnaction(async () => super.signAndSend(keyPair));
   }
 }
