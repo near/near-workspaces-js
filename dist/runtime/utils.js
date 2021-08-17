@@ -22,25 +22,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.isError = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+const process_1 = __importDefault(require("process"));
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
 Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
-// @ts-ignore
+// @ts-expect-error no typings
 const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
+// @ts-expect-error no typings
+const install_1 = __importDefault(require("near-sandbox/install"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 exports.rm = util_1.promisify(rimraf_1.default);
-const sandboxBinary = () => getBinary_1.default().binaryPath;
+const sandboxBinary = () => getBinary_1.default().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
 exports.sandboxBinary = sandboxBinary;
 async function exists(d) {
     let file;
     try {
         file = await fs.open(d, 'r');
     }
-    catch (e) {
+    catch {
         return false;
     }
     finally {
@@ -55,19 +58,17 @@ async function asyncSpawn(...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 async function install() {
-    const runPath = require.resolve("near-sandbox/install");
     try {
-        await promisify_child_process_1.spawn("node", [runPath]);
+        await promisify_child_process_1.spawn('node', [install_1.default]);
     }
-    catch (e) {
-        console.error(e);
-        throw new Error("Failed to install binary");
+    catch (error) {
+        console.error(error);
+        throw new Error('Failed to install binary');
     }
-    return;
 }
-function debug(s, ...args) {
-    if (process.env["NEAR_RUNNER_DEBUG"]) {
-        console.error(s, ...args);
+function debug(...args) {
+    if (process_1.default.env.NEAR_RUNNER_DEBUG) {
+        console.error(...args);
     }
 }
 exports.debug = debug;
@@ -79,4 +80,11 @@ async function ensureBinary() {
     }
 }
 exports.ensureBinary = ensureBinary;
+function isObject(something) {
+    return typeof something === 'object';
+}
+function isError(something) {
+    return isObject(something) && Boolean(something.stack) && Boolean(something.message);
+}
+exports.isError = isError;
 //# sourceMappingURL=utils.js.map

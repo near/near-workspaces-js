@@ -1,18 +1,18 @@
 import { Config } from './runtime';
 export declare class SandboxServer {
-    private subprocess;
     private static lastPort;
+    private subprocess;
     private readyToDie;
-    private config;
+    private readonly config;
     private constructor();
+    static nextPort(): Promise<number>;
+    static randomHomeDir(): string;
+    static init(config: Config): Promise<SandboxServer>;
     get homeDir(): string;
     get port(): number;
     get rpcAddr(): string;
-    private get internalRpcAddr();
-    static init(config: Config): Promise<SandboxServer>;
-    private spawn;
     start(): Promise<SandboxServer>;
-    close(): void;
-    static nextPort(): Promise<number>;
-    static randomHomeDir(): string;
+    close(): Promise<void>;
+    private get internalRpcAddr();
+    private spawn;
 }

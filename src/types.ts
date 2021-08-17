@@ -1,5 +1,5 @@
-export { KeyPair } from "near-api-js";
-export { PublicKey } from "near-api-js/lib/utils";
+export {KeyPair} from 'near-api-js';
+export {PublicKey} from 'near-api-js/lib/utils';
 export {
   Action,
   createAccount,
@@ -11,8 +11,7 @@ export {
   deleteKey,
   deleteAccount,
   fullAccessKey,
-  AccessKey
-} from "near-api-js/lib/transaction"
+  AccessKey,
+} from 'near-api-js/lib/transaction';
 
-
-export { DEFAULT_FUNCTION_CALL_GAS } from "near-api-js/lib/constants";
+export {DEFAULT_FUNCTION_CALL_GAS} from 'near-api-js/lib/constants';

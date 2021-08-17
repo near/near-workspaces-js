@@ -1,0 +1,13 @@
+{
+  "xo.format.enable": true,
+  "xo.overrideSeverity": "info",
+  "[javascript]": {
+    "editor.defaultFormatter": "spence-s.linter-xo"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "spence-s.linter-xo"
+  },
+  "editor.codeActionsOnSave": {
+    "spence-s.linter-xo": true
+  }
+}
