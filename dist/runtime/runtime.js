@@ -352,7 +352,7 @@ class SandboxRuntime extends Runtime {
     }
 }
 exports.SandboxRuntime = SandboxRuntime;
-SandboxRuntime.LINKDROP_PATH = path_1.join(__dirname, '..', '..', 'core_contracts', "linkdrop.wasm");
+SandboxRuntime.LINKDROP_PATH = path_1.join(__dirname, '..', '..', 'core_contracts', "testnet-linkdrop.wasm");
 // TODO: edit genesis.json to add sandbox as an account
 SandboxRuntime.BASE_ACCOUNT_ID = "test.near";
 //# sourceMappingURL=runtime.js.map

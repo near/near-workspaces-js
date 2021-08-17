@@ -394,7 +394,7 @@ export class TestnetRuntime extends Runtime {
 }
 
 export class SandboxRuntime extends Runtime {
-  private static readonly LINKDROP_PATH = join(__dirname, '..', '..','core_contracts', "linkdrop.wasm");
+  private static readonly LINKDROP_PATH = join(__dirname, '..', '..','core_contracts', "testnet-linkdrop.wasm");
   // TODO: edit genesis.json to add sandbox as an account
   private static readonly BASE_ACCOUNT_ID = "test.near";
   private server!: SandboxServer;

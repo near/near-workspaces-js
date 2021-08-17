@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && yarn test:testnet:ci
+        run: yarn && yarn test:testnet
   sandbox:
     strategy:
       matrix:
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && yarn test:sandbox:ci
+        run: yarn && yarn test:sandbox
   near-sandbox-install:
     strategy:
       matrix:
@@ -39,4 +39,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox
+        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox:ci
