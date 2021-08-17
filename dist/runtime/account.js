@@ -242,7 +242,7 @@ class Transaction {
         this.actions.push(types_1.deployContract(code));
         return this;
     }
-    functionCall(methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, }) {
+    functionCall(methodName, args, { gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, } = {}) {
         this.actions.push(types_1.functionCall(methodName, args, new bn_js_1.default(gas), new bn_js_1.default(attachedDeposit)));
         return this;
     }

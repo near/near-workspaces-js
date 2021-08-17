@@ -108,9 +108,9 @@ export declare class Transaction {
     deleteKey(publicKey: string | PublicKey): Transaction;
     deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction>;
     deployContract(code: Uint8Array): Transaction;
-    functionCall(methodName: string, args: object | Uint8Array, { gas, attachedDeposit, }: {
-        gas: BN | string;
-        attachedDeposit: BN | string;
+    functionCall(methodName: string, args: object | Uint8Array, { gas, attachedDeposit, }?: {
+        gas?: BN | string;
+        attachedDeposit?: BN | string;
     }): Transaction;
     stake(amount: BN | string, publicKey: PublicKey | string): Transaction;
     transfer(amount: string | BN): Transaction;
