@@ -262,6 +262,10 @@ export class Account {
     return accountId.endsWith(`.${this.accountId}`);
   }
 
+  toJSON(): string {
+    return this.accountId;
+  }
+
   protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
     const id = this.makeSubAccount(accountId);
     let pubKey: PublicKey;

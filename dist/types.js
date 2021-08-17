@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_FUNCTION_CALL_GAS = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.PublicKey = exports.KeyPair = void 0;
+exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.PublicKey = exports.KeyPair = void 0;
+const bn_js_1 = __importDefault(require("bn.js"));
 var near_api_js_1 = require("near-api-js");
 Object.defineProperty(exports, "KeyPair", { enumerable: true, get: function () { return near_api_js_1.KeyPair; } });
 var utils_1 = require("near-api-js/lib/utils");
@@ -19,4 +23,10 @@ Object.defineProperty(exports, "fullAccessKey", { enumerable: true, get: functio
 Object.defineProperty(exports, "AccessKey", { enumerable: true, get: function () { return transaction_1.AccessKey; } });
 var constants_1 = require("near-api-js/lib/constants");
 Object.defineProperty(exports, "DEFAULT_FUNCTION_CALL_GAS", { enumerable: true, get: function () { return constants_1.DEFAULT_FUNCTION_CALL_GAS; } });
+class BN extends bn_js_1.default {
+    toJSON() {
+        return this.toString(10);
+    }
+}
+exports.BN = BN;
 //# sourceMappingURL=types.js.map

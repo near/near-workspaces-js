@@ -2,7 +2,7 @@ import { Runner, BN, Account } from "..";
 
 const STORAGE_BYTE_COST = "10000000000000000000";
 
-async function init(ft: Account, owner: string, supply: BN | string) {
+async function init(ft: Account, owner: string, supply: BN | string = "10000") {
   await ft.call(ft, "new_default_meta", {
     owner_id: owner,
     total_supply: supply,
@@ -41,41 +41,76 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({ ft, ali }) => {
       await init(ft, ali.accountId, "1000");
 
-      let totalSupply: string = await ft.view("ft_total_supply");
+      const totalSupply: string = await ft.view("ft_total_supply");
       expect(totalSupply).toEqual("1000");
     });
   });
 
   test("Simple transfer", async () => {
     await runner.run(async ({ ft, ali, root }) => {
-      let initialAmount = "10000";
-      let transferAmount = "100";
+      const initialAmount = new BN("10000");
+      const transferAmount = new BN("100");
       await init(ft, root.accountId, initialAmount);
 
       // Register by prepaying for storage.
       await registerUser(ft, ali);
 
       await root.call(
-        ft.accountId,
+        ft,
         "ft_transfer",
         {
-          receiver_id: ali.accountId,
+          receiver_id: ali,
           amount: transferAmount,
         },
         { attachedDeposit: "1" }
       );
 
-      let rootBalance: string = await ft.view("ft_balance_of", {
+      const rootBalance: string = await ft.view("ft_balance_of", {
         account_id: root.accountId,
       });
-      let aliBalance: string = await ft.view("ft_balance_of", {
+      const aliBalance: string = await ft.view("ft_balance_of", {
         account_id: ali.accountId,
       });
-      expect(rootBalance).toEqual(
-        new BN(initialAmount).sub(new BN(transferAmount)).toString()
-      );
-      expect(aliBalance).toEqual(transferAmount);
+      expect(new BN(rootBalance)).toEqual(initialAmount.sub(transferAmount));
+      expect(new BN(aliBalance)).toEqual(transferAmount);
     });
   });
 
+  test("Can close empty balance account", async () => {
+    await runner.run(async ({ ft, ali, root }) => {
+      await init(ft, root.accountId);
+
+      await registerUser(ft, ali);
+
+      const result: boolean = await ali.call(
+        ft,
+        "storage_unregister",
+        {},
+        { attachedDeposit: "1" }
+      );
+
+      expect(result).toBeTruthy();
+    });
+  });
+
+  test("Can force close non-empty balance account", async () => {
+    await runner.run(async ({ ft, root }, runtime) => {
+      await init(ft, root.accountId, "100");
+      const unregister = async () =>
+        root.call(ft, "storage_unregister", {}, { attachedDeposit: "1" });
+
+      await expect(unregister).rejects.toThrow();
+
+      const result = await root.call_raw(
+        ft,
+        "storage_unregister",
+        { force: true },
+        { attachedDeposit: "1" }
+      );
+
+      expect(result.receipts_outcome[0].outcome.logs[0]).toEqual(
+        "Closed @" + root.accountId + " with 100"
+      );
+    });
+  });
 });

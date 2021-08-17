@@ -79,6 +79,7 @@ export declare class Account {
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
+    toJSON(): string;
     protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
     protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;

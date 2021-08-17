@@ -175,6 +175,9 @@ class Account {
     subAccountOf(accountId) {
         return accountId.endsWith(`.${this.accountId}`);
     }
+    toJSON() {
+        return this.accountId;
+    }
     async addKey(accountId, keyPair) {
         const id = this.makeSubAccount(accountId);
         let pubKey;
