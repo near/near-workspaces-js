@@ -148,6 +148,9 @@ class Account {
             ]
         });
     }
+    toJSON() {
+        return this.accountId;
+    }
 }
 exports.Account = Account;
 class ContractState {

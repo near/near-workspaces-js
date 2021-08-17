@@ -56,6 +56,7 @@ export declare class Account {
     view(method: string, args?: Args): Promise<any>;
     viewState(): Promise<ContractState>;
     patchState(key: string, val: any, borshSchema?: any): Promise<any>;
+    toJSON(): string;
 }
 export declare class ContractState {
     private data;

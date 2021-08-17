@@ -19,5 +19,10 @@ __exportStar(require("./runtime"), exports);
 __exportStar(require("./utils"), exports);
 __exportStar(require("./types"), exports);
 const bn_js_1 = __importDefault(require("bn.js"));
-exports.BN = bn_js_1.default;
+class BN extends bn_js_1.default {
+    toJSON() {
+        return this.toString(10);
+    }
+}
+exports.BN = BN;
 //# sourceMappingURL=index.js.map
