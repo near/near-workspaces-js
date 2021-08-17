@@ -2,7 +2,7 @@ import { Runner, BN, Account } from "..";
 
 const STORAGE_BYTE_COST = "10000000000000000000";
 
-async function init(ft: Account, owner: string, supply: BN | string = "10000") {
+async function init(ft: Account, owner: Account, supply: BN | string = "10000") {
   await ft.call(ft, "new_default_meta", {
     owner_id: owner,
     total_supply: supply,
@@ -13,7 +13,7 @@ async function registerUser(ft: Account, user: Account) {
   await user.call(
     ft,
     "storage_deposit",
-    { account_id: user.accountId },
+    { account_id: user },
     // Deposit pulled from ported sim test
     { attachedDeposit: new BN(STORAGE_BYTE_COST).mul(new BN(125)) }
   );
@@ -39,7 +39,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
   test("Total supply", async () => {
     await runner.run(async ({ ft, ali }) => {
-      await init(ft, ali.accountId, "1000");
+      await init(ft, ali, "1000");
 
       const totalSupply: string = await ft.view("ft_total_supply");
       expect(totalSupply).toEqual("1000");
@@ -50,7 +50,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({ ft, ali, root }) => {
       const initialAmount = new BN("10000");
       const transferAmount = new BN("100");
-      await init(ft, root.accountId, initialAmount);
+      await init(ft, root, initialAmount);
 
       // Register by prepaying for storage.
       await registerUser(ft, ali);
@@ -78,7 +78,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
   test("Can close empty balance account", async () => {
     await runner.run(async ({ ft, ali, root }) => {
-      await init(ft, root.accountId);
+      await init(ft, root);
 
       await registerUser(ft, ali);
 
@@ -94,8 +94,8 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   });
 
   test("Can force close non-empty balance account", async () => {
-    await runner.run(async ({ ft, root }, runtime) => {
-      await init(ft, root.accountId, "100");
+    await runner.run(async ({ ft, root }) => {
+      await init(ft, root, "100");
       const unregister = async () =>
         root.call(ft, "storage_unregister", {}, { attachedDeposit: "1" });
 
