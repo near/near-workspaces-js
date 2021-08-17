@@ -174,7 +174,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       }
 
       // TODO this index is diff from sim, we have 10 len when they have 4
-      let callbackOutcome = result.receipts_outcome[5].outcome;
+      const callbackOutcome = result.receipts_outcome[5].outcome;
       expect(callbackOutcome.logs[0]).toEqual(
         "The account of the sender was deleted"
       );
@@ -237,6 +237,51 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       });
       expect(new BN(rootBalance)).toEqual(initialAmount.sub(transferAmount));
       expect(new BN(defiBalance)).toEqual(transferAmount);
+    });
+  });
+
+  test("Transfer call promise panics for a full refund", async () => {
+    await runner.run(async ({ ft, defi, root }) => {
+      const initialAmount = new BN(10000);
+      const transferAmount = new BN(100);
+      await init_ft(ft, root, initialAmount);
+      await init_defi(defi, ft);
+
+      await registerUser(ft, defi);
+
+      const res = await root.call_raw(
+        ft,
+        "ft_transfer_call",
+        {
+          receiver_id: defi,
+          amount: transferAmount,
+          memo: null,
+          msg: "this won't parse as an integer",
+        },
+        { attachedDeposit: "1", gas: "150000000000000" }
+      );
+
+      const promiseOutcome = res.receipts_outcome[2].outcome;
+      if (
+        typeof promiseOutcome.status === "object" &&
+        typeof promiseOutcome.status.Failure === "object"
+      ) {
+        // TODO update the API so hacky solutions like this aren't required
+        expect(JSON.stringify(promiseOutcome.status.Failure)).toContain(
+          "ParseIntError"
+        );
+      } else {
+        throw "unexpected promise outcome";
+      }
+
+      const rootBalance: string = await ft.view("ft_balance_of", {
+        account_id: root,
+      });
+      const defiBalance: string = await ft.view("ft_balance_of", {
+        account_id: defi,
+      });
+      expect(new BN(rootBalance)).toEqual(initialAmount);
+      expect(new BN(defiBalance)).toEqual(new BN(0));
     });
   });
 });
