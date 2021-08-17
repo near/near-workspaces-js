@@ -18,9 +18,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxRuntime = exports.TestnetRuntime = exports.Runtime = void 0;
 const fs_1 = require("fs");
@@ -28,7 +25,6 @@ const nearAPI = __importStar(require("near-api-js"));
 const path_1 = require("path");
 const os = __importStar(require("os"));
 const account_1 = require("./account");
-const temp_dir_1 = __importDefault(require("temp-dir"));
 const server_1 = require("./server");
 const utils_1 = require("./utils");
 const utils_2 = require("../utils");
@@ -342,6 +338,7 @@ class SandboxRuntime extends Runtime {
     }
     async beforeConnect() {
         if (!(await utils_1.exists(SandboxRuntime.LINKDROP_PATH))) {
+            utils_1.debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
             await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode("testnet"));
         }
         this.server = await server_1.SandboxServer.init(this.config);
@@ -355,7 +352,7 @@ class SandboxRuntime extends Runtime {
     }
 }
 exports.SandboxRuntime = SandboxRuntime;
-SandboxRuntime.LINKDROP_PATH = path_1.join(temp_dir_1.default, 'sandbox', "linkdrop.wasm");
+SandboxRuntime.LINKDROP_PATH = path_1.join(__dirname, '..', '..', 'core_contracts', "linkdrop.wasm");
 // TODO: edit genesis.json to add sandbox as an account
 SandboxRuntime.BASE_ACCOUNT_ID = "test.near";
 //# sourceMappingURL=runtime.js.map

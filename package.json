@@ -30,7 +30,8 @@
   },
   "files": [
     "dist/",
-    "tsconfig.json"
+    "tsconfig.json",
+    "core_contracts"
   ],
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

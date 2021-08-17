@@ -394,7 +394,7 @@ export class TestnetRuntime extends Runtime {
 }
 
 export class SandboxRuntime extends Runtime {
-  private static readonly LINKDROP_PATH = join(tmpDir, 'sandbox', "linkdrop.wasm");
+  private static readonly LINKDROP_PATH = join(__dirname, '..', '..','core_contracts', "linkdrop.wasm");
   // TODO: edit genesis.json to add sandbox as an account
   private static readonly BASE_ACCOUNT_ID = "test.near";
   private server!: SandboxServer;
@@ -457,6 +457,7 @@ export class SandboxRuntime extends Runtime {
 
   async beforeConnect(): Promise<void> {
     if (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
+      debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`)
       await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode("testnet"));
     }
     this.server = await SandboxServer.init(this.config);
