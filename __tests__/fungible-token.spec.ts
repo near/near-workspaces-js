@@ -76,10 +76,10 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       );
 
       const rootBalance: string = await ft.view("ft_balance_of", {
-        account_id: root.accountId,
+        account_id: root,
       });
       const aliBalance: string = await ft.view("ft_balance_of", {
-        account_id: ali.accountId,
+        account_id: ali,
       });
       expect(new BN(rootBalance)).toEqual(initialAmount.sub(transferAmount));
       expect(new BN(aliBalance)).toEqual(transferAmount);
@@ -118,7 +118,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         { attachedDeposit: "1" }
       );
 
-      expect(result.receipts_outcome.length).toEqual(1);
       expect(result.receipts_outcome[0].outcome.logs[0]).toEqual(
         "Closed @" + root.accountId + " with 100"
       );
@@ -127,8 +126,8 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
   test("Transfer call with burned amount", async () => {
     await runner.run(async ({ ft, defi, root }) => {
-      const initialAmount = new BN("10000");
-      const transferAmount = new BN("100");
+      const initialAmount = new BN(10000);
+      const transferAmount = new BN(100);
       const burnAmount = new BN(10);
       await init_ft(ft, root, initialAmount);
       await init_defi(defi, ft);
@@ -206,6 +205,38 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         account_id: defi,
       });
       expect(defiBalance).toEqual(expectedAmount);
+    });
+  });
+
+  test("Transfer call immediate return no refund", async () => {
+    await runner.run(async ({ ft, defi, root }) => {
+      const initialAmount = new BN(10000);
+      const transferAmount = new BN(100);
+      await init_ft(ft, root, initialAmount);
+      await init_defi(defi, ft);
+
+      await registerUser(ft, defi);
+
+      await root.call(
+        ft,
+        "ft_transfer_call",
+        {
+          receiver_id: defi,
+          amount: transferAmount,
+          memo: null,
+          msg: "take-my-money",
+        },
+        { attachedDeposit: "1", gas: "150000000000000" }
+      );
+
+      const rootBalance: string = await ft.view("ft_balance_of", {
+        account_id: root,
+      });
+      const defiBalance: string = await ft.view("ft_balance_of", {
+        account_id: defi,
+      });
+      expect(new BN(rootBalance)).toEqual(initialAmount.sub(transferAmount));
+      expect(new BN(defiBalance)).toEqual(transferAmount);
     });
   });
 });
