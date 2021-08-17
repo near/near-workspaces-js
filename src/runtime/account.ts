@@ -188,6 +188,10 @@ export class Account {
       ]
     })
   }
+
+  toJSON(): string {
+    return this.accountId;
+  }
 }
 export class ContractState {
   private data: Map<string, Buffer>;

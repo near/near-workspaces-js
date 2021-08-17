@@ -3,5 +3,12 @@ export * from './runtime';
 export * from './utils';
 export * from './types';
 
-import BN from "bn.js";
+import _BN from "bn.js";
 export {BN};
+
+class BN extends _BN {
+	toJSON(): string {
+		return this.toString(10)
+	}
+}
+
