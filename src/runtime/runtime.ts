@@ -6,7 +6,7 @@ import * as nearAPI from 'near-api-js';
 import {toYocto} from '../utils';
 import {KeyPair} from '../types';
 import {FinalExecutionOutcome} from '../provider';
-import {debug, exists, isError} from './utils';
+import {debug, exists} from './utils';
 import {SandboxServer} from './server'; // eslint-disable-line import/no-cycle
 import {Account} from './account'; // eslint-disable-line import/no-cycle
 
@@ -185,7 +185,7 @@ export abstract class Runtime {
 
       await fn(this.accounts, this);
     } catch (error: unknown) {
-      if (isError(error)) {
+      if (error instanceof Error) {
         debug(error.stack);
       }
 
@@ -210,7 +210,10 @@ export abstract class Runtime {
       this.createdAccounts = {...this.createdAccounts, ...accounts};
       return accounts;
     } catch (error: unknown) {
-      debug(error);
+      if (error instanceof Buffer || typeof error === 'string') {
+        debug(error);
+      }
+
       throw error; // Figure out better error handling
     } finally {
       // Do any needed teardown

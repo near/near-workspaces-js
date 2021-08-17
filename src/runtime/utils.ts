@@ -62,10 +62,6 @@ export async function ensureBinary(): Promise<void> {
   }
 }
 
-export function isError(something: any): something is Error {
-  return something instanceof Error;
-}
-
 export function isPathLike(something: any): something is URL | string {
   return typeof something === 'string' || something instanceof URL;
 }
