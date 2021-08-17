@@ -34,16 +34,16 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60000);
 
   beforeAll(async () => {
-    runner = await Runner.create(async ({ runtime }) => ({
-      ft: await runtime.createAndDeploy(
+    runner = await Runner.create(async ({ root }) => ({
+      ft: await root.createAndDeploy(
         "fungible-token",
         `${__dirname}/build/debug/fungible_token.wasm`
       ),
-      defi: await runtime.createAndDeploy(
+      defi: await root.createAndDeploy(
         "defi",
         `${__dirname}/build/debug/defi.wasm`
       ),
-      ali: await runtime.createAccount("ali"),
+      ali: await root.createAccount("ali"),
     }));
   });
 
