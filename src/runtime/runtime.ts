@@ -261,7 +261,7 @@ export abstract class Runtime {
     return this.root.addKey(accountId, keyPair);
   }
 
-  async executeTrasnaction(fn: () => Promise<FinalExecutionOutcome> ): Promise<FinalExecutionOutcome> {
+  async executeTransaction(fn: () => Promise<FinalExecutionOutcome> ): Promise<FinalExecutionOutcome> {
     const res = await fn();
     return res;
   }
