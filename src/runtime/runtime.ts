@@ -224,26 +224,8 @@ export abstract class Runtime {
     );
   }
 
-  async createAccount(
-    name: string,
-    {
-      keyPair,
-      initialBalance = this.config.initialBalance!,
-    }: { keyPair?: KeyPair; initialBalance?: string } = {}
-  ): Promise<Account> {
-    return this.root.createAccount(name, {keyPair, initialBalance});
-  }
-
-  async createAndDeploy(name: string, wasm: string | Buffer): Promise<Account> {
-    return this.root.createAndDeploy(name, wasm);
-  }
-
   getRoot(): Account {
     return this.root;
-  }
-
-  getAccount(name: string): Account {
-    return this.root.getAccount(name);
   }
 
   isSandbox(): boolean {
@@ -252,13 +234,6 @@ export abstract class Runtime {
 
   isTestnet(): boolean {
     return this.config.network == "testnet";
-  }
-
-  protected async addKey(
-    accountId: string,
-    keyPair?: KeyPair
-  ): Promise<PublicKey> {
-    return this.root.addKey(accountId, keyPair);
   }
 
   async executeTransaction(fn: () => Promise<FinalExecutionOutcome> ): Promise<FinalExecutionOutcome> {
@@ -363,25 +338,6 @@ export class TestnetRuntime extends Runtime {
 
   // TODO: Delete any accounts created
   async afterRun(): Promise<void> { }
-
-  // TODO: create temp account and track to be deleted
-  async createAccount(name: string, {keyPair, initialBalance = this.config.initialBalance!}: {keyPair?: KeyPair, initialBalance?: string} = {}): Promise<Account> {
-    // TODO: subaccount done twice
-    const account = await super.createAccount(name, {keyPair, initialBalance});
-    debug(`New Account: ${this.config.explorerUrl!}/accounts/${account.accountId
-      }`);
-    return account
-  }
-
-  async createAndDeploy(
-    name: string,
-    wasm: string,
-  ): Promise<Account> {
-    // TODO: dev deploy!!
-    const account = await super.createAndDeploy(name, wasm);
-    debug(`Deployed new account: ${this.config.explorerUrl!}/accounts/${account.accountId}`);
-    return account
-  }
 
   private async ensureKeyFileFolder(): Promise<void> {
     const keyFolder = dirname(this.keyFilePath);

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import * as nearAPI from "near-api-js";
 import { Account } from './account';
-import { KeyPair, PublicKey } from '../types';
+import { KeyPair } from '../types';
 import { FinalExecutionOutcome } from "../provider";
 interface RuntimeArg {
     runtime: Runtime;
@@ -63,17 +63,10 @@ export declare abstract class Runtime {
     run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void>;
     createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     protected addMasterAccountKey(): Promise<void>;
-    createAccount(name: string, { keyPair, initialBalance, }?: {
-        keyPair?: KeyPair;
-        initialBalance?: string;
-    }): Promise<Account>;
-    createAndDeploy(name: string, wasm: string | Buffer): Promise<Account>;
     getRoot(): Account;
-    getAccount(name: string): Account;
     isSandbox(): boolean;
     isTestnet(): boolean;
-    protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
-    executeTrasnaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
+    executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
     addAccountCreated(accountId: string, sender: Account): void;
 }
 export declare class TestnetRuntime extends Runtime {
@@ -91,11 +84,6 @@ export declare class TestnetRuntime extends Runtime {
     beforeConnect(): Promise<void>;
     afterConnect(): Promise<void>;
     afterRun(): Promise<void>;
-    createAccount(name: string, { keyPair, initialBalance }?: {
-        keyPair?: KeyPair;
-        initialBalance?: string;
-    }): Promise<Account>;
-    createAndDeploy(name: string, wasm: string): Promise<Account>;
     private ensureKeyFileFolder;
 }
 export declare class SandboxRuntime extends Runtime {

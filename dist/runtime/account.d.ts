@@ -35,24 +35,24 @@ export declare class Account {
     get provider(): nearAPI.providers.JsonRpcProvider;
     getKey(accountId: string): Promise<KeyPair>;
     setKey(accountId: string, keyPair: KeyPair): Promise<void>;
-    addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
+    protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
     createAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
         initialBalance?: string;
     }): Promise<Account>;
-    internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
+    protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
         initialBalance?: string | BN;
     }): Promise<Transaction>;
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId: string): Account;
-    createAndDeploy(accountId: string, wasm: Uint8Array | string, { keyPair, initialBalance, method, args, gas, attachedDeposit, }?: {
-        method?: string;
+    createAndDeploy(accountId: string, wasm: Uint8Array | string, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
         args?: object | Uint8Array;
-        gas?: string | BN;
         attachedDeposit?: string | BN;
+        gas?: string | BN;
         initialBalance?: BN | string;
         keyPair?: KeyPair;
+        method?: string;
     }): Promise<Account>;
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
@@ -83,7 +83,7 @@ export declare class Account {
     viewState(): Promise<ContractState>;
     patchState(key: string, val: any, borshSchema?: any): Promise<any>;
     makeSubAccount(accountId: string): string;
-    isSubAccount(accountId: string): boolean;
+    subAccountOf(accountId: string): boolean;
 }
 export declare class ContractState {
     private data;

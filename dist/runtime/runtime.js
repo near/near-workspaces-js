@@ -166,17 +166,8 @@ class Runtime {
         const masterKey = await this.getMasterKey();
         await this.keyStore.setKey(this.config.network, this.masterAccount, masterKey);
     }
-    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance, } = {}) {
-        return this.root.createAccount(name, { keyPair, initialBalance });
-    }
-    async createAndDeploy(name, wasm) {
-        return this.root.createAndDeploy(name, wasm);
-    }
     getRoot() {
         return this.root;
-    }
-    getAccount(name) {
-        return this.root.getAccount(name);
     }
     isSandbox() {
         return this.config.network == "sandbox";
@@ -184,10 +175,7 @@ class Runtime {
     isTestnet() {
         return this.config.network == "testnet";
     }
-    async addKey(accountId, keyPair) {
-        return this.root.addKey(accountId, keyPair);
-    }
-    async executeTrasnaction(fn) {
+    async executeTransaction(fn) {
         const res = await fn();
         return res;
     }
@@ -265,19 +253,6 @@ class TestnetRuntime extends Runtime {
     }
     // TODO: Delete any accounts created
     async afterRun() { }
-    // TODO: create temp account and track to be deleted
-    async createAccount(name, { keyPair, initialBalance = this.config.initialBalance } = {}) {
-        // TODO: subaccount done twice
-        const account = await super.createAccount(name, { keyPair, initialBalance });
-        utils_1.debug(`New Account: ${this.config.explorerUrl}/accounts/${account.accountId}`);
-        return account;
-    }
-    async createAndDeploy(name, wasm) {
-        // TODO: dev deploy!!
-        const account = await super.createAndDeploy(name, wasm);
-        utils_1.debug(`Deployed new account: ${this.config.explorerUrl}/accounts/${account.accountId}`);
-        return account;
-    }
     async ensureKeyFileFolder() {
         const keyFolder = path_1.dirname(this.keyFilePath);
         try {

@@ -27,20 +27,8 @@ const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default("1" + "0".repeat(24));
 const oneToNine = /^([0-9])\.([0-9])$/;
-// TODO: Handle any valid number
 function toYocto(amount) {
-    let base;
-    if (amount.startsWith("0.")) {
-        const rightSide = amount.slice(2);
-        if (rightSide.startsWith("0")) {
-            throw new Error("current 0.0xxx is unsupported. Got: " + amount);
-        }
-        base = new bn_js_1.default(rightSide);
-        return base.mul(exports.ONE_NEAR).div(new bn_js_1.default("10")).toString();
-    }
-    base = new bn_js_1.default(amount);
-    const res = base.mul(exports.ONE_NEAR);
-    return res.toString();
+    return nearAPI.utils.format.parseNearAmount(amount);
 }
 exports.toYocto = toYocto;
 function createKeyPair() {

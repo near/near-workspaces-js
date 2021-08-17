@@ -101,7 +101,7 @@ class Account {
         const id = this.makeSubAccount(accountId);
         return new Account(id, this.runtime);
     }
-    async createAndDeploy(accountId, wasm, { keyPair, initialBalance, method, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = NO_DEPOSIT, } = {}) {
+    async createAndDeploy(accountId, wasm, { attachedDeposit = NO_DEPOSIT, args = {}, gas = DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, } = {}) {
         let tx = (await this.internalCreateAccount(accountId, { keyPair, initialBalance }));
         tx = await tx.deployContractFile(wasm);
         if (method) {
@@ -184,11 +184,11 @@ class Account {
         });
     }
     makeSubAccount(accountId) {
-        if (this.isSubAccount(accountId) || this.runtime.getRoot().isSubAccount(accountId))
+        if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId))
             return accountId;
         return `${accountId}.${this.accountId}`;
     }
-    isSubAccount(accountId) {
+    subAccountOf(accountId) {
         return accountId.endsWith(`.${this.accountId}`);
     }
 }
@@ -288,7 +288,7 @@ class RuntimeTransaction extends Transaction {
         return super.createAccount();
     }
     async signAndSend(keyPair) {
-        return this.runtime.executeTrasnaction(async () => super.signAndSend(keyPair));
+        return this.runtime.executeTransaction(async () => super.signAndSend(keyPair));
     }
 }
 exports.RuntimeTransaction = RuntimeTransaction;

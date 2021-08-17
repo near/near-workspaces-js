@@ -9,12 +9,12 @@ describe("view state & patch state", () => {
     jest.setTimeout(60000);
 
     beforeAll(async () => {
-      runner = await Runner.create(async ({ runtime }) => {
-        const contract = await runtime.createAndDeploy(
+      runner = await Runner.create(async ({ root }) => {
+        const contract = await root.createAndDeploy(
           "status-message",
           `${__dirname}/build/debug/status_message.wasm`
         );
-        const ali = await runtime.createAccount("ali");
+        const ali = await root.createAccount("ali");
         return { contract, ali };
       });
     });

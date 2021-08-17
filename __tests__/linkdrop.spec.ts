@@ -17,8 +17,8 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner;
 
   beforeAll(async () => {
-    runner = await Runner.create(async ({ runtime }) => ({
-      linkdrop: await runtime.createAndDeploy(
+    runner = await Runner.create(async ({ root }) => ({
+      linkdrop: await root.createAndDeploy(
         "linkdrop",
         `${__dirname}/build/debug/linkdrop.wasm`
       ),
@@ -26,7 +26,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   });
 
   test("Use `create_account_and_claim` to create a new account", async () => {
-    await runner.run(async ({ root, linkdrop }, runtime) => {
+    await runner.run(async ({ root, linkdrop }) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
@@ -58,7 +58,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           gas: tGas("50"),
         }
       );
-      const bob = runtime.getAccount(new_account_id);
+      const bob = root.getAccount(new_account_id);
       const balance = await bob.balance();
       expect(balance.available).toBe("998180000000000000000000");
 
@@ -69,8 +69,8 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   });
 
   test("Use `claim` to transfer to an existing account", async () => {
-    await runner.run(async ({ root, linkdrop }, runtime) => {
-      const bob = await runtime.createAccount("bob");
+    await runner.run(async ({ root, linkdrop }) => {
+      const bob = await root.createAccount("bob");
       const originalBalance = await bob.balance();
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();

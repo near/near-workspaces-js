@@ -97,7 +97,7 @@ export class Account {
     await this.keyStore.setKey(this.networkId, this.makeSubAccount(accountId), keyPair);
   }
 
-  async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
+  protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
     const id = this.makeSubAccount(accountId);
     let pubKey: PublicKey;
     if (keyPair) {
@@ -122,7 +122,7 @@ export class Account {
     return this.getAccount(accountId);
   }
 
-  async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN } = {}): Promise<Transaction> {
+  protected async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN } = {}): Promise<Transaction> {
     let newAccountId = this.makeSubAccount(accountId);
     const pubKey = await this.addKey(newAccountId, keyPair); 
     const amount = new BN(initialBalance || this.runtime.config.initialBalance!);
@@ -139,19 +139,19 @@ export class Account {
     accountId: string,
     wasm: Uint8Array | string,
     {
-      keyPair,
-      initialBalance,
-      method,
+      attachedDeposit = NO_DEPOSIT,
       args = {},
       gas = DEFAULT_FUNCTION_CALL_GAS,
-      attachedDeposit = NO_DEPOSIT,
+      initialBalance,
+      keyPair,
+      method,
     }: {
-      method?: string;
       args?: object | Uint8Array;
-      gas?: string | BN;
       attachedDeposit?: string | BN;
+      gas?: string | BN;
       initialBalance?: BN | string;
       keyPair?: KeyPair;
+      method?: string;
     } = {}
   ): Promise<Account> {
      let tx = (await this.internalCreateAccount(accountId, {keyPair, initialBalance}))
@@ -272,11 +272,11 @@ export class Account {
     }
 
   makeSubAccount(accountId: string): string {
-    if (this.isSubAccount(accountId) || this.runtime.getRoot().isSubAccount(accountId)) return accountId
+    if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId)) return accountId
     return `${accountId}.${this.accountId}`;
   }
 
-  isSubAccount(accountId: string): boolean {
+  subAccountOf(accountId: string): boolean {
     return accountId.endsWith(`.${this.accountId}`);
   }
 }
@@ -399,6 +399,6 @@ export class RuntimeTransaction extends Transaction {
   }
 
   async signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
-    return this.runtime.executeTrasnaction(async () => super.signAndSend(keyPair));
+    return this.runtime.executeTransaction(async () => super.signAndSend(keyPair));
   }
 }
