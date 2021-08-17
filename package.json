@@ -22,13 +22,16 @@
     "build": "tsc",
     "pretest": "yarn build",
     "prepublishOnly": "yarn build",
-    "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest",
-    "test:sandbox": "yarn build && jest",
-    "test": "jest && yarn test:testnet"
+    "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest --verbose",
+    "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet jest --verbose",
+    "test:sandbox": "yarn build && jest --verbose",
+    "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true jest --verbose",
+    "test": "jest --verbose && yarn test:testnet"
   },
   "files": [
     "dist/",
-    "tsconfig.json"
+    "tsconfig.json",
+    "core_contracts"
   ],
   "devDependencies": {
     "@types/bn.js": "^5.1.0",

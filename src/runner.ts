@@ -2,8 +2,7 @@ import { Runtime, RunnerFn, CreateRunnerFn, Config } from './runtime';
 
 export class Runner {
   private constructor(
-    private config: Partial<Config>,
-    private args?: any
+    private runtime: Runtime,
   ) { /* auto-assigns to this.config & this.args */ }
 
   /** Create the initial enviorment for the test to run in.
@@ -16,12 +15,7 @@ export class Runner {
     const { config, fn } = getConfigAndFn(configOrFunction, f);
     config.network = config.network || this.getNetworkFromEnv();
     const runtime = await Runtime.create(config, fn);
-    return new Runner({
-      ...config,
-      init: false,
-      refDir: runtime.config.homeDir,
-      initFn: fn
-    }, runtime.resultArgs);
+    return new Runner(runtime);
   }
 
   static networkIsTestnet(): boolean {
@@ -55,8 +49,8 @@ export class Runner {
    * @returns the runtime used
    */
   async run(fn: RunnerFn): Promise<Runtime> {
-    const runtime = await Runtime.create(this.config);
-    await runtime.run(fn, this.args);
+    const runtime = await this.runtime.createFrom();
+    await runtime.run(fn);
     return runtime;
   }
 
@@ -66,7 +60,7 @@ export class Runner {
    * @returns
    */
   async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
-    if ('sandbox' === this.config.network) {
+    if ('sandbox' === this.runtime.config.network) {
       return this.run(fn);
     }
     return null;

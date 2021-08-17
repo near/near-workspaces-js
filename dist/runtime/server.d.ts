@@ -1,5 +1,4 @@
 import { Config } from './runtime';
-export declare function createDir(): string;
 export declare class SandboxServer {
     private subprocess;
     private static lastPort;
@@ -15,4 +14,5 @@ export declare class SandboxServer {
     start(): Promise<SandboxServer>;
     close(): void;
     static nextPort(): Promise<number>;
+    static randomHomeDir(): string;
 }

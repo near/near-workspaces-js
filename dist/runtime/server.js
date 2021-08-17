@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SandboxServer = exports.createDir = void 0;
+exports.SandboxServer = void 0;
 const path_1 = require("path");
 const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
@@ -31,10 +31,6 @@ const utils_1 = require("./utils");
 // @ts-ignore
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
-function createDir() {
-    return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(4).toString()));
-}
-exports.createDir = createDir;
 const pollData = JSON.stringify({
     jsonrpc: "2.0",
     id: "dontcare",
@@ -168,6 +164,9 @@ class SandboxServer {
     static async nextPort() {
         this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, "0.0.0.0");
         return this.lastPort;
+    }
+    static randomHomeDir() {
+        return path_1.join(temp_dir_1.default, "sandbox", (new pure_uuid_1.default(4).toString()));
     }
 }
 exports.SandboxServer = SandboxServer;

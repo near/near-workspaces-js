@@ -39,4 +39,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox
+        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox:ci

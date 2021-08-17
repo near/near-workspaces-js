@@ -3,9 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Runner = void 0;
 const runtime_1 = require("./runtime");
 class Runner {
-    constructor(config, args) {
-        this.config = config;
-        this.args = args;
+    constructor(runtime) {
+        this.runtime = runtime;
     }
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
@@ -14,12 +13,7 @@ class Runner {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         config.network = config.network || this.getNetworkFromEnv();
         const runtime = await runtime_1.Runtime.create(config, fn);
-        return new Runner({
-            ...config,
-            init: false,
-            refDir: runtime.config.homeDir,
-            initFn: fn
-        }, runtime.resultArgs);
+        return new Runner(runtime);
     }
     static networkIsTestnet() {
         return this.getNetworkFromEnv() === 'testnet';
@@ -46,8 +40,8 @@ class Runner {
      * @returns the runtime used
      */
     async run(fn) {
-        const runtime = await runtime_1.Runtime.create(this.config);
-        await runtime.run(fn, this.args);
+        const runtime = await this.runtime.createFrom();
+        await runtime.run(fn);
         return runtime;
     }
     /**
@@ -56,7 +50,7 @@ class Runner {
      * @returns
      */
     async runSandbox(fn) {
-        if ('sandbox' === this.config.network) {
+        if ('sandbox' === this.runtime.config.network) {
             return this.run(fn);
         }
         return null;

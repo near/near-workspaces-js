@@ -1,16 +1,18 @@
 import { promises as fs } from "fs";
-import BN from 'bn.js';
 import * as nearAPI from "near-api-js";
 import { join, dirname } from "path";
 import * as os from "os";
 import { Account } from './account'
-import { SandboxServer, createDir } from './server';
-import { debug } from './utils';
+import tmpDir from "temp-dir";
+import { SandboxServer } from './server';
+import { debug, exists } from './utils';
 import { toYocto } from '../utils';
-import { KeyPair } from '../types';
+import { KeyPair, PublicKey } from '../types';
+import { FinalExecutionOutcome } from "../provider";
 
 interface RuntimeArg {
   runtime: Runtime;
+  root: Account;
 }
 
 export interface ReturnedAccounts {
@@ -73,77 +75,55 @@ export interface Config {
 }
 
 export abstract class Runtime {
-  static async create(config: Partial<Config>, f?: CreateRunnerFn): Promise<Runtime> {
+  static async create(
+    config: Partial<Config>,
+    fn?: CreateRunnerFn
+  ): Promise<Runtime> {
     switch (config.network) {
-      case 'testnet': {
-        if (f) {
-          debug('Skipping initialization function for testnet; will run before each `runner.run`');
-        }
-        return TestnetRuntime.createRuntime(config)
-      }
-      case 'sandbox': {
-        const runtime = await SandboxRuntime.createRuntime(config);
-        if (f) {
-          debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
-          const args = await runtime.createRun(f);
-          runtime.serializeAccountArgs(args);
-          return runtime;
-        }
-        return runtime
-      }
+      case "testnet":
+        return TestnetRuntime.create(config, fn);
+      case "sandbox":
+        return SandboxRuntime.create(config, fn);
       default:
         throw new Error(
           `config.network = '${config.network}' invalid; ` +
-          "must be 'testnet' or 'sandbox' (the default)"
+            "must be 'testnet' or 'sandbox' (the default). Soon 'mainnet'"
         );
     }
   }
 
+  abstract afterRun(): Promise<void>;
+  abstract get baseAccountId(): string;
+  abstract createFrom(): Promise<Runtime>;
+  abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
   abstract get keyFilePath(): string;
 
-  abstract afterRun(): Promise<void>;
-
   protected root!: Account;
-  protected near!: nearAPI.Near;
+  near!: nearAPI.Near;
   protected masterKey!: KeyPair;
   protected keyStore!: nearAPI.keyStores.KeyStore;
+  protected createdAccounts: ReturnedAccounts = {};
 
   // TODO: should probably be protected
   config: Config;
-  protected accountsCreated: Map<AccountId, AccountShortName> = new Map();
+  accountsCreated: Map<AccountId, AccountShortName> = new Map();
   resultArgs?: SerializedReturnedAccounts;
 
-
-  constructor(config: Config, resultArgs?: SerializedReturnedAccounts) {
+  constructor(config: Config, accounts?: ReturnedAccounts) {
     this.config = config;
-    this.resultArgs = resultArgs;
-  }
-
-  serializeAccountArgs(args: ReturnedAccounts): void {
-    this.resultArgs = new Map(
-      Object.entries(args).map(([argName, account]) => [
-        argName, this.accountsCreated.get(account.accountId)!
-      ])
-    )
-  }
-
-  deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs {
-    const ret = { root: this.getRoot() };
-
-    if (!args && this.resultArgs == undefined) return ret;
-
-    let encodedArgs = args || this.resultArgs;
-    return {
-      ...ret,
-      ...Object.fromEntries(
-        Array.from(encodedArgs!.entries()).map(
-          ([argName, accountShortName]) => [
-            argName,
-            this.getAccount(accountShortName)
-          ]
-        )
-      )
+    if (accounts) {
+      this.createdAccounts = accounts;
     }
+  }
+
+  get accounts(): AccountArgs {
+    return {...{root: this.root}, ...Object.fromEntries(
+      Object.entries(this.createdAccounts).map(([argName, account]) => {
+        return [
+        argName,
+        this.root.getAccount(account.prefix),
+      ]})
+    )}
   }
 
   get homeDir(): string {
@@ -171,13 +151,11 @@ export abstract class Runtime {
     return getKeyFromFile(this.keyFilePath);
   }
 
-  abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-
   // Hook that child classes can override to add functionality before `connect` call
-  async beforeConnect(): Promise<void> { }
+  async beforeConnect(): Promise<void> {}
 
   // Hook that child classes can override to add functionality after `connect` call
-  async afterConnect(): Promise<void> { }
+  abstract afterConnect(): Promise<void>;
 
   async connect(): Promise<void> {
     this.near = await nearAPI.connect({
@@ -191,51 +169,45 @@ export abstract class Runtime {
       masterAccount: this.config.masterAccount,
       initialBalance: this.config.initialBalance,
     });
-    this.root = new Account(new nearAPI.Account(
-      this.near.connection,
-      this.masterAccount
-    ));
+    this.root = new Account(this.masterAccount, this);
   }
 
   async run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void> {
-    debug('About to runtime.run with config', this.config);
+    debug("About to runtime.run with config", this.config);
     try {
       this.keyStore = await this.getKeyStore();
-      debug("About to call beforeConnect")
+      debug("About to call beforeConnect");
       await this.beforeConnect();
-      debug("About to call connect")
+      debug("About to call connect");
       await this.connect();
-      debug("About to call afterConnect")
+      debug("About to call afterConnect");
       await this.afterConnect();
-      if (args)
-        debug(`Passing ${Object.getOwnPropertyNames(args)}`)
-      await fn(
-        this.deserializeAccountArgs(args),
-        this
-      );
+      if (args) debug(`Passing ${Object.getOwnPropertyNames(args)}`);
+      await fn(this.accounts, this);
     } catch (e) {
-      console.error(e.stack)
+      debug(e.stack);
       throw e; //TODO Figure out better error handling
-    }
-    finally {
+    } finally {
       // Do any needed teardown
       await this.afterRun();
     }
   }
 
   async createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts> {
-    debug('About to runtime.createRun with config', this.config);
+    debug("About to runtime.createRun with config", this.config);
     try {
       this.keyStore = await this.getKeyStore();
-      debug("About to call beforeConnect")
+      debug("About to call beforeConnect");
       await this.beforeConnect();
-      debug("About to call connect")
+      debug("About to call connect");
       await this.connect();
-      debug("About to call afterConnect")
+      debug("About to call afterConnect");
       await this.afterConnect();
-      return await fn({ runtime: this });
+      const accounts = await fn({ runtime: this, root: this.getRoot() });
+      this.createdAccounts = {...this.createdAccounts, ...accounts};
+      return accounts;
     } catch (e) {
-      console.error(e)
+      debug(e);
       throw e; //TODO Figure out better error handling
     } finally {
       // Do any needed teardown
@@ -252,42 +224,8 @@ export abstract class Runtime {
     );
   }
 
-  private makeSubAccount(name: string): string {
-    return `${name}.${this.masterAccount}`;
-  }
-
-  async createAccount(name: string, keyPair?: nearAPI.utils.key_pair.KeyPair): Promise<Account> {
-    const accountId = this.makeSubAccount(name);
-    const pubKey = await this.addKey(accountId, keyPair);
-    await this.root.najAccount.createAccount(
-      accountId,
-      pubKey,
-      new BN(this.config.initialBalance!)
-    )
-    const account = this.getAccount(name);
-    this.accountsCreated.set(accountId, name);
-    return account;
-  }
-
-  async createAndDeploy(
-    name: string,
-    wasm: string,
-  ): Promise<Account> {
-    const account = await this.createAccount(name);
-    const contractData = await fs.readFile(wasm);
-    const result = await account.najAccount.deployContract(contractData);
-    debug(`deployed contract ${wasm} to account ${name} with result ${JSON.stringify(result)} `);
-    this.accountsCreated.set(account.accountId, name);
-    return account;
-  }
-
   getRoot(): Account {
     return this.root;
-  }
-
-  getAccount(name: string, addSubaccountPrefix: boolean = true): Account {
-    const accountId = addSubaccountPrefix ? this.makeSubAccount(name): name;
-    return new Account(this.near.account(accountId));
   }
 
   isSandbox(): boolean {
@@ -298,26 +236,25 @@ export abstract class Runtime {
     return this.config.network == "testnet";
   }
 
-  protected async addKey(name: string, keyPair?: KeyPair): Promise<nearAPI.utils.PublicKey> {
-    let pubKey: nearAPI.utils.key_pair.PublicKey;
-    if (keyPair) {
-      const key = await nearAPI.InMemorySigner.fromKeyPair(this.network, name, keyPair);
-      pubKey = await key.getPublicKey();
-    } else {
-      pubKey = await this.near.connection.signer.createKey(
-        name,
-        this.config.network
-      );
-    }
-    return pubKey;
+  async executeTransaction(fn: () => Promise<FinalExecutionOutcome> ): Promise<FinalExecutionOutcome> {
+    const res = await fn();
+    return res;
+  }
+
+  addAccountCreated(accountId: string, sender: Account): void {
+    const short =  accountId.replace(`.${sender.accountId}`, "");
+    this.accountsCreated.set(accountId, short);
   }
 }
 
 export class TestnetRuntime extends Runtime {
-  private accountArgs?: ReturnedAccounts;
+  static async create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime> {
+    debug('Skipping initialization function for testnet; will run before each `runner.run`');
+    return new TestnetRuntime({...this.defaultConfig, ...{initFn: fn}, ...config});
+  }
 
-  static createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts): TestnetRuntime {
-    return new TestnetRuntime({...this.defaultConfig, ...config}, resultArgs);
+  async createFrom(): Promise<TestnetRuntime> {
+    return new TestnetRuntime({...this.config,...{ init: false, initFn: this.config.initFn!}}, this.createdAccounts);
   }
 
   static get defaultConfig(): Config {
@@ -336,8 +273,28 @@ export class TestnetRuntime extends Runtime {
     }
   }
 
+  static get provider(): nearAPI.providers.JsonRpcProvider {
+    return new nearAPI.providers.JsonRpcProvider(this.defaultConfig.rpcAddr);
+  }
+
+  /** 
+   * Get most recent Wasm Binary of given account.
+   * */ 
+  static async viewCode(account_id: string): Promise<Buffer> {
+    const res: any = await this.provider.query({
+      request_type: 'view_code',
+      finality: 'final',
+      account_id
+    })
+    return Buffer.from(res.code_base64, 'base64');
+  }
+
+  get baseAccountId(): string {
+    return "testnet";
+  }
+
   get keyFilePath(): string {
-    return join(os.homedir(), `.near-credentials`, `testnet`, `${this.masterAccount}.json`);
+    return join(os.homedir(), `.near-credentials`, `${this.network}`, `${this.masterAccount}.json`);
   }
 
   async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
@@ -347,25 +304,13 @@ export class TestnetRuntime extends Runtime {
     return keyStore;
   }
 
-  serializeAccountArgs(args: ReturnedAccounts): void {
-    this.accountArgs = args;
-  }
-
-  deserializeAccountArgs(args?: SerializedReturnedAccounts): AccountArgs {
-    return { root: this.getRoot(), ...this.accountArgs };
-  }
-
   async beforeConnect(): Promise<void> {
     await this.ensureKeyFileFolder();
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
       ({} as any), // ignored
       this.config.helperUrl!
     );
-    if (this.config.masterAccount) {
-      throw new Error('custom masterAccount not yet supported on testnet ' + this.config.masterAccount);
-      // create sub-accounts of it with random IDs
-      this.config.masterAccount = `${randomAccountId()}.something`
-    } else {
+    if (!this.config.masterAccount) {
       // create new `dev-deploy`-style account (or reuse existing)
       this.config.masterAccount = randomAccountId()
     }
@@ -387,31 +332,12 @@ export class TestnetRuntime extends Runtime {
   async afterConnect(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
-      this.serializeAccountArgs(await this.config.initFn({ runtime: this }));
+      this.createdAccounts = await this.config.initFn({ runtime: this, root: this.getRoot()})
     }
   }
 
-  // Delete any accounts created
+  // TODO: Delete any accounts created
   async afterRun(): Promise<void> { }
-
-  // TODO: create temp account and track to be deleted
-  async createAccount(name: string, keyPair?: KeyPair): Promise<Account> {
-    // TODO: subaccount done twice
-    const account = await super.createAccount(name, keyPair);
-    debug(`New Account: https://explorer.testnet.near.org/accounts/${account.accountId
-      }`);
-    return account
-  }
-
-  async createAndDeploy(
-    name: string,
-    wasm: string,
-  ): Promise<Account> {
-    // TODO: dev deploy!!
-    const account = await super.createAndDeploy(name, wasm);
-    debug(`Deployed new account: ${this.config.explorerUrl!}/accounts/${account.accountId}`);
-    return account
-  }
 
   private async ensureKeyFileFolder(): Promise<void> {
     const keyFolder = dirname(this.keyFilePath);
@@ -423,27 +349,44 @@ export class TestnetRuntime extends Runtime {
   }
 }
 
-class SandboxRuntime extends Runtime {
+export class SandboxRuntime extends Runtime {
+  private static readonly LINKDROP_PATH = join(__dirname, '..', '..','core_contracts', "testnet-linkdrop.wasm");
+  // TODO: edit genesis.json to add sandbox as an account
+  private static readonly BASE_ACCOUNT_ID = "test.near";
   private server!: SandboxServer;
 
   static async defaultConfig(): Promise<Config> {
     const port = await SandboxServer.nextPort();
     return {
-      homeDir: createDir(),
+      homeDir: SandboxServer.randomHomeDir(),
       port,
       init: true,
       rm: false,
       refDir: null,
       network: 'sandbox',
-      masterAccount: 'test.near',
+      masterAccount: SandboxRuntime.BASE_ACCOUNT_ID,
       rpcAddr: `http://localhost:${port}`,
       initialBalance: toYocto("100"),
     };
   }
 
-  static async createRuntime(config: Partial<Config>, resultArgs?: SerializedReturnedAccounts) {
+  static async create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<SandboxRuntime> {
     const defaultConfig = await this.defaultConfig();
-    return new SandboxRuntime({...defaultConfig, ...config}, resultArgs);
+    const sandbox = new SandboxRuntime({...defaultConfig, ...config});
+    if (fn) {
+      debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
+      await sandbox.createRun(fn);
+    }
+    return sandbox;
+  }
+
+  async createFrom(): Promise<SandboxRuntime> {
+    const config = await SandboxRuntime.defaultConfig();
+    return new SandboxRuntime({...config,...{init: false, refDir: this.homeDir}}, this.createdAccounts)
+  }
+
+  get baseAccountId(): string {
+    return SandboxRuntime.BASE_ACCOUNT_ID;
   }
 
   get keyFilePath(): string {
@@ -461,7 +404,18 @@ class SandboxRuntime extends Runtime {
     return `http://localhost:${this.config.port}`;
   }
 
+  async afterConnect(): Promise<void> {
+    if (this.config.init) {
+      await this.root.createAndDeploy("sandbox", SandboxRuntime.LINKDROP_PATH);
+      debug("Deployed 'sandbox' linkdrop contract");
+    }
+  }
+
   async beforeConnect(): Promise<void> {
+    if (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
+      debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`)
+      await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode("testnet"));
+    }
     this.server = await SandboxServer.init(this.config);
     if (this.init) await this.addMasterAccountKey();
     await this.server.start();

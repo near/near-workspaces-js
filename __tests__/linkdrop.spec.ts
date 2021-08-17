@@ -17,8 +17,8 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner;
 
   beforeAll(async () => {
-    runner = await Runner.create(async ({ runtime }) => ({
-      linkdrop: await runtime.createAndDeploy(
+    runner = await Runner.create(async ({ root }) => ({
+      linkdrop: await root.createAndDeploy(
         "linkdrop",
         `${__dirname}/build/debug/linkdrop.wasm`
       ),
@@ -58,18 +58,19 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           gas: tGas("50"),
         }
       );
-      // @ts-ignore
+      const bob = root.getAccount(new_account_id);
+      const balance = await bob.balance();
+      expect(balance.available).toBe("998180000000000000000000");
+
       console.log(
-        res.receipts_outcome
-          .map((o: any) => o.outcome.logs)
-          .filter((x: any) => x.length > 0)[0]
+        `Account ${new_account_id} claim and has ${balance.available} yoctoNear`
       );
     });
   });
 
   test("Use `claim` to transfer to an existing account", async () => {
-    await runner.run(async ({ root, linkdrop }, runtime) => {
-      const bob = await runtime.createAccount("bob");
+    await runner.run(async ({ root, linkdrop }) => {
+      const bob = await root.createAccount("bob");
       const originalBalance = await bob.balance();
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
@@ -101,8 +102,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       );
 
       const newBalance = await bob.balance();
-
-      console.log(res);
       const originalAvaiable = new BN(originalBalance.available);
       const newAvaiable = new BN(newBalance.available);
       expect(originalAvaiable.lt(newAvaiable)).toBeTruthy();
