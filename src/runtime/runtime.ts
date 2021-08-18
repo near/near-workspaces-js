@@ -362,7 +362,7 @@ export class TestnetRuntime extends Runtime {
 }
 
 export class SandboxRuntime extends Runtime {
-  private static readonly LINKDROP_PATH = resolve('..', '..', 'core_contracts', 'testnet-linkdrop.wasm');
+  private static readonly LINKDROP_PATH = join(__dirname, '..', '..', 'core_contracts', 'testnet-linkdrop.wasm'); // eslint-disable-line unicorn/prefer-module
   // Edit genesis.json to add `sandbox` as an account
   private static get BASE_ACCOUNT_ID() {
     return 'test.near';
