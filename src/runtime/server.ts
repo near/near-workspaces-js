@@ -118,6 +118,7 @@ export class SandboxServer {
         }
       } catch (error: unknown) {
         debug(JSON.stringify(error));
+        throw error;
       }
     }
 

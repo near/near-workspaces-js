@@ -32,8 +32,6 @@ const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
 // @ts-expect-error no typings
 const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
-// @ts-expect-error no typings
-const install_1 = __importDefault(require("near-sandbox/install"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 exports.rm = util_1.promisify(rimraf_1.default);
 const sandboxBinary = () => getBinary_1.default().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
@@ -58,8 +56,9 @@ async function asyncSpawn(...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 async function install() {
+    const runPath = require.resolve('near-sandbox/install'); // eslint-disable-line unicorn/prefer-module
     try {
-        await promisify_child_process_1.spawn('node', [install_1.default]);
+        await promisify_child_process_1.spawn('node', [runPath]);
     }
     catch (error) {
         console.error(error);

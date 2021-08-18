@@ -7,8 +7,6 @@ import {spawn as _asyncSpawn, Output} from 'promisify-child-process';
 import rimraf from 'rimraf';
 // @ts-expect-error no typings
 import getBinary from 'near-sandbox/getBinary';
-// @ts-expect-error no typings
-import runPath from 'near-sandbox/install';
 import fs_extra from 'fs-extra';
 
 export const rm = promisify(rimraf);
@@ -35,6 +33,7 @@ export async function asyncSpawn(...args: string[]): ChildProcessPromise {
 }
 
 async function install(): Promise<void> {
+  const runPath = require.resolve('near-sandbox/install'); // eslint-disable-line unicorn/prefer-module
   try {
     await _asyncSpawn('node', [runPath]);
   } catch (error: unknown) {

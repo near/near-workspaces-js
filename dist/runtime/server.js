@@ -115,6 +115,7 @@ class SandboxServer {
             }
             catch (error) {
                 utils_1.debug(JSON.stringify(error));
+                throw error;
             }
         }
         utils_1.debug('created ' + server.homeDir);
