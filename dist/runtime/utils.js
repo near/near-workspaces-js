@@ -22,12 +22,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isError = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.isPathLike = exports.isError = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const process_1 = __importDefault(require("process"));
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
 Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
+const url_1 = require("url"); // eslint-disable-line node/prefer-global/url
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
 // @ts-expect-error no typings
@@ -51,13 +52,14 @@ async function exists(d) {
 }
 exports.exists = exists;
 async function asyncSpawn(...args) {
-    debug(`Sandbox Binary found: ${exports.sandboxBinary()}`);
+    debug(`spawning \`${exports.sandboxBinary()} ${args.join(' ')}\``);
     return promisify_child_process_1.spawn(exports.sandboxBinary(), args, { encoding: 'utf8' });
 }
 exports.asyncSpawn = asyncSpawn;
 async function install() {
     const runPath = require.resolve('near-sandbox/install'); // eslint-disable-line unicorn/prefer-module
     try {
+        debug(`spawning \`node ${runPath}\``);
         await promisify_child_process_1.spawn('node', [runPath]);
     }
     catch (error) {
@@ -75,15 +77,17 @@ exports.copyDir = util_1.promisify(fs_extra_1.default.copy);
 async function ensureBinary() {
     const binPath = exports.sandboxBinary();
     if (!await exists(binPath)) {
+        debug(`binPath=${binPath} doesn't yet exist; installing`);
         await install();
     }
 }
 exports.ensureBinary = ensureBinary;
-function isObject(something) {
-    return typeof something === 'object';
-}
 function isError(something) {
-    return isObject(something) && Boolean(something.stack) && Boolean(something.message);
+    return something instanceof Error;
 }
 exports.isError = isError;
+function isPathLike(something) {
+    return typeof something === 'string' || something instanceof url_1.URL;
+}
+exports.isPathLike = isPathLike;
 //# sourceMappingURL=utils.js.map

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
 import * as nearAPI from 'near-api-js';
@@ -40,7 +41,7 @@ export declare class Account {
     }): Promise<Account>;
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId: string): Account;
-    createAndDeploy(accountId: string, wasm: Uint8Array | string, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
+    createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
         args?: Record<string, unknown> | Uint8Array;
         attachedDeposit?: string | BN;
         gas?: string | BN;
@@ -105,8 +106,8 @@ export declare class Transaction {
     createAccount(): this;
     deleteAccount(beneficiaryId: string): this;
     deleteKey(publicKey: string | PublicKey): this;
-    deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction>;
-    deployContract(code: Uint8Array): this;
+    deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction>;
+    deployContract(code: Uint8Array | Buffer): this;
     functionCall(methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, }: {
         gas: BN | string;
         attachedDeposit: BN | string;

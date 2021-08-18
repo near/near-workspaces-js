@@ -1,3 +1,4 @@
+import {URL} from 'url'; // eslint-disable-line node/prefer-global/url
 import {Buffer} from 'buffer';
 import * as fs from 'fs/promises';
 import BN from 'bn.js';
@@ -20,6 +21,7 @@ import {
 } from '../types';
 import {FinalExecutionOutcome} from '../provider';
 import {Runtime} from './runtime'; // eslint-disable-line import/no-cycle
+import {isPathLike} from './utils';
 
 type Args = Record<string, any>;
 
@@ -111,7 +113,7 @@ export class Account {
 
   async createAndDeploy(
     accountId: string,
-    wasm: Uint8Array | string,
+    wasm: string | URL | Uint8Array | Buffer,
     {
       attachedDeposit = NO_DEPOSIT,
       args = {},
@@ -335,11 +337,11 @@ export class Transaction {
     return this;
   }
 
-  async deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction> {
-    return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
+  async deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction> {
+    return this.deployContract(isPathLike(code) ? await fs.readFile(code) : code);
   }
 
-  deployContract(code: Uint8Array): this {
+  deployContract(code: Uint8Array | Buffer): this {
     this.actions.push(deployContract(code));
     return this;
   }

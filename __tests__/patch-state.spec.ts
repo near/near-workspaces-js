@@ -1,3 +1,4 @@
+// eslint-disable-file @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 import path from 'path';
 import * as borsh from 'borsh';
 import {Runner} from '..';
@@ -11,18 +12,18 @@ describe('view state & patch state', () => {
       runner = await Runner.create(async ({root}) => {
         const contract = await root.createAndDeploy(
           'status-message',
-          path.resolve('build', 'debug', 'status_message.wasm'),
+          path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
         );
         const ali = await root.createAccount('ali');
         return {contract, ali};
       });
     });
 
-    class Assignable { // eslint-disable-line @typescript-eslint/no-extraneous-class
+    class Assignable {
       [key: string]: any;
       constructor(properties: any) {
         for (const key of Object.keys(properties)) {
-          this[key] = properties[key]; // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+          this[key] = properties[key];
         }
       }
     }
@@ -61,7 +62,7 @@ describe('view state & patch state', () => {
           data,
         );
 
-        expect(statusMessage.records[0]).toStrictEqual( // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+        expect(statusMessage.records[0]).toStrictEqual(
           new Record({k: ali.accountId, v: 'hello'}),
         );
       });
@@ -77,7 +78,7 @@ describe('view state & patch state', () => {
         const statusMessage = state.get('STATE', {schema, type: StatusMessage});
 
         // Update contract state
-        statusMessage.records.push( // eslint-disable-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        statusMessage.records.push(
           new Record({k: 'alice.near', v: 'hello world'}),
         );
 

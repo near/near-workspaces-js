@@ -1,4 +1,4 @@
-import {resolve} from 'path';
+import path from 'path';
 import {Runner} from '..';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
@@ -9,7 +9,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     runner = await Runner.create(async ({root}) => ({
       contract: await root.createAndDeploy(
         'status-message',
-        resolve('build', 'debug', 'status_message.wasm'),
+        path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
       ),
       ali: await root.createAccount('ali'),
     }));

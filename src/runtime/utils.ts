@@ -3,6 +3,7 @@ import * as fs from 'fs/promises';
 import {PathLike} from 'fs';
 import {promisify} from 'util';
 import {ChildProcess, spawn as _spawn} from 'child_process';
+import {URL} from 'url'; // eslint-disable-line node/prefer-global/url
 import {spawn as _asyncSpawn, Output} from 'promisify-child-process';
 import rimraf from 'rimraf';
 // @ts-expect-error no typings
@@ -28,13 +29,14 @@ export async function exists(d: PathLike): Promise<boolean> {
 export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
 
 export async function asyncSpawn(...args: string[]): ChildProcessPromise {
-  debug(`Sandbox Binary found: ${sandboxBinary()}`);
+  debug(`spawning \`${sandboxBinary()} ${args.join(' ')}\``);
   return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
 }
 
 async function install(): Promise<void> {
   const runPath = require.resolve('near-sandbox/install'); // eslint-disable-line unicorn/prefer-module
   try {
+    debug(`spawning \`node ${runPath}\``);
     await _asyncSpawn('node', [runPath]);
   } catch (error: unknown) {
     console.error(error);
@@ -55,14 +57,15 @@ export const copyDir = promisify(fs_extra.copy);
 export async function ensureBinary(): Promise<void> {
   const binPath = sandboxBinary();
   if (!await exists(binPath)) {
+    debug(`binPath=${binPath} doesn't yet exist; installing`);
     await install();
   }
 }
 
-function isObject(something: any): something is Record<string, unknown> {
-  return typeof something === 'object';
+export function isError(something: any): something is Error {
+  return something instanceof Error;
 }
 
-export function isError(something: any): something is Error {
-  return isObject(something) && Boolean(something.stack) && Boolean(something.message);
+export function isPathLike(something: any): something is URL | string {
+  return typeof something === 'string' || something instanceof URL;
 }

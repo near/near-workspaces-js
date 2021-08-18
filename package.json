@@ -71,7 +71,8 @@
       {
         "files": "__tests__/*.spec.ts",
         "rules": {
-          "@typescript-eslint/no-unsafe-assignment": 0
+          "@typescript-eslint/no-unsafe-assignment": 0,
+          "unicorn/prefer-module": 0
         }
       }
     ]

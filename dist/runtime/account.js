@@ -29,6 +29,7 @@ const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const borsh = __importStar(require("borsh"));
 const types_1 = require("../types");
+const utils_1 = require("./utils");
 const DEFAULT_FUNCTION_CALL_GAS = new bn_js_1.default(30 * (10 ** 12));
 const NO_DEPOSIT = new bn_js_1.default('0');
 class Account {
@@ -238,7 +239,7 @@ class Transaction {
         return this;
     }
     async deployContractFile(code) {
-        return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
+        return this.deployContract(utils_1.isPathLike(code) ? await fs.readFile(code) : code);
     }
     deployContract(code) {
         this.actions.push(types_1.deployContract(code));

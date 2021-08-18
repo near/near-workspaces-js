@@ -21,7 +21,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     runner = await Runner.create(async ({root}) => ({
       linkdrop: await root.createAndDeploy(
         'linkdrop',
-        path.resolve('build', 'debug', 'linkdrop.wasm'),
+        path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
       ),
     }));
   });
