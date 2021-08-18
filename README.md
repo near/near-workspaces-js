@@ -206,6 +206,24 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
      }
    ```
 
+Patch State on the Fly
+======================
+
+In Sandbox-mode tests, you can add or modify any contract state, contract code, account or access key with `patchState`.
+
+You cannot perform arbitrary mutation on contract state with transactions since transactions can only include contract calls that mutate state in a contract-programmed way. For example, with an NFT contract, you can perform some operation with NFTs you have ownership of, but you cannot manipulate NFTs that are owned by other accounts since the smart contract is coded with checks to reject that. This is the expected behavior of the NFT contract. However, you may want to change another person's NFT for a test setup. This is called "arbitrary mutation on contract state" and can be done with `patchState`. Alternatively you can stop the node, dump state at genesis, edit genesis, and restart the node. The later approach is more complicated to do and also cannot be performed without restarting the node.
+
+It is true that you can alter contract code, accounts, and access keys using normal transactions via the `DeployContract`, `CreateAccount`, and `AddKey` [actions](https://nomicon.io/RuntimeSpec/Actions.html?highlight=actions#actions). But this limits you to altering your own account or sub-account. `patchState` allows you to perform these operations on any account.
+
+To see an example of how to do this, see the [patch-state test](__tests__/patch-state.spec.ts).
+
+near-runner will support expanded patchState-based functionality in the future:
+
+* [Allow bootstrapping sandbox environment from testnet/mainnet contracts & state](#39)
+* [Allow replaying all transactions from testnet/mainnet](#40)
+* [Support time-travel / fast-forwarding](#1)
+
+
 Pro Tips
 ========
 
