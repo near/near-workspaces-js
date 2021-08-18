@@ -1,6 +1,6 @@
 import path from 'path';
 import {Buffer} from 'buffer';
-import {Runner, BN, Account} from '..';
+import {Runner, BN, Account, assertSuccessResult} from '..';
 
 const STORAGE_BYTE_COST = '10000000000000000000';
 
@@ -159,18 +159,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
           (initialAmount.sub(transferAmount)).toString()}`,
       );
 
-      // Help: would be nice to have an API to avoid doing this
-      if (
-        typeof result.status === 'object'
-        && typeof result.status.SuccessValue === 'string'
-      ) {
+      if (assertSuccessResult(result)) {
         const value = Buffer.from(
           result.status.SuccessValue,
           'base64',
         ).toString();
         expect(JSON.parse(value)).toStrictEqual(true);
-      } else {
-        throw new TypeError('unexpected result');
       }
 
       // Help: this index is diff from sim, we have 10 len when they have 4
@@ -183,17 +177,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
       );
 
       // Check that outcome response was the transfer amount
-      if (
-        typeof callbackOutcome.status === 'object'
-        && typeof callbackOutcome.status.SuccessValue === 'string'
-      ) {
+      if (assertSuccessResult(callbackOutcome)) {
         const value = Buffer.from(
           callbackOutcome.status.SuccessValue,
           'base64',
         ).toString();
         expect(JSON.parse(value)).toEqual(transferAmount.toString());
-      } else {
-        throw new TypeError('unexpected result');
       }
 
       const expectedAmount = transferAmount.sub(burnAmount).toString();
