@@ -22,8 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.assertSuccessResult = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
-const assert_1 = require("assert");
+exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default('1' + '0'.repeat(24));
@@ -39,11 +38,4 @@ function tGas(s) {
     return s + '0'.repeat(12);
 }
 exports.tGas = tGas;
-function assertSuccessResult(result) {
-    const isSuccessful = typeof result.status === 'object'
-        && typeof result.status.SuccessValue === 'string';
-    assert_1.strict(isSuccessful, `Expected result to be successful; got ${JSON.stringify(result.status)}`);
-    return isSuccessful;
-}
-exports.assertSuccessResult = assertSuccessResult;
 //# sourceMappingURL=utils.js.map
