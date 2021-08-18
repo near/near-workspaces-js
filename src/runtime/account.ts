@@ -262,6 +262,10 @@ export class Account {
     return accountId.endsWith(`.${this.accountId}`);
   }
 
+  toJSON(): string {
+    return this.accountId;
+  }
+
   protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
     const id = this.makeSubAccount(accountId);
     let pubKey: PublicKey;
@@ -352,7 +356,7 @@ export class Transaction {
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
-    }: {gas: BN | string; attachedDeposit: BN | string},
+    }: {gas?: BN | string; attachedDeposit?: BN | string} = {},
   ): this {
     this.actions.push(
       functionCall(methodName, args, new BN(gas), new BN(attachedDeposit)),

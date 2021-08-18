@@ -79,6 +79,7 @@ export declare class Account {
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
+    toJSON(): string;
     protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
     protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
@@ -108,9 +109,9 @@ export declare class Transaction {
     deleteKey(publicKey: string | PublicKey): this;
     deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction>;
     deployContract(code: Uint8Array | Buffer): this;
-    functionCall(methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, }: {
-        gas: BN | string;
-        attachedDeposit: BN | string;
+    functionCall(methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, }?: {
+        gas?: BN | string;
+        attachedDeposit?: BN | string;
     }): this;
     stake(amount: BN | string, publicKey: PublicKey | string): this;
     transfer(amount: string | BN): this;

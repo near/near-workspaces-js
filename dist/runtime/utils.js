@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPathLike = exports.isError = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const process_1 = __importDefault(require("process"));
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
@@ -82,10 +82,6 @@ async function ensureBinary() {
     }
 }
 exports.ensureBinary = ensureBinary;
-function isError(something) {
-    return something instanceof Error;
-}
-exports.isError = isError;
 function isPathLike(something) {
     return typeof something === 'string' || something instanceof url_1.URL;
 }

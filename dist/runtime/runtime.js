@@ -132,7 +132,7 @@ class Runtime {
             await fn(this.accounts, this);
         }
         catch (error) {
-            if (utils_2.isError(error)) {
+            if (error instanceof Error) {
                 utils_2.debug(error.stack);
             }
             throw error; // Figure out better error handling
@@ -157,7 +157,9 @@ class Runtime {
             return accounts;
         }
         catch (error) {
-            utils_2.debug(error);
+            if (error instanceof buffer_1.Buffer || typeof error === 'string') {
+                utils_2.debug(error);
+            }
             throw error; // Figure out better error handling
         }
         finally {
