@@ -1,1 +1,1 @@
-export * from "near-api-js/lib/providers/provider";
+export * from 'near-api-js/lib/providers/provider';

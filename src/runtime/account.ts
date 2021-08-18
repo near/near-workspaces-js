@@ -1,5 +1,9 @@
-import BN from "bn.js";
-import * as nearAPI from "near-api-js";
+import {URL} from 'url'; // eslint-disable-line node/prefer-global/url
+import {Buffer} from 'buffer';
+import * as fs from 'fs/promises';
+import BN from 'bn.js';
+import * as nearAPI from 'near-api-js';
+import * as borsh from 'borsh';
 import {
   AccessKey,
   Action,
@@ -14,17 +18,14 @@ import {
   PublicKey,
   stake,
   transfer,
-} from "../types";
-import * as borsh from "borsh";
-import { FinalExecutionOutcome } from "../provider";
-import { debug } from "./utils";
-import { Runtime } from "./runtime";
-import * as fs from "fs/promises";
+} from '../types';
+import {FinalExecutionOutcome} from '../provider';
+import {Runtime} from './runtime'; // eslint-disable-line import/no-cycle
+import {isPathLike} from './utils';
 
-type Args = { [key: string]: any };
+type Args = Record<string, any>;
 
-// TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
-const DEFAULT_FUNCTION_CALL_GAS = new BN(30 * 10 ** 12);
+const DEFAULT_FUNCTION_CALL_GAS = new BN(30 * (10 ** 12));
 const NO_DEPOSIT = new BN('0');
 
 export interface CallOptions {
@@ -33,7 +34,6 @@ export interface CallOptions {
   signWithKey?: KeyPair;
 }
 
-// TODO: expose in naj
 export interface AccountBalance {
   total: string;
   stateStaked: string;
@@ -42,23 +42,22 @@ export interface AccountBalance {
 }
 
 export class Account {
-  
   constructor(
     private readonly _accountId: string,
-    private runtime: Runtime,
-    private levelUp?: string,
+    private readonly runtime: Runtime,
+    private readonly levelUp?: string,
   ) {}
 
   get najAccount(): nearAPI.Account {
-    return new nearAPI.Account(this.runtime.near.connection, this.accountId)
+    return new nearAPI.Account(this.runtime.near.connection, this.accountId);
   }
 
   get connection(): nearAPI.Connection {
     return this.najAccount.connection;
   }
 
-  get networkId(): string { 
-    return this.connection.networkId; 
+  get networkId(): string {
+    return this.connection.networkId;
   }
 
   get signer(): nearAPI.InMemorySigner {
@@ -74,7 +73,7 @@ export class Account {
   }
 
   get prefix(): string {
-    return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, "") : this.accountId;
+    return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, '') : this.accountId;
   }
 
   async balance(): Promise<AccountBalance> {
@@ -97,36 +96,13 @@ export class Account {
     await this.keyStore.setKey(this.networkId, this.makeSubAccount(accountId), keyPair);
   }
 
-  protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
-    const id = this.makeSubAccount(accountId);
-    let pubKey: PublicKey;
-    if (keyPair) {
-      const key = await nearAPI.InMemorySigner.fromKeyPair(
-        this.networkId,
-        id,
-        keyPair
-      );
-      pubKey = await key.getPublicKey();
-    } else {
-      pubKey = await this.signer.createKey(id, this.networkId);
-    }
-    return pubKey;
-  }
-
   async createAccount(
     accountId: string,
-    { keyPair, initialBalance = this.runtime.config.initialBalance! }: { keyPair?: KeyPair; initialBalance?: string } = {}
+    {keyPair, initialBalance = this.runtime.config.initialBalance!}: {keyPair?: KeyPair; initialBalance?: string} = {},
   ): Promise<Account> {
     const tx = await this.internalCreateAccount(accountId, {keyPair, initialBalance});
     await tx.signAndSend();
     return this.getAccount(accountId);
-  }
-
-  protected async internalCreateAccount(accountId: string,  {keyPair, initialBalance }: { keyPair?: KeyPair; initialBalance?: string | BN } = {}): Promise<Transaction> {
-    let newAccountId = this.makeSubAccount(accountId);
-    const pubKey = await this.addKey(newAccountId, keyPair); 
-    const amount = new BN(initialBalance || this.runtime.config.initialBalance!);
-    return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
   }
 
   /** Adds suffix to accountId if account isn't sub account or have full including top level account */
@@ -137,7 +113,7 @@ export class Account {
 
   async createAndDeploy(
     accountId: string,
-    wasm: Uint8Array | string,
+    wasm: string | URL | Uint8Array | Buffer,
     {
       attachedDeposit = NO_DEPOSIT,
       args = {},
@@ -146,19 +122,20 @@ export class Account {
       keyPair,
       method,
     }: {
-      args?: object | Uint8Array;
+      args?: Record<string, unknown> | Uint8Array;
       attachedDeposit?: string | BN;
       gas?: string | BN;
       initialBalance?: BN | string;
       keyPair?: KeyPair;
       method?: string;
-    } = {}
+    } = {},
   ): Promise<Account> {
-     let tx = (await this.internalCreateAccount(accountId, {keyPair, initialBalance}))
-     tx = await tx.deployContractFile(wasm);
-     if (method) {
-       tx.functionCall(method, args, { gas, attachedDeposit });
-     }
+    let tx = (await this.internalCreateAccount(accountId, {keyPair, initialBalance}));
+    tx = await tx.deployContractFile(wasm);
+    if (method) {
+      tx.functionCall(method, args, {gas, attachedDeposit});
+    }
+
     await tx.signAndSend();
     return this.getAccount(accountId);
   }
@@ -173,7 +150,7 @@ export class Account {
   async call_raw(
     contractId: Account | string,
     methodName: string,
-    args: object,
+    args: Record<string, unknown>,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
@@ -182,11 +159,11 @@ export class Account {
       gas?: string | BN;
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
-    } = {}
+    } = {},
   ): Promise<FinalExecutionOutcome> {
     return this.createTransaction(contractId)
-               .functionCall(methodName, args, {gas, attachedDeposit})
-               .signAndSend(signWithKey);
+      .functionCall(methodName, args, {gas, attachedDeposit})
+      .signAndSend(signWithKey);
   }
 
   /**
@@ -199,16 +176,16 @@ export class Account {
   async call(
     contractId: Account | string,
     methodName: string,
-    args: object,
+    args: Record<string, unknown>,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
-    }:{
+    }: {
       gas?: string | BN;
       attachedDeposit?: string | BN;
-      signWithKey?: KeyPair
-    } = {}
+      signWithKey?: KeyPair;
+    } = {},
   ): Promise<any> {
     const txResult = await this.call_raw(
       contractId,
@@ -217,157 +194,186 @@ export class Account {
       {
         gas,
         attachedDeposit,
-        signWithKey
-      }
+        signWithKey,
+      },
     );
     if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
       const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
       try {
-        return JSON.parse(value);
-      } catch (e) {
+        return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+      } catch {
         return value;
       }
     }
-    throw JSON.stringify(txResult.status);
+
+    throw new Error(JSON.stringify(txResult.status));
   }
 
-  async view_raw(method: string, args: Args = {}): Promise<any> {
-    const res: any = await this.connection.provider.query({
+  async view_raw(method: string, args: Args = {}): Promise<nearAPI.providers.CodeResult> {
+    const result: nearAPI.providers.CodeResult = await this.connection.provider.query({
       request_type: 'call_function',
       account_id: this.accountId,
       method_name: method,
       args_base64: Buffer.from(JSON.stringify(args)).toString('base64'),
-      finality: 'optimistic'
+      finality: 'optimistic',
     });
-    return res;
+    return result;
   }
 
   async view(method: string, args: Args = {}): Promise<any> {
-    const res = await this.view_raw(method, args);
-    if (res.result) {
-      return JSON.parse(Buffer.from(res.result).toString())
+    const result = await this.view_raw(method, args);
+    if (result.result) {
+      return JSON.parse(Buffer.from(result.result).toString()); // eslint-disable-line @typescript-eslint/no-unsafe-return
     }
-    return res.result;
+
+    return result.result;
   }
 
   async viewState(): Promise<ContractState> {
-    return new ContractState(await this.najAccount.viewState(""));
+    return new ContractState(await this.najAccount.viewState(''));
   }
 
-  async patchState(key: string, val: any, borshSchema?: any): Promise<any> {
+  async patchState(key: string, value_: any, borshSchema?: any): Promise<any> {
     const data_key = Buffer.from(key).toString('base64');
-    let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
+    let value = (borshSchema) ? borsh.serialize(borshSchema, value_) : value_; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
     value = Buffer.from(value).toString('base64');
     const account_id = this.accountId;
-    return this.provider.sendJsonRpc("sandbox_patch_state", {
+    return this.provider.sendJsonRpc('sandbox_patch_state', {
       records: [
         {
-          "Data": {
+          Data: {
             account_id,
             data_key,
-            value
-          }
-        }
+            value, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+          },
+        },
       ]});
-    }
+  }
 
   makeSubAccount(accountId: string): string {
-    if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId)) return accountId
+    if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId)) {
+      return accountId;
+    }
+
     return `${accountId}.${this.accountId}`;
   }
 
   subAccountOf(accountId: string): boolean {
     return accountId.endsWith(`.${this.accountId}`);
   }
+
+  protected async addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey> {
+    const id = this.makeSubAccount(accountId);
+    let pubKey: PublicKey;
+    if (keyPair) {
+      const key = await nearAPI.InMemorySigner.fromKeyPair(
+        this.networkId,
+        id,
+        keyPair,
+      );
+      pubKey = await key.getPublicKey();
+    } else {
+      pubKey = await this.signer.createKey(id, this.networkId);
+    }
+
+    return pubKey;
+  }
+
+  protected async internalCreateAccount(accountId: string, {keyPair, initialBalance}: {keyPair?: KeyPair; initialBalance?: string | BN} = {}): Promise<Transaction> {
+    const newAccountId = this.makeSubAccount(accountId);
+    const pubKey = await this.addKey(newAccountId, keyPair);
+    const amount = new BN(initialBalance ?? this.runtime.config.initialBalance!);
+    return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
+  }
 }
 export class ContractState {
-  private data: Map<string, Buffer>;
-  constructor(dataArray: Array<{ key: Buffer; value: Buffer; }>) {
+  private readonly data: Map<string, Buffer>;
+  constructor(dataArray: Array<{key: Buffer; value: Buffer}>) {
     this.data = new Map();
-    dataArray.forEach(({ key, value }) => {
+    for (const {key, value} of dataArray) {
       this.data.set(key.toString(), value);
-    });
+    }
   }
 
   get_raw(key: string): Buffer {
-    return this.data.get(key) || Buffer.from("");
+    return this.data.get(key) ?? Buffer.from('');
   }
 
-  get(key: string, borshSchema?: { type: any, schema: any }): any {
+  get(key: string, borshSchema?: {type: any; schema: any}): any {
     const value = this.get_raw(key);
     if (borshSchema) {
       return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
     }
+
     return value.toJSON();
   }
 }
 
 export class Transaction {
-  private actions: Action[] = [];
   protected receiverId: string;
+  private readonly actions: Action[] = [];
   constructor(protected sender: Account, receiver: Account | string) {
-    this.receiverId =
-      typeof receiver === "string" ? receiver : receiver.accountId;
+    this.receiverId
+      = typeof receiver === 'string' ? receiver : receiver.accountId;
   }
 
-  addKey(publicKey: string | PublicKey, accessKey: AccessKey = fullAccessKey()): Transaction {
+  addKey(publicKey: string | PublicKey, accessKey: AccessKey = fullAccessKey()): this {
     this.actions.push(addKey(PublicKey.from(publicKey), accessKey));
     return this;
   }
 
-  createAccount(): Transaction {
+  createAccount(): this {
     this.actions.push(createAccount());
     return this;
   }
 
-  deleteAccount(beneficiaryId: string): Transaction {
+  deleteAccount(beneficiaryId: string): this {
     this.actions.push(deleteAccount(beneficiaryId));
     return this;
   }
 
-  deleteKey(publicKey: string | PublicKey): Transaction {
+  deleteKey(publicKey: string | PublicKey): this {
     this.actions.push(deleteKey(PublicKey.from(publicKey)));
     return this;
   }
 
-  async deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction> {
-    return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
+  async deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction> {
+    return this.deployContract(isPathLike(code) ? await fs.readFile(code) : code);
   }
 
-  deployContract(code: Uint8Array): Transaction {
+  deployContract(code: Uint8Array | Buffer): this {
     this.actions.push(deployContract(code));
     return this;
   }
 
   functionCall(
     methodName: string,
-    args: object | Uint8Array,
+    args: Record<string, unknown> | Uint8Array,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
-    }: { gas: BN | string; attachedDeposit: BN | string }
-  ): Transaction {
+    }: {gas: BN | string; attachedDeposit: BN | string},
+  ): this {
     this.actions.push(
-      functionCall(methodName, args, new BN(gas), new BN(attachedDeposit))
+      functionCall(methodName, args, new BN(gas), new BN(attachedDeposit)),
     );
     return this;
   }
 
-  stake(amount: BN | string, publicKey: PublicKey | string): Transaction {
+  stake(amount: BN | string, publicKey: PublicKey | string): this {
     this.actions.push(stake(new BN(amount), PublicKey.from(publicKey)));
     return this;
   }
 
-  transfer(amount: string | BN): Transaction {
+  transfer(amount: string | BN): this {
     this.actions.push(transfer(new BN(amount)));
     return this;
   }
 
-  // TODO: expose signAndSend in naj
   /**
-   * 
+   *
    * @param keyPair Temporary key to sign transaction
-   * @returns 
+   * @returns
    */
   async signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
     let oldKey: KeyPair;
@@ -375,26 +381,27 @@ export class Transaction {
       oldKey = await this.sender.getKey(this.sender.accountId);
       await this.sender.setKey(this.sender.accountId, keyPair);
     }
-    // @ts-expect-error
-    const res = await this.sender.najAccount.signAndSendTransaction({
+
+    // @ts-expect-error signAndSendTransaction iscurrently protected
+    const result = await this.sender.najAccount.signAndSendTransaction({
       receiverId: this.receiverId,
       actions: this.actions,
     });
     if (keyPair) {
       await this.sender.setKey(this.sender.accountId, oldKey!);
     }
-    return res;
+
+    return result;
   }
 }
 
 export class RuntimeTransaction extends Transaction {
-
-  constructor(private runtime: Runtime, sender:Account, receiver: Account | string){
+  constructor(private readonly runtime: Runtime, sender: Account, receiver: Account | string) {
     super(sender, receiver);
   }
 
-  createAccount(): Transaction {
-    this.runtime.addAccountCreated(this.receiverId, this.sender)
+  createAccount(): this {
+    this.runtime.addAccountCreated(this.receiverId, this.sender);
     return super.createAccount();
   }
 

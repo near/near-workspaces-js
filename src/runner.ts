@@ -1,8 +1,9 @@
-import { Runtime, RunnerFn, CreateRunnerFn, Config } from './runtime';
+import process from 'process';
+import {Runtime, RunnerFn, CreateRunnerFn, Config} from './runtime';
 
 export class Runner {
   private constructor(
-    private runtime: Runtime,
+    private readonly runtime: Runtime,
   ) { /* auto-assigns to this.config & this.args */ }
 
   /** Create the initial enviorment for the test to run in.
@@ -10,10 +11,10 @@ export class Runner {
    */
   static async create(
     configOrFunction: CreateRunnerFn | Partial<Config>,
-    f?: CreateRunnerFn
+    f?: CreateRunnerFn,
   ): Promise<Runner> {
-    const { config, fn } = getConfigAndFn(configOrFunction, f);
-    config.network = config.network || this.getNetworkFromEnv();
+    const {config, fn} = getConfigAndFn(configOrFunction, f);
+    config.network = config.network ?? this.getNetworkFromEnv();
     const runtime = await Runtime.create(config, fn);
     return new Runner(runtime);
   }
@@ -36,12 +37,11 @@ export class Runner {
         return 'sandbox';
       default:
         throw new Error(
-          `environment variable NEAR_RUNNER_NETWORK=${network} invalid; ` +
-          "use 'testnet' or 'sandbox' (the default)"
+          `environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+          + 'use \'testnet\' or \'sandbox\' (the default)',
         );
     }
   }
-
 
   /**
    * Sets up the context, runs the function, and tears it down.
@@ -60,29 +60,32 @@ export class Runner {
    * @returns
    */
   async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
-    if ('sandbox' === this.runtime.config.network) {
+    if (this.runtime.config.network === 'sandbox') {
       return this.run(fn);
     }
+
     return null;
   }
 }
 
 function getConfigAndFn(
   configOrFunction: CreateRunnerFn | Partial<Config>,
-  f?: CreateRunnerFn
-): { fn: CreateRunnerFn, config: Partial<Config> } {
+  f?: CreateRunnerFn,
+): {fn: CreateRunnerFn; config: Partial<Config>} {
   const type1 = typeof configOrFunction;
   const type2 = typeof f;
   if (type1 === 'function' && type2 === 'undefined') {
-    // @ts-ignore Type this|that not assignable to that
-    return { config: {}, fn: configOrFunction };
+    // @ts-expect-error Type this|that not assignable to that
+    return {config: {}, fn: configOrFunction};
   }
+
   if (type1 === 'object' && type2 === 'function') {
-    // @ts-ignore Type this|that not assignable to that
-    return { config: configOrFunction, fn: f };
+    // @ts-expect-error Type this|that not assignable to that
+    return {config: configOrFunction, fn: f};
   }
+
   throw new Error(
-    "Invalid arguments! " +
-    "Expected `(config, runFunction)` or just `(runFunction)`"
-  )
+    'Invalid arguments! '
+    + 'Expected `(config, runFunction)` or just `(runFunction)`',
+  );
 }

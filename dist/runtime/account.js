@@ -23,13 +23,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RuntimeTransaction = exports.Transaction = exports.ContractState = exports.Account = void 0;
+const buffer_1 = require("buffer");
+const fs = __importStar(require("fs/promises"));
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
-const types_1 = require("../types");
 const borsh = __importStar(require("borsh"));
-const fs = __importStar(require("fs/promises"));
-// TODO: import DEFAULT_FUNCTION_CALL_GAS from NAJ
-const DEFAULT_FUNCTION_CALL_GAS = new bn_js_1.default(30 * 10 ** 12);
+const types_1 = require("../types");
+const utils_1 = require("./utils");
+const DEFAULT_FUNCTION_CALL_GAS = new bn_js_1.default(30 * (10 ** 12));
 const NO_DEPOSIT = new bn_js_1.default('0');
 class Account {
     constructor(_accountId, runtime, levelUp) {
@@ -56,7 +57,7 @@ class Account {
         return this._accountId;
     }
     get prefix() {
-        return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, "") : this.accountId;
+        return this.levelUp ? this.accountId.replace(`.${this.levelUp}`, '') : this.accountId;
     }
     async balance() {
         return this.najAccount.getAccountBalance();
@@ -73,28 +74,10 @@ class Account {
     async setKey(accountId, keyPair) {
         await this.keyStore.setKey(this.networkId, this.makeSubAccount(accountId), keyPair);
     }
-    async addKey(accountId, keyPair) {
-        const id = this.makeSubAccount(accountId);
-        let pubKey;
-        if (keyPair) {
-            const key = await nearAPI.InMemorySigner.fromKeyPair(this.networkId, id, keyPair);
-            pubKey = await key.getPublicKey();
-        }
-        else {
-            pubKey = await this.signer.createKey(id, this.networkId);
-        }
-        return pubKey;
-    }
     async createAccount(accountId, { keyPair, initialBalance = this.runtime.config.initialBalance } = {}) {
         const tx = await this.internalCreateAccount(accountId, { keyPair, initialBalance });
         await tx.signAndSend();
         return this.getAccount(accountId);
-    }
-    async internalCreateAccount(accountId, { keyPair, initialBalance } = {}) {
-        let newAccountId = this.makeSubAccount(accountId);
-        const pubKey = await this.addKey(newAccountId, keyPair);
-        const amount = new bn_js_1.default(initialBalance || this.runtime.config.initialBalance);
-        return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
     }
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId) {
@@ -133,75 +116,95 @@ class Account {
         const txResult = await this.call_raw(contractId, methodName, args, {
             gas,
             attachedDeposit,
-            signWithKey
+            signWithKey,
         });
         if (typeof txResult.status === 'object' && typeof txResult.status.SuccessValue === 'string') {
-            const value = Buffer.from(txResult.status.SuccessValue, 'base64').toString();
+            const value = buffer_1.Buffer.from(txResult.status.SuccessValue, 'base64').toString();
             try {
-                return JSON.parse(value);
+                return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
             }
-            catch (e) {
+            catch {
                 return value;
             }
         }
-        throw JSON.stringify(txResult.status);
+        throw new Error(JSON.stringify(txResult.status));
     }
     async view_raw(method, args = {}) {
-        const res = await this.connection.provider.query({
+        const result = await this.connection.provider.query({
             request_type: 'call_function',
             account_id: this.accountId,
             method_name: method,
-            args_base64: Buffer.from(JSON.stringify(args)).toString('base64'),
-            finality: 'optimistic'
+            args_base64: buffer_1.Buffer.from(JSON.stringify(args)).toString('base64'),
+            finality: 'optimistic',
         });
-        return res;
+        return result;
     }
     async view(method, args = {}) {
-        const res = await this.view_raw(method, args);
-        if (res.result) {
-            return JSON.parse(Buffer.from(res.result).toString());
+        const result = await this.view_raw(method, args);
+        if (result.result) {
+            return JSON.parse(buffer_1.Buffer.from(result.result).toString()); // eslint-disable-line @typescript-eslint/no-unsafe-return
         }
-        return res.result;
+        return result.result;
     }
     async viewState() {
-        return new ContractState(await this.najAccount.viewState(""));
+        return new ContractState(await this.najAccount.viewState(''));
     }
-    async patchState(key, val, borshSchema) {
-        const data_key = Buffer.from(key).toString('base64');
-        let value = (borshSchema) ? borsh.serialize(borshSchema, val) : val;
-        value = Buffer.from(value).toString('base64');
+    async patchState(key, value_, borshSchema) {
+        const data_key = buffer_1.Buffer.from(key).toString('base64');
+        let value = (borshSchema) ? borsh.serialize(borshSchema, value_) : value_; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+        value = buffer_1.Buffer.from(value).toString('base64');
         const account_id = this.accountId;
-        return this.provider.sendJsonRpc("sandbox_patch_state", {
+        return this.provider.sendJsonRpc('sandbox_patch_state', {
             records: [
                 {
-                    "Data": {
+                    Data: {
                         account_id,
                         data_key,
-                        value
-                    }
-                }
+                        value, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+                    },
+                },
             ]
         });
     }
     makeSubAccount(accountId) {
-        if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId))
+        if (this.subAccountOf(accountId) || this.runtime.getRoot().subAccountOf(accountId)) {
             return accountId;
+        }
         return `${accountId}.${this.accountId}`;
     }
     subAccountOf(accountId) {
         return accountId.endsWith(`.${this.accountId}`);
+    }
+    async addKey(accountId, keyPair) {
+        const id = this.makeSubAccount(accountId);
+        let pubKey;
+        if (keyPair) {
+            const key = await nearAPI.InMemorySigner.fromKeyPair(this.networkId, id, keyPair);
+            pubKey = await key.getPublicKey();
+        }
+        else {
+            pubKey = await this.signer.createKey(id, this.networkId);
+        }
+        return pubKey;
+    }
+    async internalCreateAccount(accountId, { keyPair, initialBalance } = {}) {
+        const newAccountId = this.makeSubAccount(accountId);
+        const pubKey = await this.addKey(newAccountId, keyPair);
+        const amount = new bn_js_1.default(initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.runtime.config.initialBalance);
+        return this.createTransaction(newAccountId).createAccount().transfer(amount).addKey(pubKey);
     }
 }
 exports.Account = Account;
 class ContractState {
     constructor(dataArray) {
         this.data = new Map();
-        dataArray.forEach(({ key, value }) => {
+        for (const { key, value } of dataArray) {
             this.data.set(key.toString(), value);
-        });
+        }
     }
     get_raw(key) {
-        return this.data.get(key) || Buffer.from("");
+        var _a;
+        return (_a = this.data.get(key)) !== null && _a !== void 0 ? _a : buffer_1.Buffer.from('');
     }
     get(key, borshSchema) {
         const value = this.get_raw(key);
@@ -216,8 +219,8 @@ class Transaction {
     constructor(sender, receiver) {
         this.sender = sender;
         this.actions = [];
-        this.receiverId =
-            typeof receiver === "string" ? receiver : receiver.accountId;
+        this.receiverId
+            = typeof receiver === 'string' ? receiver : receiver.accountId;
     }
     addKey(publicKey, accessKey = types_1.fullAccessKey()) {
         this.actions.push(types_1.addKey(types_1.PublicKey.from(publicKey), accessKey));
@@ -236,7 +239,7 @@ class Transaction {
         return this;
     }
     async deployContractFile(code) {
-        return this.deployContract(typeof code === 'string' ? await fs.readFile(code) : code);
+        return this.deployContract(utils_1.isPathLike(code) ? await fs.readFile(code) : code);
     }
     deployContract(code) {
         this.actions.push(types_1.deployContract(code));
@@ -254,7 +257,6 @@ class Transaction {
         this.actions.push(types_1.transfer(new bn_js_1.default(amount)));
         return this;
     }
-    // TODO: expose signAndSend in naj
     /**
      *
      * @param keyPair Temporary key to sign transaction
@@ -266,15 +268,15 @@ class Transaction {
             oldKey = await this.sender.getKey(this.sender.accountId);
             await this.sender.setKey(this.sender.accountId, keyPair);
         }
-        // @ts-expect-error
-        const res = await this.sender.najAccount.signAndSendTransaction({
+        // @ts-expect-error signAndSendTransaction iscurrently protected
+        const result = await this.sender.najAccount.signAndSendTransaction({
             receiverId: this.receiverId,
             actions: this.actions,
         });
         if (keyPair) {
             await this.sender.setKey(this.sender.accountId, oldKey);
         }
-        return res;
+        return result;
     }
 }
 exports.Transaction = Transaction;

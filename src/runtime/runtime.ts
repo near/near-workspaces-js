@@ -1,23 +1,21 @@
-import { promises as fs } from "fs";
-import * as nearAPI from "near-api-js";
-import { join, dirname } from "path";
-import * as os from "os";
-import { Account } from './account'
-import tmpDir from "temp-dir";
-import { SandboxServer } from './server';
-import { debug, exists } from './utils';
-import { toYocto } from '../utils';
-import { KeyPair, PublicKey } from '../types';
-import { FinalExecutionOutcome } from "../provider";
+import {Buffer} from 'buffer';
+import {join, dirname} from 'path';
+import * as os from 'os';
+import {promises as fs} from 'fs';
+import * as nearAPI from 'near-api-js';
+import {toYocto} from '../utils';
+import {KeyPair} from '../types';
+import {FinalExecutionOutcome} from '../provider';
+import {debug, exists, isError} from './utils';
+import {SandboxServer} from './server'; // eslint-disable-line import/no-cycle
+import {Account} from './account'; // eslint-disable-line import/no-cycle
 
 interface RuntimeArg {
   runtime: Runtime;
   root: Account;
 }
 
-export interface ReturnedAccounts {
-  [key: string]: Account;
-}
+export type ReturnedAccounts = Record<string, Account>;
 
 export interface AccountArgs extends ReturnedAccounts {
   root: Account;
@@ -30,30 +28,43 @@ type AccountId = string;
 type UserPropName = string;
 type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
 
-const DEFAULT_INITIAL_DEPOSIT: string = toYocto("10");
+const DEFAULT_INITIAL_DEPOSIT: string = toYocto('10');
 
 function randomAccountId(): string {
-  let accountId;
-  // create random number with at least 7 digits
-  const randomNumber = Math.floor(Math.random() * (9999999 - 1000000) + 1000000);
-  accountId = `dev-${Date.now()}-${randomNumber}`;
+  // Create random number with at least 7 digits
+  const randomNumber = Math.floor((Math.random() * (9_999_999 - 1_000_000)) + 1_000_000);
+  const accountId = `dev-${Date.now()}-${randomNumber}`;
   return accountId;
 }
 
-async function getKeyFromFile(filePath: string, create: boolean = true): Promise<KeyPair> {
+interface KeyFilePrivate {
+  private_key: string;
+}
+
+interface KeyFileSecret {
+  secret_key: string;
+}
+
+type KeyFile = KeyFilePrivate | KeyFileSecret;
+
+async function getKeyFromFile(filePath: string, create = true): Promise<KeyPair> {
   try {
-    const keyFile = require(filePath);
+    const keyFile = require(filePath) as KeyFile; // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, unicorn/prefer-module
     return nearAPI.utils.KeyPair.fromString(
-      keyFile.secret_key || keyFile.private_key
+      // @ts-expect-error `x` does not exist on KeyFile
+      keyFile.secret_key ?? keyFile.private_key,
     );
-  } catch (e) {
-    if (!create) throw e;
-    debug("about to write to ", filePath)
+  } catch (error: unknown) {
+    if (!create) {
+      throw error;
+    }
+
+    debug('about to write to ', filePath);
     const keyPair = nearAPI.utils.KeyPairEd25519.fromRandom();
     await fs.writeFile(filePath, JSON.stringify({
-      secret_key: keyPair.toString()
+      secret_key: keyPair.toString(),
     }));
-    debug("wrote to file ", filePath);
+    debug('wrote to file ', filePath);
     return keyPair;
   }
 }
@@ -75,39 +86,15 @@ export interface Config {
 }
 
 export abstract class Runtime {
-  static async create(
-    config: Partial<Config>,
-    fn?: CreateRunnerFn
-  ): Promise<Runtime> {
-    switch (config.network) {
-      case "testnet":
-        return TestnetRuntime.create(config, fn);
-      case "sandbox":
-        return SandboxRuntime.create(config, fn);
-      default:
-        throw new Error(
-          `config.network = '${config.network}' invalid; ` +
-            "must be 'testnet' or 'sandbox' (the default). Soon 'mainnet'"
-        );
-    }
-  }
-
-  abstract afterRun(): Promise<void>;
-  abstract get baseAccountId(): string;
-  abstract createFrom(): Promise<Runtime>;
-  abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-  abstract get keyFilePath(): string;
+  near!: nearAPI.Near;
+  config: Config; // Should be protected?
+  accountsCreated: Map<AccountId, AccountShortName> = new Map();
+  resultArgs?: SerializedReturnedAccounts;
 
   protected root!: Account;
-  near!: nearAPI.Near;
   protected masterKey!: KeyPair;
   protected keyStore!: nearAPI.keyStores.KeyStore;
   protected createdAccounts: ReturnedAccounts = {};
-
-  // TODO: should probably be protected
-  config: Config;
-  accountsCreated: Map<AccountId, AccountShortName> = new Map();
-  resultArgs?: SerializedReturnedAccounts;
 
   constructor(config: Config, accounts?: ReturnedAccounts) {
     this.config = config;
@@ -116,14 +103,30 @@ export abstract class Runtime {
     }
   }
 
+  static async create(
+    config: Partial<Config>,
+    fn?: CreateRunnerFn,
+  ): Promise<Runtime> {
+    switch (config.network) {
+      case 'testnet':
+        return TestnetRuntime.create(config, fn);
+      case 'sandbox':
+        return SandboxRuntime.create(config, fn);
+      default:
+        throw new Error(
+          `config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
+            + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'',
+        );
+    }
+  }
+
   get accounts(): AccountArgs {
-    return {...{root: this.root}, ...Object.fromEntries(
-      Object.entries(this.createdAccounts).map(([argName, account]) => {
-        return [
+    return {root: this.root, ...Object.fromEntries(
+      Object.entries(this.createdAccounts).map(([argName, account]) => [
         argName,
         this.root.getAccount(account.prefix),
-      ]})
-    )}
+      ]),
+    )};
   }
 
   get homeDir(): string {
@@ -147,15 +150,9 @@ export abstract class Runtime {
   }
 
   async getMasterKey(): Promise<KeyPair> {
-    debug("reading key from file", this.keyFilePath);
+    debug('reading key from file', this.keyFilePath);
     return getKeyFromFile(this.keyFilePath);
   }
-
-  // Hook that child classes can override to add functionality before `connect` call
-  async beforeConnect(): Promise<void> {}
-
-  // Hook that child classes can override to add functionality after `connect` call
-  abstract afterConnect(): Promise<void>;
 
   async connect(): Promise<void> {
     this.near = await nearAPI.connect({
@@ -173,20 +170,26 @@ export abstract class Runtime {
   }
 
   async run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void> {
-    debug("About to runtime.run with config", this.config);
+    debug('About to runtime.run with config', this.config);
     try {
       this.keyStore = await this.getKeyStore();
-      debug("About to call beforeConnect");
+      debug('About to call beforeConnect');
       await this.beforeConnect();
-      debug("About to call connect");
+      debug('About to call connect');
       await this.connect();
-      debug("About to call afterConnect");
+      debug('About to call afterConnect');
       await this.afterConnect();
-      if (args) debug(`Passing ${Object.getOwnPropertyNames(args)}`);
+      if (args) {
+        debug(`Passing ${Object.getOwnPropertyNames(args).join(', ')}`);
+      }
+
       await fn(this.accounts, this);
-    } catch (e) {
-      debug(e.stack);
-      throw e; //TODO Figure out better error handling
+    } catch (error: unknown) {
+      if (isError(error)) {
+        debug(error.stack);
+      }
+
+      throw error; // Figure out better error handling
     } finally {
       // Do any needed teardown
       await this.afterRun();
@@ -194,34 +197,25 @@ export abstract class Runtime {
   }
 
   async createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts> {
-    debug("About to runtime.createRun with config", this.config);
+    debug('About to runtime.createRun with config', this.config);
     try {
       this.keyStore = await this.getKeyStore();
-      debug("About to call beforeConnect");
+      debug('About to call beforeConnect');
       await this.beforeConnect();
-      debug("About to call connect");
+      debug('About to call connect');
       await this.connect();
-      debug("About to call afterConnect");
+      debug('About to call afterConnect');
       await this.afterConnect();
-      const accounts = await fn({ runtime: this, root: this.getRoot() });
+      const accounts = await fn({runtime: this, root: this.getRoot()});
       this.createdAccounts = {...this.createdAccounts, ...accounts};
       return accounts;
-    } catch (e) {
-      debug(e);
-      throw e; //TODO Figure out better error handling
+    } catch (error: unknown) {
+      debug(error);
+      throw error; // Figure out better error handling
     } finally {
       // Do any needed teardown
       await this.afterRun();
     }
-  }
-
-  protected async addMasterAccountKey(): Promise<void> {
-    const masterKey = await this.getMasterKey();
-    await this.keyStore.setKey(
-      this.config.network,
-      this.masterAccount,
-      masterKey
-    );
   }
 
   getRoot(): Account {
@@ -229,32 +223,44 @@ export abstract class Runtime {
   }
 
   isSandbox(): boolean {
-    return this.config.network == "sandbox";
+    return this.config.network === 'sandbox';
   }
 
   isTestnet(): boolean {
-    return this.config.network == "testnet";
+    return this.config.network === 'testnet';
   }
 
-  async executeTransaction(fn: () => Promise<FinalExecutionOutcome> ): Promise<FinalExecutionOutcome> {
-    const res = await fn();
-    return res;
+  async executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome> {
+    return fn();
   }
 
   addAccountCreated(accountId: string, sender: Account): void {
-    const short =  accountId.replace(`.${sender.accountId}`, "");
+    const short = accountId.replace(`.${sender.accountId}`, '');
     this.accountsCreated.set(accountId, short);
   }
+
+  protected async addMasterAccountKey(): Promise<void> {
+    const mainKey = await this.getMasterKey();
+    await this.keyStore.setKey(
+      this.config.network,
+      this.masterAccount,
+      mainKey,
+    );
+  }
+
+  abstract beforeConnect(): Promise<void>;
+  abstract afterConnect(): Promise<void>;
+  abstract afterRun(): Promise<void>;
+  abstract get baseAccountId(): string;
+  abstract createFrom(): Promise<Runtime>;
+  abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+  abstract get keyFilePath(): string;
 }
 
 export class TestnetRuntime extends Runtime {
   static async create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime> {
     debug('Skipping initialization function for testnet; will run before each `runner.run`');
-    return new TestnetRuntime({...this.defaultConfig, ...{initFn: fn}, ...config});
-  }
-
-  async createFrom(): Promise<TestnetRuntime> {
-    return new TestnetRuntime({...this.config,...{ init: false, initFn: this.config.initFn!}}, this.createdAccounts);
+    return new TestnetRuntime({...this.defaultConfig, initFn: fn, ...config});
   }
 
   static get defaultConfig(): Config {
@@ -266,40 +272,44 @@ export class TestnetRuntime extends Runtime {
       refDir: null,
       network: 'testnet',
       rpcAddr: 'https://rpc.testnet.near.org',
-      walletUrl: "https://wallet.testnet.near.org",
-      helperUrl: "https://helper.testnet.near.org",
-      explorerUrl: "https://explorer.testnet.near.org",
+      walletUrl: 'https://wallet.testnet.near.org',
+      helperUrl: 'https://helper.testnet.near.org',
+      explorerUrl: 'https://explorer.testnet.near.org',
       initialBalance: DEFAULT_INITIAL_DEPOSIT,
-    }
+    };
   }
 
   static get provider(): nearAPI.providers.JsonRpcProvider {
     return new nearAPI.providers.JsonRpcProvider(this.defaultConfig.rpcAddr);
   }
 
-  /** 
+  /**
    * Get most recent Wasm Binary of given account.
-   * */ 
+   * */
   static async viewCode(account_id: string): Promise<Buffer> {
-    const res: any = await this.provider.query({
+    const result: any = await this.provider.query({
       request_type: 'view_code',
       finality: 'final',
-      account_id
-    })
-    return Buffer.from(res.code_base64, 'base64');
+      account_id,
+    });
+    return Buffer.from(result.code_base64, 'base64'); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+  }
+
+  async createFrom(): Promise<TestnetRuntime> {
+    return new TestnetRuntime({...this.config, init: false, initFn: this.config.initFn!}, this.createdAccounts);
   }
 
   get baseAccountId(): string {
-    return "testnet";
+    return 'testnet';
   }
 
   get keyFilePath(): string {
-    return join(os.homedir(), `.near-credentials`, `${this.network}`, `${this.masterAccount}.json`);
+    return join(os.homedir(), '.near-credentials', `${this.network}`, `${this.masterAccount}.json`);
   }
 
   async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
-      join(os.homedir(), `.near-credentials`)
+      join(os.homedir(), '.near-credentials'),
     );
     return keyStore;
   }
@@ -308,51 +318,56 @@ export class TestnetRuntime extends Runtime {
     await this.ensureKeyFileFolder();
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
       ({} as any), // ignored
-      this.config.helperUrl!
+      this.config.helperUrl!,
     );
     if (!this.config.masterAccount) {
-      // create new `dev-deploy`-style account (or reuse existing)
-      this.config.masterAccount = randomAccountId()
+      // Create new `dev-deploy`-style account (or reuse existing)
+      this.config.masterAccount = randomAccountId();
     }
+
     await this.addMasterAccountKey();
     await accountCreator.createAccount(
       this.masterAccount,
-      (await this.getMasterKey()).getPublicKey()
+      (await this.getMasterKey()).getPublicKey(),
     );
     debug(`Added masterAccount ${this.config.masterAccount
-      } with keyStore ${this.keyStore
-      } and publicKey ${await this.keyStore.getKey(
-        this.config.network,
-        this.masterAccount
-      )
-      }
+    } with keyStore ${JSON.stringify(this.keyStore)
+    } and publicKey ${(await this.keyStore.getKey(
+      this.config.network,
+      this.masterAccount,
+    )).getPublicKey().toString()
+    }
       https://explorer.testnet.near.org/accounts/${this.masterAccount}`);
   }
 
   async afterConnect(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
-      this.createdAccounts = await this.config.initFn({ runtime: this, root: this.getRoot()})
+      this.createdAccounts = await this.config.initFn({runtime: this, root: this.getRoot()});
     }
   }
 
-  // TODO: Delete any accounts created
-  async afterRun(): Promise<void> { }
+  async afterRun(): Promise<void> {
+    // Delete accounts created
+  }
 
   private async ensureKeyFileFolder(): Promise<void> {
     const keyFolder = dirname(this.keyFilePath);
     try {
-      await fs.mkdir(keyFolder, { recursive: true })
-    } catch (e) {
-      // TODO: check error
+      await fs.mkdir(keyFolder, {recursive: true});
+    } catch {
+      // Check error
     }
   }
 }
 
 export class SandboxRuntime extends Runtime {
-  private static readonly LINKDROP_PATH = join(__dirname, '..', '..','core_contracts', "testnet-linkdrop.wasm");
-  // TODO: edit genesis.json to add sandbox as an account
-  private static readonly BASE_ACCOUNT_ID = "test.near";
+  private static readonly LINKDROP_PATH = join(__dirname, '..', '..', 'core_contracts', 'testnet-linkdrop.wasm'); // eslint-disable-line unicorn/prefer-module
+  // Edit genesis.json to add `sandbox` as an account
+  private static get BASE_ACCOUNT_ID() {
+    return 'test.near';
+  }
+
   private server!: SandboxServer;
 
   static async defaultConfig(): Promise<Config> {
@@ -366,7 +381,7 @@ export class SandboxRuntime extends Runtime {
       network: 'sandbox',
       masterAccount: SandboxRuntime.BASE_ACCOUNT_ID,
       rpcAddr: `http://localhost:${port}`,
-      initialBalance: toYocto("100"),
+      initialBalance: toYocto('100'),
     };
   }
 
@@ -377,12 +392,13 @@ export class SandboxRuntime extends Runtime {
       debug('Running initialization function to set up sandbox for all future calls to `runner.run`');
       await sandbox.createRun(fn);
     }
+
     return sandbox;
   }
 
   async createFrom(): Promise<SandboxRuntime> {
     const config = await SandboxRuntime.defaultConfig();
-    return new SandboxRuntime({...config,...{init: false, refDir: this.homeDir}}, this.createdAccounts)
+    return new SandboxRuntime({...config, init: false, refDir: this.homeDir}, this.createdAccounts);
   }
 
   get baseAccountId(): string {
@@ -390,12 +406,12 @@ export class SandboxRuntime extends Runtime {
   }
 
   get keyFilePath(): string {
-    return join(this.homeDir, "validator_key.json");
+    return join(this.homeDir, 'validator_key.json');
   }
 
   async getKeyStore(): Promise<nearAPI.keyStores.KeyStore> {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
-      this.homeDir
+      this.homeDir,
     );
     return keyStore;
   }
@@ -406,23 +422,27 @@ export class SandboxRuntime extends Runtime {
 
   async afterConnect(): Promise<void> {
     if (this.config.init) {
-      await this.root.createAndDeploy("sandbox", SandboxRuntime.LINKDROP_PATH);
-      debug("Deployed 'sandbox' linkdrop contract");
+      await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
+      debug('Deployed \'sandbox\' linkdrop contract');
     }
   }
 
   async beforeConnect(): Promise<void> {
     if (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
-      debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`)
-      await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode("testnet"));
+      debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
+      await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.viewCode('testnet'));
     }
+
     this.server = await SandboxServer.init(this.config);
-    if (this.init) await this.addMasterAccountKey();
+    if (this.init) {
+      await this.addMasterAccountKey();
+    }
+
     await this.server.start();
   }
 
   async afterRun(): Promise<void> {
-    debug("Closing server with port " + this.config.port);
-    this.server.close();
+    debug(`Closing server with port ${this.config.port}`);
+    await this.server.close();
   }
 }

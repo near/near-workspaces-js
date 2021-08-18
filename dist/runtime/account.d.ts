@@ -1,12 +1,12 @@
 /// <reference types="node" />
-import BN from "bn.js";
-import * as nearAPI from "near-api-js";
-import { AccessKey, KeyPair, PublicKey } from "../types";
-import { FinalExecutionOutcome } from "../provider";
-import { Runtime } from "./runtime";
-declare type Args = {
-    [key: string]: any;
-};
+import { URL } from 'url';
+import { Buffer } from 'buffer';
+import BN from 'bn.js';
+import * as nearAPI from 'near-api-js';
+import { AccessKey, KeyPair, PublicKey } from '../types';
+import { FinalExecutionOutcome } from '../provider';
+import { Runtime } from './runtime';
+declare type Args = Record<string, any>;
 export interface CallOptions {
     gas?: string | BN;
     attachedDeposit?: string | BN;
@@ -20,8 +20,8 @@ export interface AccountBalance {
 }
 export declare class Account {
     private readonly _accountId;
-    private runtime;
-    private levelUp?;
+    private readonly runtime;
+    private readonly levelUp?;
     constructor(_accountId: string, runtime: Runtime, levelUp?: string | undefined);
     get najAccount(): nearAPI.Account;
     get connection(): nearAPI.Connection;
@@ -35,19 +35,14 @@ export declare class Account {
     get provider(): nearAPI.providers.JsonRpcProvider;
     getKey(accountId: string): Promise<KeyPair>;
     setKey(accountId: string, keyPair: KeyPair): Promise<void>;
-    protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
     createAccount(accountId: string, { keyPair, initialBalance }?: {
         keyPair?: KeyPair;
         initialBalance?: string;
     }): Promise<Account>;
-    protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
-        keyPair?: KeyPair;
-        initialBalance?: string | BN;
-    }): Promise<Transaction>;
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId: string): Account;
-    createAndDeploy(accountId: string, wasm: Uint8Array | string, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
-        args?: object | Uint8Array;
+    createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
+        args?: Record<string, unknown> | Uint8Array;
         attachedDeposit?: string | BN;
         gas?: string | BN;
         initialBalance?: BN | string;
@@ -61,7 +56,7 @@ export declare class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: Account | string, methodName: string, args: object, { gas, attachedDeposit, signWithKey, }?: {
+    call_raw(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -73,20 +68,25 @@ export declare class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call(contractId: Account | string, methodName: string, args: object, { gas, attachedDeposit, signWithKey, }?: {
+    call(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<any>;
-    view_raw(method: string, args?: Args): Promise<any>;
+    view_raw(method: string, args?: Args): Promise<nearAPI.providers.CodeResult>;
     view(method: string, args?: Args): Promise<any>;
     viewState(): Promise<ContractState>;
-    patchState(key: string, val: any, borshSchema?: any): Promise<any>;
+    patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
+    protected addKey(accountId: string, keyPair?: KeyPair): Promise<PublicKey>;
+    protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
+        keyPair?: KeyPair;
+        initialBalance?: string | BN;
+    }): Promise<Transaction>;
 }
 export declare class ContractState {
-    private data;
+    private readonly data;
     constructor(dataArray: Array<{
         key: Buffer;
         value: Buffer;
@@ -99,21 +99,21 @@ export declare class ContractState {
 }
 export declare class Transaction {
     protected sender: Account;
-    private actions;
     protected receiverId: string;
+    private readonly actions;
     constructor(sender: Account, receiver: Account | string);
-    addKey(publicKey: string | PublicKey, accessKey?: AccessKey): Transaction;
-    createAccount(): Transaction;
-    deleteAccount(beneficiaryId: string): Transaction;
-    deleteKey(publicKey: string | PublicKey): Transaction;
-    deployContractFile(code: string | Buffer | Uint8Array): Promise<Transaction>;
-    deployContract(code: Uint8Array): Transaction;
-    functionCall(methodName: string, args: object | Uint8Array, { gas, attachedDeposit, }: {
+    addKey(publicKey: string | PublicKey, accessKey?: AccessKey): this;
+    createAccount(): this;
+    deleteAccount(beneficiaryId: string): this;
+    deleteKey(publicKey: string | PublicKey): this;
+    deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction>;
+    deployContract(code: Uint8Array | Buffer): this;
+    functionCall(methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, }: {
         gas: BN | string;
         attachedDeposit: BN | string;
-    }): Transaction;
-    stake(amount: BN | string, publicKey: PublicKey | string): Transaction;
-    transfer(amount: string | BN): Transaction;
+    }): this;
+    stake(amount: BN | string, publicKey: PublicKey | string): this;
+    transfer(amount: string | BN): this;
     /**
      *
      * @param keyPair Temporary key to sign transaction
@@ -122,9 +122,9 @@ export declare class Transaction {
     signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }
 export declare class RuntimeTransaction extends Transaction {
-    private runtime;
+    private readonly runtime;
     constructor(runtime: Runtime, sender: Account, receiver: Account | string);
-    createAccount(): Transaction;
+    createAccount(): this;
     signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }
 export {};
