@@ -28,7 +28,8 @@
     "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet jest --verbose",
     "test:sandbox": "yarn build && jest --verbose",
     "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true jest --verbose",
-    "test": "jest --verbose && yarn test:testnet"
+    "test": "jest --verbose && yarn test:testnet",
+    "prepare": "husky install"
   },
   "files": [
     "dist/",
@@ -41,6 +42,7 @@
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.10",
     "@types/rimraf": "^3.0.1",
+    "husky": "^7.0.1",
     "jest": "^27.0.6",
     "ts-jest": "^27.0.4",
     "ts-node": "^10.1.0",

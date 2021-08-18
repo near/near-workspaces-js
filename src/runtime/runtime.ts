@@ -1,5 +1,5 @@
 import {Buffer} from 'buffer';
-import {join, dirname, resolve} from 'path';
+import {join, dirname} from 'path';
 import * as os from 'os';
 import {promises as fs} from 'fs';
 import * as nearAPI from 'near-api-js';

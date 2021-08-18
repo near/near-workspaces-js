@@ -1,4 +1,4 @@
-// eslint-disable-file @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import path from 'path';
 import * as borsh from 'borsh';
 import {Runner} from '..';
