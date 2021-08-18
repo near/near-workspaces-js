@@ -108,10 +108,9 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test('Can force close non-empty balance account', async () => {
     await runner.run(async ({ft, root}) => {
       await init_ft(ft, root, '100');
-      const unregister = async () =>
-        root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'});
 
-      await expect(unregister).rejects.toThrow();
+      await expect(async () =>
+        root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'})).rejects.toThrow();
 
       const result = await root.call_raw(
         ft,
