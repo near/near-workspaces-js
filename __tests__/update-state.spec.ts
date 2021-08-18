@@ -1,4 +1,4 @@
-import {resolve} from 'node:path';
+import {resolve} from 'path';
 import {Runner} from '..';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {

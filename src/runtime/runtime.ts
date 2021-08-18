@@ -1,7 +1,7 @@
-import {Buffer} from 'node:buffer';
-import {join, dirname, resolve} from 'node:path';
-import * as os from 'node:os';
-import {promises as fs} from 'node:fs';
+import {Buffer} from 'buffer';
+import {join, dirname, resolve} from 'path';
+import * as os from 'os';
+import {promises as fs} from 'fs';
 import * as nearAPI from 'near-api-js';
 import {toYocto} from '../utils';
 import {KeyPair} from '../types';

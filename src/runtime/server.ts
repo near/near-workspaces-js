@@ -1,9 +1,9 @@
-import {ChildProcess} from 'node:child_process';
-import {Buffer} from 'node:buffer';
-import process from 'node:process';
-import {open} from 'node:fs/promises';
-import {join} from 'node:path';
-import * as http from 'node:http';
+import {ChildProcess} from 'child_process';
+import {Buffer} from 'buffer';
+import process from 'process';
+import {open} from 'fs/promises';
+import {join} from 'path';
+import * as http from 'http';
 import tmpDir from 'temp-dir';
 import * as portCheck from 'node-port-check';
 import UUID from 'pure-uuid';

@@ -64,6 +64,9 @@
   },
   "xo": {
     "space": true,
+    "rules": {
+      "unicorn/prefer-node-protocol": 0
+    },
     "overrides": [
       {
         "files": "__tests__/*.spec.ts",

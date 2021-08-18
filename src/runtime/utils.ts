@@ -1,8 +1,8 @@
-import process from 'node:process';
-import * as fs from 'node:fs/promises';
-import {PathLike} from 'node:fs';
-import {promisify} from 'node:util';
-import {ChildProcess, spawn as _spawn} from 'node:child_process';
+import process from 'process';
+import * as fs from 'fs/promises';
+import {PathLike} from 'fs';
+import {promisify} from 'util';
+import {ChildProcess, spawn as _spawn} from 'child_process';
 import {spawn as _asyncSpawn, Output} from 'promisify-child-process';
 import rimraf from 'rimraf';
 // @ts-expect-error no typings

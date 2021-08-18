@@ -1,5 +1,5 @@
-import {Buffer} from 'node:buffer';
-import * as fs from 'node:fs/promises';
+import {Buffer} from 'buffer';
+import * as fs from 'fs/promises';
 import BN from 'bn.js';
 import * as nearAPI from 'near-api-js';
 import * as borsh from 'borsh';

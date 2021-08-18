@@ -1,4 +1,4 @@
-import process from 'node:process';
+import process from 'process';
 import {Runtime, RunnerFn, CreateRunnerFn, Config} from './runtime';
 
 export class Runner {

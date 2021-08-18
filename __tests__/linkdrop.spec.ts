@@ -1,4 +1,4 @@
-import path from 'node:path';
+import path from 'path';
 import {Runner, toYocto, createKeyPair, BN, tGas} from '..';
 
 /* Contract API for reference
