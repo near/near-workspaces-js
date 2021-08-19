@@ -1,3 +1,16 @@
+/**
+ * This test verifies the functionality of the contract at
+ * https://github.com/near/near-linkdrop
+ *
+ * An interesting feature of this contract: when someone first visits a linkdrop
+ * page, they don't yet have a NEAR account. But they still make a call to the
+ * contract! How? From the contract's perspective, it _calls itself_ (see
+ * `linkdrop.call(linkdrop, …)` below) using a Function Call access key, which
+ * can only call one function (`create_account_and_claim`) and which is only
+ * good for one use.
+ *
+ * You can see this functionality in action below using `signWithKey`.
+ */
 import path from 'path';
 import {Runner, toYocto, createKeyPair, BN, tGas} from '..';
 
