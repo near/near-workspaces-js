@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && yarn test:testnet
+        run: yarn && yarn test:testnet:ci
   sandbox:
     strategy:
       matrix:

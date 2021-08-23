@@ -33,7 +33,7 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner;
-  jest.setTimeout(60_000);
+  jest.setTimeout(1_000_000);
 
   beforeAll(async () => {
     runner = await Runner.create(async ({root}) => ({

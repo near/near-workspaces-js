@@ -13,6 +13,10 @@ import {NearAccount} from './near-account';
 import {findCallerFile} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
+function timeSuffix(prefix: string, length = 99_999): string {
+  return `${prefix}${Date.now() % length}`;
+}
+
 async function findAccountsWithPrefix(
   prefix: string,
   keyStore: KeyStore,
@@ -26,7 +30,7 @@ async function findAccountsWithPrefix(
     return paths;
   }
 
-  return [`${randomAccountId(prefix, '')}`];
+  return [timeSuffix(prefix, 9_999_999)];
 }
 
 type AccountShortName = string;
@@ -292,7 +296,7 @@ export class TestnetSubaccountManager extends TestnetManager {
 
   async init(): Promise<AccountManager> {
     const root = this.realRoot;
-    this.subAccount = root.makeSubAccount(randomAccountId('', ''));
+    this.subAccount = root.makeSubAccount(timeSuffix(''));
     await this.realRoot.createAccount(this.subAccount, {initialBalance: toYocto('50')});
     return this;
   }

@@ -80,7 +80,8 @@
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
           "unicorn/prefer-module": 0,
-          "@typescript-eslint/no-unsafe-call": 0
+          "@typescript-eslint/no-unsafe-call": 0,
+          "@typescript-eslint/no-empty-function": 0
         }
       }
     ]

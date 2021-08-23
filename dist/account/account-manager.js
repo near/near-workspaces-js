@@ -30,6 +30,9 @@ const transaction_1 = require("../runtime/transaction");
 const provider_1 = require("../provider");
 const account_1 = require("./account");
 const utils_3 = require("./utils");
+function timeSuffix(prefix, length = 99999) {
+    return `${prefix}${Date.now() % length}`;
+}
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
     utils_2.debug(`Looking ${prefix} in ${accounts.join('\n')}`);
@@ -38,7 +41,7 @@ async function findAccountsWithPrefix(prefix, keyStore, network) {
     if (paths.length > 0) {
         return paths;
     }
-    return [`${utils_1.randomAccountId(prefix, '')}`];
+    return [timeSuffix(prefix, 9999999)];
 }
 class AccountManager {
     constructor(near) {
@@ -232,7 +235,7 @@ class TestnetSubaccountManager extends TestnetManager {
     }
     async init() {
         const root = this.realRoot;
-        this.subAccount = root.makeSubAccount(utils_1.randomAccountId('', ''));
+        this.subAccount = root.makeSubAccount(timeSuffix(''));
         await this.realRoot.createAccount(this.subAccount, { initialBalance: utils_1.toYocto('50') });
         return this;
     }
