@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as nearAPI from 'near-api-js';
 import {asId, randomAccountId, toYocto} from '../utils';
-import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, fullAccessKey, AccessKey} from '../types';
+import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore} from '../types';
 import {debug, getKeyFromFile} from '../runtime/utils';
 import {AccountBalance, NamedAccount} from '../runtime/types';
 import {Transaction} from '../runtime/transaction';
