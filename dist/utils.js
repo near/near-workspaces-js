@@ -39,8 +39,8 @@ function tGas(s) {
 }
 exports.tGas = tGas;
 // Create random number with at least 7 digits by default
-function randomAccountId(prefix = 'dev', suffix = `-${(Math.floor(Math.random() * (9999999 - 1000000)) + 1000000)}`) {
-    return `${prefix}-${Date.now()}${suffix}`;
+function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9999999 - 1000000)) + 1000000)}`) {
+    return `${prefix}${Date.now()}${suffix}`;
 }
 exports.randomAccountId = randomAccountId;
 function asId(id) {

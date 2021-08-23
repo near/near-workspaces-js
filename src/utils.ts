@@ -18,8 +18,8 @@ export function tGas(s: string) {
 }
 
 // Create random number with at least 7 digits by default
-export function randomAccountId(prefix = 'dev', suffix = `-${(Math.floor(Math.random() * (9_999_999 - 1_000_000)) + 1_000_000)}`): string {
-  return `${prefix}-${Date.now()}${suffix}`;
+export function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9_999_999 - 1_000_000)) + 1_000_000)}`): string {
+  return `${prefix}${Date.now()}${suffix}`;
 }
 
 export function asId(id: string | NamedAccount): string {

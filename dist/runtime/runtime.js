@@ -9,7 +9,7 @@ const account_manager_1 = require("../account/account-manager");
 const provider_1 = require("../provider");
 const utils_2 = require("./utils");
 const server_1 = require("./server");
-const DEFAULT_INITIAL_DEPOSIT = utils_1.toYocto('10');
+const DEFAULT_INITIAL_DEPOSIT = utils_1.toYocto('100');
 class Runtime {
     constructor(config, accounts) {
         this.returnedAccounts = new Map();
@@ -121,6 +121,7 @@ class TestnetRuntime extends Runtime {
     }
     async createFrom() {
         const runtime = new TestnetRuntime({ ...this.config, init: false, initFn: this.config.initFn }, this.createdAccounts);
+        runtime.manager = await this.manager.createFrom(runtime);
         return runtime;
     }
     static get defaultConfig() {
@@ -159,7 +160,7 @@ class TestnetRuntime extends Runtime {
         }
     }
     async afterRun() {
-        // Delete accounts created
+        await this.manager.cleanup();
     }
 }
 exports.TestnetRuntime = TestnetRuntime;

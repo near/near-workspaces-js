@@ -15,7 +15,7 @@ type AccountId = string;
 type UserPropName = string;
 type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
 
-const DEFAULT_INITIAL_DEPOSIT: string = toYocto('10');
+const DEFAULT_INITIAL_DEPOSIT: string = toYocto('100');
 export abstract class Runtime {
   config: Config; // Should be protected?
   returnedAccounts: Map<AccountId, AccountShortName> = new Map();
@@ -158,6 +158,7 @@ export class TestnetRuntime extends Runtime {
 
   async createFrom(): Promise<TestnetRuntime> {
     const runtime = new TestnetRuntime({...this.config, init: false, initFn: this.config.initFn!}, this.createdAccounts);
+    runtime.manager = await this.manager.createFrom(runtime);
     return runtime;
   }
 
@@ -203,7 +204,7 @@ export class TestnetRuntime extends Runtime {
   }
 
   async afterRun(): Promise<void> {
-    // Delete accounts created
+    await this.manager.cleanup();
   }
 }
 

@@ -35,6 +35,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     exists(accountId: string | NearAccount): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
     addAccountCreated(account: string, sender: string): void;
+    cleanup(): Promise<void>;
     get rootAccountId(): string;
     abstract get DEFAULT_INITIAL_BALANCE(): string;
     abstract createFrom(near: NEAR): Promise<NearAccountManager>;
@@ -62,6 +63,8 @@ export declare class TestnetSubaccountManager extends TestnetManager {
     get rootAccountId(): string;
     get realRoot(): NearAccount;
     init(): Promise<AccountManager>;
+    cleanup(): Promise<void>;
+    get initialBalance(): string;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;

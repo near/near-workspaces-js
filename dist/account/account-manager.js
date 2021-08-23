@@ -38,7 +38,7 @@ async function findAccountsWithPrefix(prefix, keyStore, network) {
     if (paths.length > 0) {
         return paths;
     }
-    return [`${utils_1.randomAccountId(prefix)}`];
+    return [`${utils_1.randomAccountId(prefix, '')}`];
 }
 class AccountManager {
     constructor(near) {
@@ -90,6 +90,7 @@ class AccountManager {
     async setKey(accountId, keyPair) {
         const key = keyPair !== null && keyPair !== void 0 ? keyPair : types_1.KeyPairEd25519.fromRandom();
         await this.keyStore.setKey(this.networkId, accountId, key);
+        utils_2.debug(`setting keys for ${accountId}`);
         return (await this.getKey(accountId));
     }
     async removeKey(accountId) {
@@ -129,6 +130,7 @@ class AccountManager {
         const short = account.replace(`.${sender}`, '');
         this.accountsCreated.set(account, short);
     }
+    async cleanup() { } // eslint-disable-line @typescript-eslint/no-empty-function
     get rootAccountId() {
         return this.near.config.rootAccount;
     }
@@ -153,7 +155,7 @@ class TestnetManager extends AccountManager {
         return keyStore;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        throw new Error('Method not implemented.');
+        return utils_1.toYocto('50');
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -188,7 +190,7 @@ class TestnetManager extends AccountManager {
             utils_2.debug(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
-        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(utils_1.toYocto('100')))) {
+        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(utils_1.toYocto('1000')))) {
             await this.addFunds();
         }
     }
@@ -230,9 +232,16 @@ class TestnetSubaccountManager extends TestnetManager {
     }
     async init() {
         const root = this.realRoot;
-        this.subAccount = root.makeSubAccount(utils_1.randomAccountId('sub'));
-        await this.realRoot.createAccount(this.subAccount);
+        this.subAccount = root.makeSubAccount(utils_1.randomAccountId('', ''));
+        await this.realRoot.createAccount(this.subAccount, { initialBalance: utils_1.toYocto('50') });
         return this;
+    }
+    async cleanup() {
+        await Promise.all([...this.accountsCreated.keys()]
+            .map(async (id) => this.getAccount(id).delete(this.realRoot.accountId)));
+    }
+    get initialBalance() {
+        return utils_1.toYocto('10');
     }
 }
 exports.TestnetSubaccountManager = TestnetSubaccountManager;
@@ -281,7 +290,6 @@ class ManagedTransaction extends transaction_1.Transaction {
         const executionResult = await this.manager.executeTransaction(this, keyPair);
         // @ts-expect-error status could not have SuccessValue and this would catch that
         if (executionResult.status.SuccessValue !== undefined && this.delete) {
-            console.log(executionResult);
             await this.manager.deleteKey(this.receiverId);
         }
         return executionResult;
