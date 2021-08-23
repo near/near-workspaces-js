@@ -116,6 +116,7 @@ class AccountManager {
         let oldKey = null;
         if (keyPair) {
             oldKey = await this.getKey(account.accountId);
+            await this.setKey(account.accountId, keyPair);
         }
         // @ts-expect-error access shouldn't be protected
         const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions });
@@ -261,7 +262,7 @@ class ManagedTransaction extends transaction_1.Transaction {
     constructor(manager, sender, receiver) {
         super(sender, receiver);
         this.manager = manager;
-        this.delete = true;
+        this.delete = false;
     }
     createAccount() {
         this.manager.addAccountCreated(this.receiverId, this.senderId);

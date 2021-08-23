@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import { URL } from 'url';
 import { FinalExecutionOutcome, Action, PublicKey, AccessKey, BN, KeyPair } from '../types';
 import { NamedAccount } from './types';
-export declare class Transaction {
+export declare abstract class Transaction {
     readonly receiverId: string;
     readonly senderId: string;
     readonly actions: Action[];
@@ -20,7 +20,5 @@ export declare class Transaction {
     }): this;
     stake(amount: BN | string, publicKey: PublicKey | string): this;
     transfer(amount: string | BN): this;
-}
-export interface SignableTransaction extends Transaction {
-    signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
+    abstract signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }

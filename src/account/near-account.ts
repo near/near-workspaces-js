@@ -4,14 +4,14 @@ import BN from 'bn.js';
 import {KeyPair} from 'near-api-js';
 import {AccountBalance, PublicKey, FinalExecutionOutcome, CodeResult} from '../types';
 import {ContractState} from '../contract-state';
-import {SignableTransaction} from '../runtime/transaction';
+import {Transaction} from '../runtime/transaction';
 
 export interface NearAccount {
   accountId: string;
 
   balance(): Promise<AccountBalance>;
 
-  createTransaction(receiver: NearAccount | string): SignableTransaction;
+  createTransaction(receiver: NearAccount | string): Transaction;
 
   exists(): Promise<boolean>;
 

@@ -5,7 +5,7 @@ import {FinalExecutionOutcome, Action, PublicKey, AccessKey, fullAccessKey, addK
 import {NO_DEPOSIT, NamedAccount} from './types';
 import {isPathLike} from './utils';
 
-export class Transaction {
+export abstract class Transaction {
   readonly receiverId: string;
   readonly senderId: string;
   readonly actions: Action[] = [];
@@ -66,8 +66,6 @@ export class Transaction {
     this.actions.push(transfer(new BN(amount)));
     return this;
   }
-}
 
-export interface SignableTransaction extends Transaction {
-  signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
+  abstract signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }

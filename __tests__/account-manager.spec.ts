@@ -5,7 +5,7 @@ jest.setTimeout(500_000);
 
 describe('Account Manager', () => {
   if (!Runner.networkIsTestnet()) {
-    test('skipping on ' + Runner.getNetworkFromEnv(), () => {});
+    test('skipping on ' + Runner.getNetworkFromEnv(), () => {}); // eslint-disable-line @typescript-eslint/no-empty-function
     return;
   }
 

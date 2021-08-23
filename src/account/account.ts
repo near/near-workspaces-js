@@ -8,7 +8,7 @@ import {
   PublicKey,
   CodeResult,
   FinalExecutionOutcome} from '../types';
-import {SignableTransaction, Transaction} from '../runtime/transaction';
+import {Transaction} from '../runtime/transaction';
 import {AccountBalance, Args, NO_DEPOSIT} from '../runtime/types';
 import {ContractState} from '../contract-state';
 import {JSONRpc} from '../provider';
@@ -37,7 +37,7 @@ export class Account implements NearAccount {
     return this.manager.balance(this.accountId);
   }
 
-  createTransaction(receiver: NearAccount | string): SignableTransaction {
+  createTransaction(receiver: NearAccount | string): Transaction {
     return this.manager.createTransaction(this, receiver);
   }
 

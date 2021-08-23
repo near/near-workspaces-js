@@ -225,7 +225,7 @@ class SandboxRuntime extends Runtime {
     async beforeConnect() {
         if (!(await utils_2.exists(SandboxRuntime.LINKDROP_PATH))) {
             utils_2.debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
-            await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet')); // eslint-disable-line @typescript-eslint/no-unsafe-call
+            await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
         }
         this.server = await server_1.SandboxServer.init(this.config);
         await this.server.start();

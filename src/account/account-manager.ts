@@ -5,7 +5,7 @@ import {asId, randomAccountId, toYocto} from '../utils';
 import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore} from '../types';
 import {debug, getKeyFromFile} from '../runtime/utils';
 import {AccountBalance, NamedAccount} from '../runtime/types';
-import {SignableTransaction, Transaction} from '../runtime/transaction';
+import {Transaction} from '../runtime/transaction';
 import {JSONRpc} from '../provider';
 import {NEAR} from '../interfaces';
 import {Account} from './account';
@@ -90,7 +90,7 @@ export abstract class AccountManager implements NearAccountManager {
     return JSONRpc.from(this.near.config);
   }
 
-  createTransaction(sender: NearAccount | string, receiver: NearAccount | string): SignableTransaction {
+  createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction {
     return new ManagedTransaction(this, sender, receiver);
   }
 
@@ -135,6 +135,7 @@ export abstract class AccountManager implements NearAccountManager {
     let oldKey: KeyPair | null = null;
     if (keyPair) {
       oldKey = await this.getKey(account.accountId);
+      await this.setKey(account.accountId, keyPair);
     }
 
     // @ts-expect-error access shouldn't be protected
@@ -324,7 +325,7 @@ export class SandboxManager extends AccountManager {
 }
 
 export class ManagedTransaction extends Transaction {
-  private delete = true;
+  private delete = false;
   constructor(private readonly manager: NearAccountManager, sender: NamedAccount | string, receiver: NamedAccount | string) {
     super(sender, receiver);
   }

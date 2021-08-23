@@ -1,4 +1,4 @@
-import {Connection, FinalExecutionOutcome, KeyStore} from './types';
+import {Connection, KeyStore} from './types';
 import {NearAccount} from './account/near-account';
 
 export interface ClientConfig {

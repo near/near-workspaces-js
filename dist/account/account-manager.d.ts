@@ -1,7 +1,7 @@
 import * as nearAPI from 'near-api-js';
 import { PublicKey, KeyPair, FinalExecutionOutcome, KeyStore } from '../types';
 import { AccountBalance, NamedAccount } from '../runtime/types';
-import { SignableTransaction, Transaction } from '../runtime/transaction';
+import { Transaction } from '../runtime/transaction';
 import { JSONRpc } from '../provider';
 import { NEAR } from '../interfaces';
 import { NearAccount } from './near-account';
@@ -24,7 +24,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     get root(): NearAccount;
     get initialBalance(): string;
     get provider(): JSONRpc;
-    createTransaction(sender: NearAccount | string, receiver: NearAccount | string): SignableTransaction;
+    createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
     /** Sets the provider key to store, otherwise creates a new one */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
