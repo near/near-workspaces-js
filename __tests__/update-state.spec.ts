@@ -1,5 +1,5 @@
 import path from 'path';
-import {Runner} from '..';
+import {Runner} from '../src';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   let runner: Runner;

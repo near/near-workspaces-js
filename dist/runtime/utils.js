@@ -22,18 +22,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.getKeyFromFile = exports.callsites = exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const process_1 = __importDefault(require("process"));
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
 Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
-const url_1 = require("url"); // eslint-disable-line node/prefer-global/url
+const url_1 = require("url");
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
 // @ts-expect-error no typings
 const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const types_1 = require("../types");
 exports.rm = util_1.promisify(rimraf_1.default);
 const sandboxBinary = () => getBinary_1.default().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
 exports.sandboxBinary = sandboxBinary;
@@ -57,7 +58,7 @@ async function asyncSpawn(...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 async function install() {
-    const runPath = require.resolve('near-sandbox/install'); // eslint-disable-line unicorn/prefer-module
+    const runPath = require.resolve('near-sandbox/install');
     try {
         debug(`spawning \`node ${runPath}\``);
         await promisify_child_process_1.spawn('node', [runPath]);
@@ -86,4 +87,34 @@ function isPathLike(something) {
     return typeof something === 'string' || something instanceof url_1.URL;
 }
 exports.isPathLike = isPathLike;
+function callsites() {
+    const _prepareStackTrace = Error.prepareStackTrace;
+    Error.prepareStackTrace = (_, stack) => stack;
+    const stack = new Error().stack.slice(1); // eslint-disable-line unicorn/error-message
+    Error.prepareStackTrace = _prepareStackTrace;
+    return stack;
+}
+exports.callsites = callsites;
+async function getKeyFromFile(filePath, create = true) {
+    var _a;
+    try {
+        const keyFile = require(filePath); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+        return types_1.KeyPair.fromString(
+        // @ts-expect-error `x` does not exist on KeyFile
+        (_a = keyFile.secret_key) !== null && _a !== void 0 ? _a : keyFile.private_key);
+    }
+    catch (error) {
+        if (!create) {
+            throw error;
+        }
+        debug('about to write to ', filePath);
+        const keyPair = types_1.KeyPairEd25519.fromRandom();
+        await fs.writeFile(filePath, JSON.stringify({
+            secret_key: keyPair.toString(),
+        }));
+        debug('wrote to file ', filePath);
+        return keyPair;
+    }
+}
+exports.getKeyFromFile = getKeyFromFile;
 //# sourceMappingURL=utils.js.map

@@ -10,6 +10,7 @@
   "dependencies": {
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
+    "callsites": "^4.0.0",
     "fs-extra": "^10.0.0",
     "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
     "near-sandbox": "^0.0.5",
@@ -68,14 +69,18 @@
   "xo": {
     "space": true,
     "rules": {
-      "unicorn/prefer-node-protocol": 0
+      "unicorn/prefer-node-protocol": 0,
+      "unicorn/prefer-module": 0,
+      "unicorn/no-array-callback-reference": 0,
+      "node/prefer-global/url": 0
     },
     "overrides": [
       {
         "files": "__tests__/*.spec.ts",
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
-          "unicorn/prefer-module": 0
+          "unicorn/prefer-module": 0,
+          "@typescript-eslint/no-unsafe-call": 0
         }
       }
     ]

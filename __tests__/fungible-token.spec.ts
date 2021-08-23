@@ -1,12 +1,12 @@
 import path from 'path';
 import {Buffer} from 'buffer';
-import {Runner, BN, Account} from '..';
+import {Runner, BN, NearAccount} from '../src';
 
 const STORAGE_BYTE_COST = '10000000000000000000';
 
 async function init_ft(
-  ft: Account,
-  owner: Account,
+  ft: NearAccount,
+  owner: NearAccount,
   supply: BN | string = '10000',
 ) {
   await ft.call(ft, 'new_default_meta', {
@@ -15,13 +15,13 @@ async function init_ft(
   });
 }
 
-async function init_defi(defi: Account, ft: Account) {
+async function init_defi(defi: NearAccount, ft: NearAccount) {
   await defi.call(defi, 'new', {
     fungible_token_account_id: ft,
   });
 }
 
-async function registerUser(ft: Account, user: Account) {
+async function registerUser(ft: NearAccount, user: NearAccount) {
   await user.call(
     ft,
     'storage_deposit',
@@ -53,7 +53,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({ft, ali}) => {
       await init_ft(ft, ali, '1000');
 
-      const totalSupply: string = await ft.view('ft_total_supply');
+      const totalSupply: string = await ft.view('ft_total_supply', {});
       expect(totalSupply).toEqual('1000');
     });
   });
@@ -197,7 +197,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
       const expectedAmount = transferAmount.sub(burnAmount).toString();
 
-      const totalSupply: string = await ft.view('ft_total_supply');
+      const totalSupply: string = await ft.view('ft_total_supply', {});
       expect(totalSupply).toEqual(expectedAmount);
 
       const defiBalance: string = await ft.view('ft_balance_of', {

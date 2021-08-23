@@ -1,5 +1,5 @@
 import path from 'path';
-import {Runner, toYocto, createKeyPair, BN, tGas} from '..';
+import {Runner, toYocto, createKeyPair, BN, tGas} from '../src';
 
 /* Contract API for reference
 impl Linkdrop {

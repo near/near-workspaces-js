@@ -1,4 +1,5 @@
-import { Runtime, RunnerFn, CreateRunnerFn, Config } from './runtime';
+import { Runtime, RunnerFn, CreateRunnerFn } from './runtime';
+import { Config } from './interfaces';
 export declare class Runner {
     private readonly runtime;
     private constructor();
