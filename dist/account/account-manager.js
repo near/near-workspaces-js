@@ -44,19 +44,19 @@ async function findAccountsWithPrefix(prefix, keyStore, network) {
     return [timeSuffix(prefix, 9999999)];
 }
 class AccountManager {
-    constructor(near) {
-        this.near = near;
+    constructor(config) {
+        this.config = config;
         this.accountsCreated = new Set();
     }
-    static async create(near) {
+    static async create(config) {
         let manager;
-        const { network } = near.config;
+        const { network } = config;
         switch (network) {
             case 'sandbox':
-                manager = new SandboxManager(near);
+                manager = new SandboxManager(config);
                 break;
             case 'testnet':
-                manager = new TestnetManager(near);
+                manager = new TestnetManager(config);
                 break;
             default: throw new Error(`Bad network id: ${network} expected "testnet" or "sandbox"`);
         }
@@ -78,10 +78,10 @@ class AccountManager {
     }
     get initialBalance() {
         var _a;
-        return (_a = this.near.config.initialBalance) !== null && _a !== void 0 ? _a : this.DEFAULT_INITIAL_BALANCE;
+        return (_a = this.config.initialBalance) !== null && _a !== void 0 ? _a : this.DEFAULT_INITIAL_BALANCE;
     }
     get provider() {
-        return jsonrpc_1.JSONRpc.from(this.near.config);
+        return jsonrpc_1.JSONRpc.from(this.config);
     }
     createTransaction(sender, receiver) {
         return new ManagedTransaction(this, sender, receiver);
@@ -134,17 +134,17 @@ class AccountManager {
     }
     async cleanup() { } // eslint-disable-line @typescript-eslint/no-empty-function
     get rootAccountId() {
-        return this.near.config.rootAccount;
+        return this.config.rootAccount;
     }
     get keyStore() {
         var _a;
-        return (_a = this.near.config.keyStore) !== null && _a !== void 0 ? _a : this.defaultKeyStore;
+        return (_a = this.config.keyStore) !== null && _a !== void 0 ? _a : this.defaultKeyStore;
     }
     get signer() {
         return new nearAPI.InMemorySigner(this.keyStore);
     }
     get networkId() {
-        return this.near.config.network;
+        return this.config.network;
     }
     get connection() {
         return new nearAPI.Connection(this.networkId, this.provider, this.signer);
@@ -168,7 +168,7 @@ class TestnetManager extends AccountManager {
     }
     async createAccount(accountId, pubKey) {
         const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
-        this.near.config.helperUrl);
+        this.config.helperUrl);
         await accountCreator.createAccount(accountId, pubKey);
         return this.getAccount(accountId);
     }
@@ -197,7 +197,7 @@ class TestnetManager extends AccountManager {
         }
     }
     async initRootAccount() {
-        if (this.near.config.rootAccount) {
+        if (this.config.rootAccount) {
             return;
         }
         const fileName = utils_2.findCallerFile();
@@ -212,14 +212,13 @@ class TestnetManager extends AccountManager {
             await Promise.all(accounts.map(async (acc) => {
                 await this.deleteAccount(acc, accountId);
             }));
-            this.near.config.rootAccount = accountId;
+            this.config.rootAccount = accountId;
             return;
         }
         throw new Error(`Bad filename/account name passed: ${fileName}`);
     }
-    async createFrom(near) {
-        const config = { ...near.config, rootAccount: this.rootAccountId };
-        return (new TestnetSubaccountManager({ ...near, config })).init();
+    async createFrom(config) {
+        return (new TestnetSubaccountManager({ ...config, ...this.config, rootAccount: this.rootAccountId })).init();
     }
 }
 exports.TestnetManager = TestnetManager;
@@ -230,7 +229,7 @@ class TestnetSubaccountManager extends TestnetManager {
         return this.subAccount;
     }
     get realRoot() {
-        return this.getAccount(this.near.config.rootAccount);
+        return this.getAccount(this.config.rootAccount);
     }
     async init() {
         const root = this.realRoot;
@@ -254,18 +253,18 @@ class SandboxManager extends AccountManager {
         }
         return this;
     }
-    async createFrom(near) {
-        return new SandboxManager(near);
+    async createFrom(config) {
+        return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
         return helper_funcs_1.toYocto('200');
     }
     get defaultKeyStore() {
-        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.near.config.homeDir);
+        const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.config.homeDir);
         return keyStore;
     }
     get keyFilePath() {
-        return path.join(this.near.config.homeDir, 'validator_key.json');
+        return path.join(this.config.homeDir, 'validator_key.json');
     }
 }
 exports.SandboxManager = SandboxManager;

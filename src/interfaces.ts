@@ -44,7 +44,3 @@ export interface AccountArgs extends ReturnedAccounts {
 }
 export type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
 export type RunnerFn = (args: AccountArgs, runtime: NearRuntime) => Promise<void>;
-
-export interface NEAR {
-  config: Config;
-}

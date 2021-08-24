@@ -6,7 +6,7 @@ import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore,
 import {debug} from '../utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
-import {NEAR} from '../interfaces';
+import {Config} from '../interfaces';
 import {Account} from './account';
 import {NearAccount} from './near-account';
 import {findCallerFile, getKeyFromFile} from './utils';
@@ -35,20 +35,20 @@ async function findAccountsWithPrefix(
 export abstract class AccountManager implements NearAccountManager {
   accountsCreated: Set<string> = new Set();
   constructor(
-    protected near: NEAR,
+    protected config: Config,
   ) {}
 
   static async create(
-    near: NEAR,
+    config: Config,
   ): Promise<AccountManager> {
     let manager: AccountManager;
-    const {network} = near.config;
+    const {network} = config;
     switch (network) {
       case 'sandbox':
-        manager = new SandboxManager(near);
+        manager = new SandboxManager(config);
         break;
       case 'testnet':
-        manager = new TestnetManager(near);
+        manager = new TestnetManager(config);
         break;
       default: throw new Error(`Bad network id: ${network as string} expected "testnet" or "sandbox"`);
     }
@@ -77,11 +77,11 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   get initialBalance(): string {
-    return this.near.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
+    return this.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
   }
 
   get provider(): JSONRpc {
-    return JSONRpc.from(this.near.config);
+    return JSONRpc.from(this.config);
   }
 
   createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction {
@@ -150,16 +150,16 @@ export abstract class AccountManager implements NearAccountManager {
   async cleanup(): Promise<void> {} // eslint-disable-line @typescript-eslint/no-empty-function
 
   get rootAccountId(): string {
-    return this.near.config.rootAccount!;
+    return this.config.rootAccount!;
   }
 
   // Abstract initRootAccount(): Promise<string>;
   abstract get DEFAULT_INITIAL_BALANCE(): string;
-  abstract createFrom(near: NEAR): Promise<NearAccountManager>;
+  abstract createFrom(config: Config): Promise<NearAccountManager>;
   abstract get defaultKeyStore(): KeyStore;
 
   protected get keyStore(): KeyStore {
-    return this.near.config.keyStore ?? this.defaultKeyStore;
+    return this.config.keyStore ?? this.defaultKeyStore;
   }
 
   protected get signer(): nearAPI.InMemorySigner {
@@ -167,7 +167,7 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   protected get networkId(): string {
-    return this.near.config.network;
+    return this.config.network;
   }
 
   protected get connection(): nearAPI.Connection {
@@ -202,7 +202,7 @@ export class TestnetManager extends AccountManager {
   async createAccount(accountId: string, pubKey: PublicKey): Promise<NearAccount> {
     const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
       {} as any, // ignored
-      this.near.config.helperUrl!,
+      this.config.helperUrl!,
     );
     await accountCreator.createAccount(accountId, pubKey);
     return this.getAccount(accountId);
@@ -238,7 +238,7 @@ export class TestnetManager extends AccountManager {
   }
 
   async initRootAccount(): Promise<void> {
-    if (this.near.config.rootAccount) {
+    if (this.config.rootAccount) {
       return;
     }
 
@@ -257,7 +257,7 @@ export class TestnetManager extends AccountManager {
           await this.deleteAccount(acc, accountId);
         }),
       );
-      this.near.config.rootAccount = accountId;
+      this.config.rootAccount = accountId;
       return;
     }
 
@@ -266,9 +266,8 @@ export class TestnetManager extends AccountManager {
     );
   }
 
-  async createFrom(near: NEAR): Promise<AccountManager> {
-    const config = {...near.config, rootAccount: this.rootAccountId};
-    return (new TestnetSubaccountManager({...near, config})).init();
+  async createFrom(config: Config): Promise<AccountManager> {
+    return (new TestnetSubaccountManager({...config, ...this.config, rootAccount: this.rootAccountId})).init();
   }
 }
 
@@ -280,7 +279,7 @@ export class TestnetSubaccountManager extends TestnetManager {
   }
 
   get realRoot(): NearAccount {
-    return this.getAccount(this.near.config.rootAccount!);
+    return this.getAccount(this.config.rootAccount!);
   }
 
   async init(): Promise<AccountManager> {
@@ -311,8 +310,8 @@ export class SandboxManager extends AccountManager {
     return this;
   }
 
-  async createFrom(near: NEAR): Promise<NearAccountManager> {
-    return new SandboxManager(near);
+  async createFrom(config: Config): Promise<NearAccountManager> {
+    return new SandboxManager(config);
   }
 
   get DEFAULT_INITIAL_BALANCE(): string {
@@ -321,13 +320,13 @@ export class SandboxManager extends AccountManager {
 
   get defaultKeyStore(): KeyStore {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
-      this.near.config.homeDir,
+      this.config.homeDir,
     );
     return keyStore;
   }
 
   get keyFilePath(): string {
-    return path.join(this.near.config.homeDir, 'validator_key.json');
+    return path.join(this.config.homeDir, 'validator_key.json');
   }
 }
 

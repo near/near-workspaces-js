@@ -1,5 +1,5 @@
 import { KeyPair } from 'near-api-js';
-import { NEAR } from '../interfaces';
+import { Config } from '../interfaces';
 import { JSONRpc } from '../jsonrpc';
 import { Transaction } from '../transaction';
 import { AccountBalance, FinalExecutionOutcome } from '../types';
@@ -19,5 +19,5 @@ export interface NearAccountManager {
     /** Creates a KeyPair if one is not provided */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
-    createFrom(near: NEAR): Promise<NearAccountManager>;
+    createFrom(config: Config): Promise<NearAccountManager>;
 }

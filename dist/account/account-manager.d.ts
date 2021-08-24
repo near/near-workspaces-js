@@ -2,14 +2,14 @@ import * as nearAPI from 'near-api-js';
 import { PublicKey, KeyPair, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
-import { NEAR } from '../interfaces';
+import { Config } from '../interfaces';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
-    protected near: NEAR;
+    protected config: Config;
     accountsCreated: Set<string>;
-    constructor(near: NEAR);
-    static create(near: NEAR): Promise<AccountManager>;
+    constructor(config: Config);
+    static create(config: Config): Promise<AccountManager>;
     getAccount(accountId: string): NearAccount;
     deleteKey(account_id: string): Promise<void>;
     init(): Promise<AccountManager>;
@@ -30,7 +30,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     cleanup(): Promise<void>;
     get rootAccountId(): string;
     abstract get DEFAULT_INITIAL_BALANCE(): string;
-    abstract createFrom(near: NEAR): Promise<NearAccountManager>;
+    abstract createFrom(config: Config): Promise<NearAccountManager>;
     abstract get defaultKeyStore(): KeyStore;
     protected get keyStore(): KeyStore;
     protected get signer(): nearAPI.InMemorySigner;
@@ -48,7 +48,7 @@ export declare class TestnetManager extends AccountManager {
     addFunds(): Promise<void>;
     createAndFundAccount(): Promise<void>;
     initRootAccount(): Promise<void>;
-    createFrom(near: NEAR): Promise<AccountManager>;
+    createFrom(config: Config): Promise<AccountManager>;
 }
 export declare class TestnetSubaccountManager extends TestnetManager {
     subAccount: string;
@@ -60,7 +60,7 @@ export declare class TestnetSubaccountManager extends TestnetManager {
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;
-    createFrom(near: NEAR): Promise<NearAccountManager>;
+    createFrom(config: Config): Promise<NearAccountManager>;
     get DEFAULT_INITIAL_BALANCE(): string;
     get defaultKeyStore(): KeyStore;
     get keyFilePath(): string;

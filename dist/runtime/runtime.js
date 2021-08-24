@@ -58,12 +58,10 @@ class Runtime {
     async run(fn) {
         utils_1.debug('About to runtime.run with config', this.config);
         try {
-            utils_1.debug('About to call beforeConnect');
-            await this.beforeConnect();
-            utils_1.debug('About to call connect');
-            await this.connect();
-            utils_1.debug('About to call afterConnect');
-            await this.afterConnect();
+            utils_1.debug('About to call setup');
+            await this.setup();
+            utils_1.debug('About to call beforeRun');
+            await this.beforeRun();
             await fn(this.accounts, this);
         }
         catch (error) {
@@ -80,12 +78,10 @@ class Runtime {
     async createRun(fn) {
         utils_1.debug('About to runtime.createRun with config', this.config);
         try {
-            utils_1.debug('About to call beforeConnect');
-            await this.beforeConnect();
-            utils_1.debug('About to call connect');
-            await this.connect();
-            utils_1.debug('About to call afterConnect');
-            await this.afterConnect();
+            utils_1.debug('About to call setup');
+            await this.setup();
+            utils_1.debug('About to call beforeRun');
+            await this.beforeRun();
             const accounts = await fn({ runtime: this, root: this.root });
             this.createdAccounts = { ...this.createdAccounts, ...accounts };
             return accounts;
@@ -104,9 +100,6 @@ class Runtime {
     async executeTransaction(fn) {
         return fn();
     }
-    async connect() {
-        // This.manager = await this.manager.createFrom(this);
-    }
 }
 exports.Runtime = Runtime;
 class TestnetRuntime extends Runtime {
@@ -116,12 +109,12 @@ class TestnetRuntime extends Runtime {
         // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
         utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
         const runtime = new TestnetRuntime(fullConfig);
-        runtime.manager = await account_1.AccountManager.create(runtime);
+        runtime.manager = await account_1.AccountManager.create(runtime.config);
         return runtime;
     }
     async createFrom() {
         const runtime = new TestnetRuntime({ ...this.config, init: false, initFn: this.config.initFn }, this.createdAccounts);
-        runtime.manager = await this.manager.createFrom(runtime);
+        runtime.manager = await this.manager.createFrom(runtime.config);
         return runtime;
     }
     static get defaultConfig() {
@@ -150,10 +143,10 @@ class TestnetRuntime extends Runtime {
     static get baseAccountId() {
         return 'testnet';
     }
-    async beforeConnect() {
+    async setup() {
         // Not needed
     }
-    async afterConnect() {
+    async beforeRun() {
         if (this.config.initFn) {
             utils_1.debug('About to run initFn');
             this.createdAccounts = await this.config.initFn({ runtime: this, root: this.root });
@@ -197,7 +190,7 @@ class SandboxRuntime extends Runtime {
         let config = await SandboxRuntime.defaultConfig();
         config = { ...this.config, ...config, init: false, refDir: this.homeDir };
         const runtime = new SandboxRuntime(config, this.createdAccounts);
-        runtime.manager = await this.manager.createFrom(runtime);
+        runtime.manager = await this.manager.createFrom(runtime.config);
         return runtime;
     }
     get baseAccountId() {
@@ -217,13 +210,13 @@ class SandboxRuntime extends Runtime {
     get rpcAddr() {
         return `http://localhost:${this.config.port}`;
     }
-    async afterConnect() {
+    async beforeRun() {
         if (this.config.init) {
             await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
             utils_1.debug('Deployed \'sandbox\' linkdrop contract');
         }
     }
-    async beforeConnect() {
+    async setup() {
         if (!(await utils_1.exists(SandboxRuntime.LINKDROP_PATH))) {
             utils_1.debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
             await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
@@ -231,7 +224,7 @@ class SandboxRuntime extends Runtime {
         this.server = await server_1.SandboxServer.init(this.config);
         await this.server.start();
         if (this.init) {
-            this.manager = await account_1.AccountManager.create(this);
+            this.manager = await account_1.AccountManager.create(this.config);
         }
     }
     async afterRun() {
