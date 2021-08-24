@@ -10,7 +10,6 @@ describe('Account Manager', () => {
   }
 
   test('should create a new account', async () => {
-    const config = TestnetRuntime.defaultConfig;
     const accountManager = await AccountManager.create(TestnetRuntime.defaultConfig);
     const {root} = accountManager;
     expect(await root.exists()).toBe(true);
