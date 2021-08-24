@@ -103,7 +103,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
 
    ```js
    describe('my contract', () => {
-     let runner: Runner;
+     let runner;
      jest.setTimeout(60_000);
 
      beforeAll(async () => {
