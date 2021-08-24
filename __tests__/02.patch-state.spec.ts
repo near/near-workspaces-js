@@ -1,3 +1,16 @@
+/**
+ * This test demonstrates patchState behavior, using the contract from
+ * https://github.com/near-examples/rust-status-message
+ *
+ * If you want to make arbitrary modifications to a contract that wouldn't be
+ * possible with ordinary function calls, you can use patchState. In a
+ * test below, this is used to set the status of an account that is never
+ * created within the testing environment, `alice.near`.
+ *
+ * patchState is a Sandbox-specific feature, so these tests can't be run on
+ * testnet. That's why they're wrapped with `if (Runner.networkIsSandbox())`.
+ */
+
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import path from 'path';
 import * as borsh from 'borsh';

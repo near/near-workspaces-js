@@ -1,3 +1,18 @@
+/**
+ * This tests the behavior of the standard FT contract at
+ * https://github.com/near/near-sdk-rs/tree/master/examples/fungible-token
+ *
+ * Some advanced features of near-runner this shows off:
+ *
+ * - Cross-Contract Calls: the "defi" contract implements basic features that
+ *   might be used by a marketplace contract. You can see its source code at the
+ *   near-sdk-rs link above. Several FT methods make cross-contract calls, and
+ *   these are tested below using this "defi" contract.
+ *
+ * - Complex transactions: to exercise certain edge cases of the FT standard,
+ *   tests below initiate chains of transactions using near-runner's transaction
+ *   builder. Search for `createTransaction` below.
+ */
 import path from 'path';
 import {Buffer} from 'buffer';
 import {Runner, BN, Account} from '..';
