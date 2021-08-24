@@ -1,8 +1,8 @@
 import {Buffer} from 'buffer';
 import * as fs from 'fs/promises';
 import {URL} from 'url';
+import {ExecutionResult} from './execution-result';
 import {
-  FinalExecutionOutcome,
   Action,
   PublicKey,
   AccessKey,
@@ -85,5 +85,5 @@ export abstract class Transaction {
     return this;
   }
 
-  abstract signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
+  abstract signAndSend(keyPair?: KeyPair): Promise<ExecutionResult>;
 }

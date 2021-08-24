@@ -2,10 +2,11 @@
 import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
-import { KeyPair, PublicKey, CodeResult, FinalExecutionOutcome, AccountBalance, Args } from '../types';
+import { KeyPair, PublicKey, CodeResult, AccountBalance, Args } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JSONRpc } from '../jsonrpc';
+import { ExecutionResult } from '../execution-result';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
@@ -44,7 +45,7 @@ export declare class Account implements NearAccount {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<FinalExecutionOutcome>;
+    }): Promise<ExecutionResult>;
     /**
      * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
      *
@@ -62,7 +63,7 @@ export declare class Account implements NearAccount {
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
     /** Delete account and sends funds to beneficiaryId */
-    delete(beneficiaryId: string): Promise<FinalExecutionOutcome>;
+    delete(beneficiaryId: string): Promise<ExecutionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
     toJSON(): string;

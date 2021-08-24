@@ -1,7 +1,8 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import { URL } from 'url';
-import { FinalExecutionOutcome, Action, PublicKey, AccessKey, BN, KeyPair, NamedAccount } from './types';
+import { ExecutionResult } from './execution-result';
+import { Action, PublicKey, AccessKey, BN, KeyPair, NamedAccount } from './types';
 export declare abstract class Transaction {
     readonly receiverId: string;
     readonly senderId: string;
@@ -19,5 +20,5 @@ export declare abstract class Transaction {
     }): this;
     stake(amount: BN | string, publicKey: PublicKey | string): this;
     transfer(amount: string | BN): this;
-    abstract signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
+    abstract signAndSend(keyPair?: KeyPair): Promise<ExecutionResult>;
 }

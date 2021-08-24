@@ -28,6 +28,7 @@ const types_1 = require("../types");
 const internal_utils_1 = require("../internal-utils");
 const transaction_1 = require("../transaction");
 const jsonrpc_1 = require("../jsonrpc");
+const execution_result_1 = require("../execution-result");
 const account_1 = require("./account");
 const utils_2 = require("./utils");
 function timeSuffix(prefix, length = 99999) {
@@ -124,12 +125,14 @@ class AccountManager {
             oldKey = await this.getKey(account.accountId);
             await this.setKey(account.accountId, keyPair);
         }
+        const before = Date.now();
         // @ts-expect-error access shouldn't be protected
         const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions });
+        const after = Date.now();
         if (oldKey) {
             await this.setKey(account.accountId, oldKey);
         }
-        return outcome;
+        return new execution_result_1.ExecutionResult(outcome, after - before);
     }
     addAccountCreated(account, _sender) {
         this.accountsCreated.add(account);
@@ -285,8 +288,7 @@ class ManagedTransaction extends transaction_1.Transaction {
      */
     async signAndSend(keyPair) {
         const executionResult = await this.manager.executeTransaction(this, keyPair);
-        // @ts-expect-error status could not have SuccessValue and this would catch that
-        if (executionResult.status.SuccessValue !== undefined && this.delete) {
+        if (executionResult.succeeded && this.delete) {
             await this.manager.deleteKey(this.receiverId);
         }
         return executionResult;

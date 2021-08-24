@@ -7,6 +7,7 @@ import {debug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';
+import {ExecutionResult} from '../execution-result';
 import {Account} from './account';
 import {NearAccount} from './near-account';
 import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
@@ -129,7 +130,7 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.accountExists(asId(accountId));
   }
 
-  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
+  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<ExecutionResult> {
     const account: nearAPI.Account = new nearAPI.Account(this.connection, tx.senderId);
     let oldKey: KeyPair | null = null;
     if (keyPair) {
@@ -137,14 +138,15 @@ export abstract class AccountManager implements NearAccountManager {
       await this.setKey(account.accountId, keyPair);
     }
 
+    const before = Date.now();
     // @ts-expect-error access shouldn't be protected
     const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
-
+    const after = Date.now();
     if (oldKey) {
       await this.setKey(account.accountId, oldKey);
     }
 
-    return outcome;
+    return new ExecutionResult(outcome, after - before);
   }
 
   addAccountCreated(account: string, _sender: string): void {
@@ -343,10 +345,9 @@ export class ManagedTransaction extends Transaction {
    * @param keyPair Temporary key to sign transaction
    * @returns
    */
-  async signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome> {
+  async signAndSend(keyPair?: KeyPair): Promise<ExecutionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
-    // @ts-expect-error status could not have SuccessValue and this would catch that
-    if (executionResult.status.SuccessValue !== undefined && this.delete) {
+    if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);
     }
 

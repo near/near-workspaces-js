@@ -14,8 +14,7 @@
  *   builder. Search for `createTransaction` below.
  */
 import path from 'path';
-import {Buffer} from 'buffer';
-import {Runner, BN, NearAccount} from '../src';
+import {Runner, BN, NearAccount, captureError} from '../src';
 
 const STORAGE_BYTE_COST = '10000000000000000000';
 
@@ -123,9 +122,9 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test('Can force close non-empty balance account', async () => {
     await runner.run(async ({ft, root}) => {
       await init_ft(ft, root, '100');
-
-      await expect(async () =>
-        root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'})).rejects.toThrow();
+      const errorString = await captureError(async () =>
+        root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
+      expect(errorString).toContain('Can\'t unregister the account with the positive balance without force');
 
       const result = await root.call_raw(
         ft,
@@ -134,7 +133,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         {attachedDeposit: '1'},
       );
 
-      expect(result.receipts_outcome[0].outcome.logs[0]).toEqual(
+      expect(result.logs[0]).toEqual(
         `Closed @${root.accountId} with 100`,
       );
     });
@@ -168,27 +167,15 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         )
         .signAndSend();
 
-      expect(result.receipts_outcome[0].outcome.logs[1]).toEqual(
+      expect(result.logs).toContain(
         `Closed @${root.accountId} with ${
           (initialAmount.sub(transferAmount)).toString()}`,
       );
 
-      // Help: would be nice to have an API to avoid doing this
-      if (
-        typeof result.status === 'object'
-        && typeof result.status.SuccessValue === 'string'
-      ) {
-        const value = Buffer.from(
-          result.status.SuccessValue,
-          'base64',
-        ).toString();
-        expect(JSON.parse(value)).toStrictEqual(true);
-      } else {
-        throw new TypeError('unexpected result');
-      }
+      expect(result.parseResult()).toStrictEqual(true);
 
       // Help: this index is diff from sim, we have 10 len when they have 4
-      const callbackOutcome = result.receipts_outcome[5].outcome;
+      const callbackOutcome = result.receipts_outcomes[5];
       expect(callbackOutcome.logs[0]).toEqual(
         'The account of the sender was deleted',
       );
@@ -196,20 +183,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         `Account @${root.accountId} burned ${burnAmount.toString()}`,
       );
 
-      // Check that outcome response was the transfer amount
-      if (
-        typeof callbackOutcome.status === 'object'
-        && typeof callbackOutcome.status.SuccessValue === 'string'
-      ) {
-        const value = Buffer.from(
-          callbackOutcome.status.SuccessValue,
-          'base64',
-        ).toString();
-        expect(JSON.parse(value)).toEqual(transferAmount.toString());
-      } else {
-        throw new TypeError('unexpected result');
-      }
-
+      expect(callbackOutcome.parseResult()).toEqual(transferAmount.toString());
       const expectedAmount = transferAmount.sub(burnAmount).toString();
 
       const totalSupply: string = await ft.view('ft_total_supply');
@@ -275,7 +249,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         {attachedDeposit: '1', gas: '150000000000000'},
       );
 
-      const promiseOutcome = result.receipts_outcome[2].outcome;
+      const promiseOutcome = result.receipts_outcomes[2];
       if (
         typeof promiseOutcome.status === 'object'
         && typeof promiseOutcome.status.Failure === 'object'

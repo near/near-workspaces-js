@@ -1,15 +1,38 @@
-import { Action, ExecutionOutcome, ExecutionOutcomeWithId, FinalExecutionOutcome, PublicKey } from './types';
+import { Action, ExecutionError, ExecutionOutcome, ExecutionOutcomeWithId, ExecutionStatus, ExecutionStatusBasic, FinalExecutionOutcome, FinalExecutionStatus, FinalExecutionStatusBasic, PublicKey } from './types';
+export declare class PromiseOutcome {
+    outcome: ExecutionOutcome;
+    constructor(outcome: ExecutionOutcome);
+    get errors(): Array<Record<string, unknown>>;
+    get status(): ExecutionStatus | ExecutionStatusBasic;
+    get succeeded(): boolean;
+    get isFailure(): boolean;
+    get executionStatus(): ExecutionStatus;
+    parseResult(): any;
+    get SuccessValue(): string | undefined;
+    get executionError(): ExecutionError | undefined;
+    get errorMessage(): string | undefined;
+    get errorType(): string | undefined;
+    get logs(): string[];
+}
 export declare class ExecutionResult {
     readonly result: FinalExecutionOutcome;
-    constructor(result: FinalExecutionOutcome);
+    readonly durationMs: number;
+    constructor(result: FinalExecutionOutcome, durationMs: number);
     get outcomesWithId(): ExecutionOutcomeWithId[];
+    get receipts_outcomes(): PromiseOutcome[];
+    get outcome(): ExecutionOutcome[];
     get outcomes(): ExecutionOutcome[];
     get logs(): string[];
     get transactionReceipt(): TransactionReceipt;
     get errors(): Array<Record<string, unknown>>;
+    get status(): FinalExecutionStatus | FinalExecutionStatusBasic;
     get succeeded(): boolean;
     logsContain(pattern: string | RegExp): boolean;
     findLogs(pattern: string | RegExp): string[];
+    get finalExecutionStatus(): FinalExecutionStatus;
+    get SuccessValue(): string | null;
+    parseResult(): any;
+    promiseErrors(): ExecutionError[];
 }
 export interface TransactionReceipt {
     action: Action[];

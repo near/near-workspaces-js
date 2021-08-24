@@ -105,17 +105,7 @@ class Account {
             attachedDeposit,
             signWithKey,
         });
-        if (typeof txResult.status === 'object'
-            && typeof txResult.status.SuccessValue === 'string') {
-            const value = buffer_1.Buffer.from(txResult.status.SuccessValue, 'base64').toString();
-            try {
-                return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
-            }
-            catch {
-                return value;
-            }
-        }
-        throw new Error(JSON.stringify(txResult.status));
+        return txResult.parseResult();
     }
     async view_raw(method, args = {}) {
         return this.provider.view_call(this.accountId, method, args);

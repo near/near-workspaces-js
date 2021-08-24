@@ -7,7 +7,6 @@ import {
   KeyPair,
   PublicKey,
   CodeResult,
-  FinalExecutionOutcome,
   AccountBalance,
   Args,
 } from '../types';
@@ -15,6 +14,7 @@ import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JSONRpc} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
+import {ExecutionResult} from '../execution-result';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
 
@@ -125,7 +125,7 @@ export class Account implements NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     } = {},
-  ): Promise<FinalExecutionOutcome> {
+  ): Promise<ExecutionResult> {
     return this.createTransaction(contractId)
       .functionCall(methodName, args, {gas, attachedDeposit})
       .signAndSend(signWithKey);
@@ -157,22 +157,7 @@ export class Account implements NearAccount {
       attachedDeposit,
       signWithKey,
     });
-    if (
-      typeof txResult.status === 'object'
-      && typeof txResult.status.SuccessValue === 'string'
-    ) {
-      const value = Buffer.from(
-        txResult.status.SuccessValue,
-        'base64',
-      ).toString();
-      try {
-        return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
-      } catch {
-        return value;
-      }
-    }
-
-    throw new Error(JSON.stringify(txResult.status));
+    return txResult.parseResult();
   }
 
   async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
@@ -218,7 +203,7 @@ export class Account implements NearAccount {
   }
 
   /** Delete account and sends funds to beneficiaryId */
-  async delete(beneficiaryId: string): Promise<FinalExecutionOutcome> {
+  async delete(beneficiaryId: string): Promise<ExecutionResult> {
     return this.createTransaction(this)
       .deleteAccount(beneficiaryId)
       .signAndSend();

@@ -2,9 +2,10 @@ import {URL} from 'url';
 import {Buffer} from 'buffer';
 import BN from 'bn.js';
 import {KeyPair} from 'near-api-js';
-import {AccountBalance, PublicKey, FinalExecutionOutcome, CodeResult} from '../types';
+import {AccountBalance, PublicKey, CodeResult} from '../types';
 import {ContractState} from '../contract-state';
 import {Transaction} from '../transaction';
+import {ExecutionResult} from '../execution-result';
 
 export interface NearAccount {
   accountId: string;
@@ -48,7 +49,7 @@ export interface NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     },
-  ): Promise<FinalExecutionOutcome>;
+  ): Promise<ExecutionResult>;
 
   /**
    * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
@@ -74,7 +75,7 @@ export interface NearAccount {
   patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
 
   /** Delete account and sends funds to beneficiaryId */
-  delete(beneficiaryId: string): Promise<FinalExecutionOutcome>;
+  delete(beneficiaryId: string): Promise<ExecutionResult>;
   makeSubAccount(accountId: string): string;
   subAccountOf(accountId: string): boolean;
   toJSON(): string;
