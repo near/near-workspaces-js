@@ -78,7 +78,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
    import {Runner} from '..';
 
    describe('my app', () => {
-     let runner: Runner;
+     let runner;
      jest.setTimeout(60_000);
 
      beforeAll(async () => {
