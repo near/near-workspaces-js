@@ -6,78 +6,203 @@ Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/con
 This software is in early beta.
 
 
-Quick Start
-===========
+Quick Start with Jest
+=====================
+
+near-runner works with any JS testing library/framework. Feel free to bring your own, or follow the instructions below to get started quickly with [Jest].
+
 
 1. Install.
 
-       npm install --save-dev near-runner
+       npm install --save-dev near-runner jest
 
-   or
+   or if using [Yarn]
 
-       yarn add --dev near-runner
+       yarn add --dev near-runner jest
 
-2. Import.
+2. Configure.
 
-       import { Runner } from 'near-runner'
+   near-runner doesn't require any configuration, but Jest does.
 
-3. Create a `Runner`.
+   Add a new section to your `package.json`:
+
+   ```js
+   "jest": {
+     "testEnvironment": "node",
+     "testMatch": [
+       "**/__tests__/*.spec.js"
+     ],
+     "testPathIgnorePatterns": [
+       "/assembly/",
+       "/node_modules/"
+     ]
+   }
+   ```
+
+   This tells Jest to look in a folder called `__tests__` in the root of your project for files with names that end with `spec.js`.
+
+   You can also add a new line to the `scripts` section of your `package.json`:
+
+   ```diff
+    "scripts": {
+   +  "test": "jest --verbose",
+    }
+   ```
+
+   If your project has a `build` script, you might also want to add a `pretest` script:
+
+   ```diff
+    "scripts": {
+   +  "pretest": "npm run build",
+    }
+   ```
+
+   or if using [Yarn]:
+
+   ```diff
+    "scripts": {
+   +  "pretest": "yarn build",
+    }
+   ```
+
+   If you want to see an example, with the addition of TypeScript and Jest's TypeScript variant [ts-jest](https://www.npmjs.com/package/ts-jest), see [the `package.json` in this project](./package.json).
+
+3. Bootstrap.
+
+   Make a `__tests__` folder, make your first test file. Call it `main.spec.js` for now if you're not sure what else to call it.
+
+   Set up a `runner` with NEAR accounts, contracts, and state that will be used in all of your tests.
+
+   ```js
+   import path from 'path';
+   import {Runner} from '..';
+
+   describe('my app', () => {
+     let runner;
+     jest.setTimeout(60_000);
+
+     beforeAll(async () => {
+       runner = await Runner.create(async ({root}) => {
+         const alice = await root.createAccount('alice');
+         const contract = await root.createAndDeploy(
+           'contract-account-name',
+           path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+         );
+
+         // make other contract calls that you want as a starting point for all tests
+
+         return {alice, contract};
+       });
+     });
+   });
+   ```
+
+4. Write tests.
+
+   Jest will run each `test` in parallel; the `runner` you bootstrapped optimizes for parallelism. Add some `test` calls:
+
+   ```js
+   describe('my contract', () => {
+     let runner;
+     jest.setTimeout(60_000);
+
+     beforeAll(async () => {
+       // …omitted for brevity…
+     });
+
+     test('does something', async () => {
+       await runner.run(async ({alice, contract}) => {
+         await alice.call(
+           contract,
+           'some_update_function',
+           {some_string_argument: 'cool', some_number_argument: 42}
+         );
+         const result = await contract.view(
+           'some_view_function',
+           {account_id: alice.accountId}
+         );
+         expect(result).toBe('whatever');
+       });
+     });
+
+     test('does something else', async () => {
+       await runner.run(async ({alice, contract}) => {
+         const result = await contract.view(
+           'some_view_function',
+           {account_id: alice.accountId}
+         );
+         expect(result).toBe('some default');
+       });
+     });
+   });
+   ```
+
+  [Jest]: https://jestjs.io/
+  [Yarn]: https://yarnpkg.com/
+
+
+How It Works
+============
+
+Let's look at a modified version of the above that uses vanilla/plain JS without any Jest.
+
+3. Bootstrapping a `Runner`.
 
    ```ts
-   const runner = await Runner.create(async ({ runtime }) => {
-     const alice = await runtime.createAccount('alice')
-     const contract = await runtime.createAndDeploy(
+   const runner = await Runner.create(async ({root}) => {
+     const alice = await root.createAccount('alice');
+     const contract = await root.createAndDeploy(
        'contract-account-name',
-       './path/to/compiled.wasm'
-     )
-     return { alice, contract }
-   })
+       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+     );
+     return {alice, contract};
+   });
    ```
 
    Let's step through this.
 
    1. `Runner.create` initializes a new [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox) node/instance. This is essentially a mini-NEAR blockchain created just for this test. Each of these Sandbox instances gets its own data directory and port, so that tests can run in parallel.
-   2. `runtime.createAccount` creates a new account with the given name.
-   3. `runtime.createAndDeploy` creates a new account with the given name, then deploys the specified Wasm file to it.
-   4. After `Runner.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
-   5. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
-   6. The object returned, `{ alice, contract } `, will be passed along to subsequent tests.
+   2. `root.createAccount` creates a new account with the given name.
+   3. `root.createAndDeploy` creates a new account with the given name, then deploys the specified Wasm file to it.
+   4. `path.join` is a safe cross-platform way to [specify filepaths](https://nodejs.org/api/path.html#path_path_join_paths)
+   5. After `Runner.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
+   6. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
+   7. The object returned, `{alice, contract} `, will be passed along to subsequent tests.
 
-4. Write tests.
+4. Writing tests.
+
+   As mentioned, Jest will run all `test` functions in parallel. Here's a simple way that could work in plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
 
    ```ts
    await Promise.all([
-     runner.run(async ({ alice, contract }) => {
+     runner.run(async ({alice, contract}) => {
        await alice.call(
          contract,
          'some_update_function',
-         { some_string_argument: 'cool', some_number_argument: 42 }
-       )
+         {some_string_argument: 'cool', some_number_argument: 42}
+       );
        const result = await contract.view(
          'some_view_function',
-         { account_id: alice.accountId }
-       )
-       assert.equal(result, 'whatever')
+         {account_id: alice}
+       );
+       assert.equal(result, 'whatever');
      }),
-     runner.run(async ({ alice, contract }) => {
+     runner.run(async ({alice, contract}) => {
        const result = await contract.view(
          'some_view_function',
-         { account_id: alice.accountId }
-       )
-       assert.equal(result, 'some default')
-     })
-   ])
+         {account_id: alice}
+       );
+       assert.equal(result, 'some default');
+     });
+   ]);
    ```
 
    Let's step through this.
 
-   1. For this high-level example, we show tests being run in parallel by using `Promise.all`. In most real tests, your test runner will probably take care of this for you. For examples using [Jest](https://jestjs.io/), check out [the `__tests__` directory here](./__tests__).
-   2. Like the earlier call to `Runner.create`, each call to `runner.run` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
-   3. `runtime.getAccount` and `runtime.getContractAccount` get the accounts that were initialized in `Runner.create`.
-   4. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
-   5. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
-   6. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` and `alice.accountId` rather than `alice.call('contract-account-name', …)` and `'alice'`
-   7. `assert` comes from [Node's `assert` library](https://nodejs.org/api/assert.html), imported with `import { strict as assert } from "assert"`. In most real tests, your test runner will include its own assertion library. For examples using [Jest](https://jestjs.io/), check out [the `__tests__` directory here](./__tests__).
+   1. Like the earlier call to `Runner.create`, each call to `runner.run` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
+   2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
+   3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
+   4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
 
 Running on Testnet
@@ -96,8 +221,8 @@ You can run in testnet mode in two ways.
 
    ```ts
    const runner = await Runner.create(
-     { network: 'testnet' },
-     async ({ runtime }) => { … }
+     {network: 'testnet'},
+     async ({root}) => { … }
    )
    ```
 
@@ -113,18 +238,18 @@ If you set both, the config object takes precedence.
 Stepping through a testnet example
 ----------------------------------
 
-Let's revisit a shortened version of the example from the Quick Start above, describing what will happen in Testnet.
+Let's revisit a shortened version of the example from How It Works above, describing what will happen in Testnet.
 
 3. Create a `Runner`.
 
    ```ts
-   const runner = await Runner.create(async ({ runtime }) => {
-     await runtime.createAccount('alice')
-     await runtime.createAndDeploy(
+   const runner = await Runner.create(async ({root}) => {
+     await root.createAccount('alice');
+     await root.createAndDeploy(
        'contract-account-name',
-       './path/to/compiled.wasm'
-     )
-   })
+       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+     );
+   });
    ```
 
    Let's step through this.
@@ -135,26 +260,26 @@ Let's revisit a shortened version of the example from the Quick Start above, des
 
    ```ts
    await Promise.all([
-     runner.run(async ({ alice, contract }) => {
+     runner.run(async ({alice, contract}) => {
        await alice.call(
          contract,
          'some_update_function',
-         { some_string_argument: 'cool', some_number_argument: 42 }
-       )
+         {some_string_argument: 'cool', some_number_argument: 42}
+       );
        const result = await contract.view(
          'some_view_function',
-         { account_id: alice.accountId }
-       )
-       assert.equal(result, 'whatever')
+         {account_id: alice.accountId}
+       );
+       assert.equal(result, 'whatever');
      }),
-     runner.run(async ({ alice, contract }) => {
+     runner.run(async ({alice, contract}) => {
        const result = await contract.view(
          'some_view_function',
-         { account_id: alice.accountId }
-       )
-       assert.equal(result, 'some default')
-     })
-   ])
+         {account_id: alice.accountId}
+       );
+       assert.equal(result, 'some default');
+     });
+   ]);
    ```
 
    Each call to `runner.run` will:
@@ -174,36 +299,37 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
 
    ```ts
    await Promise.all([
-     runner.run(async ({ … }) => {
+     runner.run(async ({…}) => {
        // runs on any network, sandbox or testnet
      }),
-     runner.runSandbox(async ({ … }) => {
+     runner.runSandbox(async ({…}) => {
        // only runs on sandbox network
-     })
-   ])
+     });
+   ]);
    ```
 
 2. `Runner.getNetworkFromEnv`: Given that the above approach can result in empty test definitions, you can instead skip entire sections of your test files by checking the `Runner.getNetworkFromConfig`. Using Jest syntax:
 
    ```ts
    describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-     let runner: Runner // leave off `Runner` typing in plain JS
+     let runner: Runner; // leave off `Runner` typing in plain JS
      beforeAll(() => {
-       runner = await Runner.create(async ({ runtime }) => ({ // note the implicit return
-         contract: await runtime.createAndDeploy(
+       runner = await Runner.create(async ({root}) => ({ // note the implicit return
+         contract: await root.createAndDeploy(
            'contract-account-name',
-           './path/to/compiled.wasm'
+           path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
          )
-       }))
-     })
+       }));
+     });
      test('thing that makes sense on any network', async () => {
        // test basic contract & account interactions
-     })
+     });
      if ('sandbox' === Runner.getNetworkFromEnv()) {
        test('thing that only makes sense with sandbox', async () => {
          // test with patch-state, fast-forwarding, etc
-       })
+       });
      }
+   });
    ```
 
 Patch State on the Fly
@@ -236,7 +362,7 @@ Pro Tips
     ```ts
     Runner.create(
       { init: false, homeDir: './test-data/alice-owns-an-nft' },
-      async ({ runtime }) => { … }
+      async ({root}) => { … }
     )
     ```
 
