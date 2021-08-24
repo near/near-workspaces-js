@@ -4,7 +4,7 @@ import BN from 'bn.js';
 import {KeyPair} from 'near-api-js';
 import {AccountBalance, PublicKey, FinalExecutionOutcome, CodeResult} from '../types';
 import {ContractState} from '../contract-state';
-import {Transaction} from '../runtime/transaction';
+import {Transaction} from '../transaction';
 
 export interface NearAccount {
   accountId: string;

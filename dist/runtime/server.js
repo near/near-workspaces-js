@@ -31,7 +31,7 @@ const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
-const utils_1 = require("./utils");
+const utils_1 = require("../utils");
 const pollData = JSON.stringify({
     jsonrpc: '2.0',
     id: 'dontcare',

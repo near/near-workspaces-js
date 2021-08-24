@@ -1,4 +1,5 @@
 import _BN from 'bn.js';
+import {KeyPair} from 'near-api-js';
 
 export {KeyPair, Connection} from 'near-api-js';
 export {PublicKey, KeyPairEd25519} from 'near-api-js/lib/utils';
@@ -28,12 +29,16 @@ export class BN extends _BN {
   }
 }
 
-// Need to fill out all record types
-export interface DataRecord {
-  Data: {account_id: string; data_key: string; value: string};
+export type Args = Record<string, any>;
+
+export const NO_DEPOSIT = new BN('0');
+
+export interface NamedAccount {
+  accountId: string;
 }
 
-export type Record = DataRecord;
-export interface Records {
-  records: Record[];
+export interface CallOptions {
+  gas?: string | BN;
+  attachedDeposit?: string | BN;
+  signWithKey?: KeyPair;
 }

@@ -1,16 +1,15 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as nearAPI from 'near-api-js';
-import {asId, randomAccountId, toYocto} from '../utils';
-import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore} from '../types';
-import {debug, getKeyFromFile} from '../runtime/utils';
-import {AccountBalance, NamedAccount} from '../runtime/types';
-import {Transaction} from '../runtime/transaction';
-import {JSONRpc} from '../provider';
+import {asId, randomAccountId, toYocto} from '../helper-funcs';
+import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount} from '../types';
+import {debug} from '../utils';
+import {Transaction} from '../transaction';
+import {JSONRpc} from '../jsonrpc';
 import {NEAR} from '../interfaces';
 import {Account} from './account';
 import {NearAccount} from './near-account';
-import {findCallerFile} from './utils';
+import {findCallerFile, getKeyFromFile} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
 function timeSuffix(prefix: string, length = 99_999): string {
@@ -33,17 +32,8 @@ async function findAccountsWithPrefix(
   return [timeSuffix(prefix, 9_999_999)];
 }
 
-type AccountShortName = string;
-type AccountId = string;
-
-export interface Network {
-  id: string;
-  rpcAddr: string;
-  helperUrl?: string;
-}
-
 export abstract class AccountManager implements NearAccountManager {
-  accountsCreated: Map<AccountId, AccountShortName> = new Map();
+  accountsCreated: Set<string> = new Set();
   constructor(
     protected near: NEAR,
   ) {}
@@ -153,9 +143,8 @@ export abstract class AccountManager implements NearAccountManager {
     return outcome;
   }
 
-  addAccountCreated(account: string, sender: string): void {
-    const short = account.replace(`.${sender}`, '');
-    this.accountsCreated.set(account, short);
+  addAccountCreated(account: string, _sender: string): void {
+    this.accountsCreated.add(account);
   }
 
   async cleanup(): Promise<void> {} // eslint-disable-line @typescript-eslint/no-empty-function
@@ -221,7 +210,7 @@ export class TestnetManager extends AccountManager {
 
   async addFunds(): Promise<void> {
     const temporaryId = randomAccountId();
-    console.log(temporaryId);
+    debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
     const keyPair = await this.getRootKey();
     const {keyStore} = this;
     await keyStore.setKey(this.networkId, temporaryId, keyPair);
@@ -303,7 +292,7 @@ export class TestnetSubaccountManager extends TestnetManager {
 
   async cleanup(): Promise<void> {
     await Promise.all(
-      [...this.accountsCreated.keys()]
+      [...this.accountsCreated.values()]
         .map(async id => this.getAccount(id).delete(this.realRoot.accountId)),
     );
   }

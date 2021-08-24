@@ -1,13 +1,12 @@
 import {Buffer} from 'buffer';
 import {join} from 'path';
 import {promises as fs} from 'fs';
-import {toYocto} from '../utils';
+import {toYocto} from '../helper-funcs';
 import {FinalExecutionOutcome} from '../types';
-import {AccountManager} from '../account/account-manager';
+import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, ClientConfig, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
-import {NearAccount, NearAccountManager} from '../account';
-import {JSONRpc} from '../provider';
-import {debug, exists} from './utils';
+import {JSONRpc} from '../jsonrpc';
+import {debug, exists} from '../utils';
 import {SandboxServer} from './server';
 
 type AccountShortName = string;

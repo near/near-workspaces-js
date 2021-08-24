@@ -1,7 +1,7 @@
 import { KeyPair } from 'near-api-js';
 import { NEAR } from '../interfaces';
-import { JSONRpc } from '../provider';
-import { Transaction } from '../runtime/transaction';
+import { JSONRpc } from '../jsonrpc';
+import { Transaction } from '../transaction';
 import { AccountBalance, FinalExecutionOutcome } from '../types';
 import { NearAccount } from './near-account';
 export interface NearAccountManager {

@@ -12,4 +12,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./near-account"), exports);
 __exportStar(require("./near-account-manager"), exports);
+__exportStar(require("./account-manager"), exports);
+__exportStar(require("./account"), exports);
 //# sourceMappingURL=index.js.map

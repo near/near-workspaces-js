@@ -1,6 +1,7 @@
 import {Buffer} from 'buffer';
 import BN from 'bn.js';
-import {JsonRpcProvider, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, Records, BlockId, Finality, ViewStateResult} from '../types';
+import {JsonRpcProvider, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
+import {Records} from './contract-state';
 
 export class JSONRpc extends JsonRpcProvider {
   private static readonly providers: Map<string, JSONRpc> = new Map();

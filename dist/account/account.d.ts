@@ -2,11 +2,10 @@
 import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
-import { KeyPair, PublicKey, CodeResult, FinalExecutionOutcome } from '../types';
-import { Transaction } from '../runtime/transaction';
-import { AccountBalance, Args } from '../runtime/types';
+import { KeyPair, PublicKey, CodeResult, FinalExecutionOutcome, AccountBalance, Args } from '../types';
+import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
-import { JSONRpc } from '../provider';
+import { JSONRpc } from '../jsonrpc';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
@@ -20,7 +19,7 @@ export declare class Account implements NearAccount {
     createTransaction(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;
     setKey(keyPair?: KeyPair): Promise<PublicKey>;
-    createAccount(accountId: string, { keyPair, initialBalance }?: {
+    createAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string;
     }): Promise<NearAccount>;
@@ -67,7 +66,7 @@ export declare class Account implements NearAccount {
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
     toJSON(): string;
-    protected internalCreateAccount(accountId: string, { keyPair, initialBalance }?: {
+    protected internalCreateAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string | BN;
     }): Promise<Transaction>;

@@ -1,7 +1,7 @@
 import { FinalExecutionOutcome } from '../types';
-import { AccountArgs, ClientConfig, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn } from '../interfaces';
 import { NearAccount, NearAccountManager } from '../account';
-import { JSONRpc } from '../provider';
+import { AccountArgs, ClientConfig, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn } from '../interfaces';
+import { JSONRpc } from '../jsonrpc';
 declare type AccountShortName = string;
 declare type AccountId = string;
 declare type UserPropName = string;

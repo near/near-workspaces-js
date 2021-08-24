@@ -12,3 +12,14 @@ export declare class ContractState {
         schema: any;
     }): any;
 }
+export interface Data {
+    Data: {
+        account_id: string;
+        data_key: string;
+        value: string;
+    };
+}
+export declare type RecordType = Data;
+export interface Records {
+    records: RecordType[];
+}

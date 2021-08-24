@@ -1,21 +1,13 @@
 import * as nearAPI from 'near-api-js';
-import { PublicKey, KeyPair, FinalExecutionOutcome, KeyStore } from '../types';
-import { AccountBalance, NamedAccount } from '../runtime/types';
-import { Transaction } from '../runtime/transaction';
-import { JSONRpc } from '../provider';
+import { PublicKey, KeyPair, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount } from '../types';
+import { Transaction } from '../transaction';
+import { JSONRpc } from '../jsonrpc';
 import { NEAR } from '../interfaces';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
-declare type AccountShortName = string;
-declare type AccountId = string;
-export interface Network {
-    id: string;
-    rpcAddr: string;
-    helperUrl?: string;
-}
 export declare abstract class AccountManager implements NearAccountManager {
     protected near: NEAR;
-    accountsCreated: Map<AccountId, AccountShortName>;
+    accountsCreated: Set<string>;
     constructor(near: NEAR);
     static create(near: NEAR): Promise<AccountManager>;
     getAccount(accountId: string): NearAccount;
@@ -34,7 +26,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     balance(account: string | NearAccount): Promise<AccountBalance>;
     exists(accountId: string | NearAccount): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
-    addAccountCreated(account: string, sender: string): void;
+    addAccountCreated(account: string, _sender: string): void;
     cleanup(): Promise<void>;
     get rootAccountId(): string;
     abstract get DEFAULT_INITIAL_BALANCE(): string;
@@ -86,4 +78,3 @@ export declare class ManagedTransaction extends Transaction {
      */
     signAndSend(keyPair?: KeyPair): Promise<FinalExecutionOutcome>;
 }
-export {};
