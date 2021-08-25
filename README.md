@@ -119,7 +119,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
          );
          const result = await contract.view(
            'some_view_function',
-           {account_id: alice.accountId}
+           {account_id: alice}
          );
          expect(result).toBe('whatever');
        });
@@ -129,7 +129,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
        await runner.run(async ({alice, contract}) => {
          const result = await contract.view(
            'some_view_function',
-           {account_id: alice.accountId}
+           {account_id: alice}
          );
          expect(result).toBe('some default');
        });
@@ -268,14 +268,14 @@ Let's revisit a shortened version of the example from How It Works above, descri
        );
        const result = await contract.view(
          'some_view_function',
-         {account_id: alice.accountId}
+         {account_id: alice}
        );
        assert.equal(result, 'whatever');
      }),
      runner.run(async ({alice, contract}) => {
        const result = await contract.view(
          'some_view_function',
-         {account_id: alice.accountId}
+         {account_id: alice}
        );
        assert.equal(result, 'some default');
      });
