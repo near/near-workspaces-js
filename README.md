@@ -75,7 +75,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
 
    ```js
    import path from 'path';
-   import {Runner} from '..';
+   import {Runner} from 'near-runner';
 
    describe('my app', () => {
      let runner;
