@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ManagedTransaction = exports.SandboxManager = exports.TestnetSubaccountManager = exports.TestnetManager = exports.AccountManager = void 0;
+exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = exports.AccountManager = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 const nearAPI = __importStar(require("near-api-js"));
@@ -48,19 +48,15 @@ class AccountManager {
         this.config = config;
         this.accountsCreated = new Set();
     }
-    static async create(config) {
-        let manager;
+    static create(config) {
         const { network } = config;
         switch (network) {
             case 'sandbox':
-                manager = new SandboxManager(config);
-                break;
+                return new SandboxManager(config);
             case 'testnet':
-                manager = new TestnetManager(config);
-                break;
+                return new TestnetManager(config);
             default: throw new Error(`Bad network id: ${network} expected "testnet" or "sandbox"`);
         }
-        return manager.init();
     }
     getAccount(accountId) {
         return new account_1.Account(accountId, this);
@@ -157,7 +153,7 @@ class TestnetManager extends AccountManager {
         return keyStore;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return helper_funcs_1.toYocto('50');
+        return helper_funcs_1.toYocto('10');
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -197,16 +193,14 @@ class TestnetManager extends AccountManager {
         }
     }
     async initRootAccount() {
-        if (this.config.rootAccount) {
+        if (this.config.rootAccount !== undefined) {
             return;
         }
-        const fileName = utils_2.findCallerFile();
+        const [fileName, lineNumber] = utils_2.findCallerFile();
         const p = path.parse(fileName);
         if (['.ts', '.js'].includes(p.ext)) {
-            let { name } = p;
-            if (name.includes('.')) {
-                name = name.split('.')[0];
-            }
+            const hash = utils_2.hashPathBase64(fileName);
+            const name = `l${lineNumber}${hash.slice(0, 6)}`;
             const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
             const accountId = accounts.shift();
             await Promise.all(accounts.map(async (acc) => {
@@ -218,34 +212,16 @@ class TestnetManager extends AccountManager {
         throw new Error(`Bad filename/account name passed: ${fileName}`);
     }
     async createFrom(config) {
-        return (new TestnetSubaccountManager({ ...config, ...this.config, rootAccount: this.rootAccountId })).init();
+        return (new TestnetManager({ ...config, ...this.config, rootAccount: undefined })).init();
+    }
+    async cleanup() {
+        await Promise.all([...this.accountsCreated.values()]
+            .map(async (id) => this.getAccount(id).delete(this.rootAccountId)));
     }
 }
 exports.TestnetManager = TestnetManager;
 TestnetManager.KEYSTORE_PATH = path.join(os.homedir(), '.near-credentials', 'near-runner');
 TestnetManager.KEY_DIR_PATH = path.join(TestnetManager.KEYSTORE_PATH, 'testnet');
-class TestnetSubaccountManager extends TestnetManager {
-    get rootAccountId() {
-        return this.subAccount;
-    }
-    get realRoot() {
-        return this.getAccount(this.config.rootAccount);
-    }
-    async init() {
-        const root = this.realRoot;
-        this.subAccount = root.makeSubAccount(timeSuffix(''));
-        await this.realRoot.createAccount(this.subAccount, { initialBalance: helper_funcs_1.toYocto('50') });
-        return this;
-    }
-    async cleanup() {
-        await Promise.all([...this.accountsCreated.values()]
-            .map(async (id) => this.getAccount(id).delete(this.realRoot.accountId)));
-    }
-    get initialBalance() {
-        return helper_funcs_1.toYocto('10');
-    }
-}
-exports.TestnetSubaccountManager = TestnetSubaccountManager;
 class SandboxManager extends AccountManager {
     async init() {
         if (!await this.getKey(this.rootAccountId)) {

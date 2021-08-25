@@ -18,20 +18,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
+exports.hashPathBase64 = exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
 const fs = __importStar(require("fs/promises"));
 const path_1 = require("path");
+const buffer_1 = require("buffer");
+const js_sha256_1 = __importDefault(require("js-sha256"));
 const utils_1 = require("../utils");
 const types_1 = require("../types");
 function findCallerFile() {
     const sites = callsites();
-    const files = sites.filter(s => s.getFileName()).map(s => s.getFileName());
+    const files = sites.filter(s => s.getFileName());
     const thisDir = __dirname;
     const parentDir = path_1.dirname(__dirname);
     utils_1.debug(`looking through ${files.join(', ')}, thisDir: ${thisDir}, parentDir:${parentDir}`);
-    const i = files.findIndex(file => !file.startsWith(parentDir));
-    return files[i];
+    const i = files.findIndex(file => !file.getFileName().startsWith(parentDir));
+    return [files[i].getFileName(), files[i].getLineNumber()];
 }
 exports.findCallerFile = findCallerFile;
 function callsites() {
@@ -64,4 +69,8 @@ async function getKeyFromFile(filePath, create = true) {
     }
 }
 exports.getKeyFromFile = getKeyFromFile;
+function hashPathBase64(s) {
+    return buffer_1.Buffer.from(js_sha256_1.default.sha256.arrayBuffer(s)).toString('base64');
+}
+exports.hashPathBase64 = hashPathBase64;
 //# sourceMappingURL=utils.js.map

@@ -15,6 +15,7 @@ class Runtime {
         this.returnedAccounts = new Map();
         this.createdAccounts = {};
         this.config = config;
+        this.manager = account_1.AccountManager.create(config);
         if (accounts) {
             this.createdAccounts = accounts;
         }
@@ -103,13 +104,12 @@ class Runtime {
 }
 exports.Runtime = Runtime;
 class TestnetRuntime extends Runtime {
-    static async create(config, fn) {
+    static async create(config, initFn) {
         // Add better error handling
-        const fullConfig = { ...this.defaultConfig, initFn: fn, ...config };
+        const fullConfig = { ...this.defaultConfig, initFn, ...config };
         // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
         utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
         const runtime = new TestnetRuntime(fullConfig);
-        runtime.manager = await account_1.AccountManager.create(runtime.config);
         return runtime;
     }
     async createFrom() {
@@ -190,7 +190,6 @@ class SandboxRuntime extends Runtime {
         let config = await SandboxRuntime.defaultConfig();
         config = { ...this.config, ...config, init: false, refDir: this.homeDir };
         const runtime = new SandboxRuntime(config, this.createdAccounts);
-        runtime.manager = await this.manager.createFrom(runtime.config);
         return runtime;
     }
     get baseAccountId() {
@@ -223,9 +222,6 @@ class SandboxRuntime extends Runtime {
         }
         this.server = await server_1.SandboxServer.init(this.config);
         await this.server.start();
-        if (this.init) {
-            this.manager = await account_1.AccountManager.create(this.config);
-        }
     }
     async afterRun() {
         utils_1.debug(`Closing server with port ${this.config.port}`);

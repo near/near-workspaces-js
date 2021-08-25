@@ -9,7 +9,7 @@ import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';
 import {Account} from './account';
 import {NearAccount} from './near-account';
-import {findCallerFile, getKeyFromFile} from './utils';
+import {findCallerFile, getKeyFromFile, hashPathBase64} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
 function timeSuffix(prefix: string, length = 99_999): string {
@@ -38,22 +38,17 @@ export abstract class AccountManager implements NearAccountManager {
     protected config: Config,
   ) {}
 
-  static async create(
+  static create(
     config: Config,
-  ): Promise<AccountManager> {
-    let manager: AccountManager;
+  ): AccountManager {
     const {network} = config;
     switch (network) {
       case 'sandbox':
-        manager = new SandboxManager(config);
-        break;
+        return new SandboxManager(config);
       case 'testnet':
-        manager = new TestnetManager(config);
-        break;
+        return new TestnetManager(config);
       default: throw new Error(`Bad network id: ${network as string} expected "testnet" or "sandbox"`);
     }
-
-    return manager.init();
   }
 
   getAccount(accountId: string): NearAccount {
@@ -187,7 +182,7 @@ export class TestnetManager extends AccountManager {
   }
 
   get DEFAULT_INITIAL_BALANCE(): string {
-    return toYocto('50');
+    return toYocto('10');
   }
 
   get defaultKeyStore(): KeyStore {
@@ -238,17 +233,15 @@ export class TestnetManager extends AccountManager {
   }
 
   async initRootAccount(): Promise<void> {
-    if (this.config.rootAccount) {
+    if (this.config.rootAccount !== undefined) {
       return;
     }
 
-    const fileName = findCallerFile();
+    const [fileName, lineNumber] = findCallerFile();
     const p = path.parse(fileName);
     if (['.ts', '.js'].includes(p.ext)) {
-      let {name} = p;
-      if (name.includes('.')) {
-        name = name.split('.')[0];
-      }
+      const hash: string = hashPathBase64(fileName);
+      const name = `l${lineNumber}${hash.slice(0, 6)}`;
 
       const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
       const accountId = accounts.shift()!;
@@ -267,37 +260,14 @@ export class TestnetManager extends AccountManager {
   }
 
   async createFrom(config: Config): Promise<AccountManager> {
-    return (new TestnetSubaccountManager({...config, ...this.config, rootAccount: this.rootAccountId})).init();
-  }
-}
-
-export class TestnetSubaccountManager extends TestnetManager {
-  subAccount!: string;
-
-  get rootAccountId(): string {
-    return this.subAccount;
-  }
-
-  get realRoot(): NearAccount {
-    return this.getAccount(this.config.rootAccount!);
-  }
-
-  async init(): Promise<AccountManager> {
-    const root = this.realRoot;
-    this.subAccount = root.makeSubAccount(timeSuffix(''));
-    await this.realRoot.createAccount(this.subAccount, {initialBalance: toYocto('50')});
-    return this;
+    return (new TestnetManager({...config, ...this.config, rootAccount: undefined})).init();
   }
 
   async cleanup(): Promise<void> {
     await Promise.all(
       [...this.accountsCreated.values()]
-        .map(async id => this.getAccount(id).delete(this.realRoot.accountId)),
+        .map(async id => this.getAccount(id).delete(this.rootAccountId)),
     );
-  }
-
-  get initialBalance(): string {
-    return toYocto('10');
   }
 }
 

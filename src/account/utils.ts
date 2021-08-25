@@ -1,17 +1,19 @@
 import * as fs from 'fs/promises';
 import {dirname} from 'path';
+import {Buffer} from 'buffer';
+import sha256 from 'js-sha256';
 import {CallSite} from 'callsites';
 import {debug} from '../utils';
 import {KeyPair, KeyPairEd25519} from '../types';
 
-export function findCallerFile(): string {
+export function findCallerFile(): [string, number] {
   const sites: CallSite[] = callsites();
-  const files: string[] = sites.filter(s => s.getFileName()).map(s => s.getFileName()!);
+  const files: CallSite[] = sites.filter(s => s.getFileName());
   const thisDir = __dirname;
   const parentDir = dirname(__dirname);
   debug(`looking through ${files.join(', ')}, thisDir: ${thisDir}, parentDir:${parentDir}`);
-  const i = files.findIndex(file => !file.startsWith(parentDir));
-  return files[i];
+  const i = files.findIndex(file => !file.getFileName()!.startsWith(parentDir));
+  return [files[i].getFileName()!, files[i].getLineNumber()!];
 }
 
 export function callsites(): CallSite[] {
@@ -52,4 +54,8 @@ export async function getKeyFromFile(filePath: string, create = true): Promise<K
     debug('wrote to file ', filePath);
     return keyPair;
   }
+}
+
+export function hashPathBase64(s: string): string {
+  return Buffer.from(sha256.sha256.arrayBuffer(s)).toString('base64');
 }

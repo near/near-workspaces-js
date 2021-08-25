@@ -9,7 +9,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     protected config: Config;
     accountsCreated: Set<string>;
     constructor(config: Config);
-    static create(config: Config): Promise<AccountManager>;
+    static create(config: Config): AccountManager;
     getAccount(accountId: string): NearAccount;
     deleteKey(account_id: string): Promise<void>;
     init(): Promise<AccountManager>;
@@ -49,14 +49,7 @@ export declare class TestnetManager extends AccountManager {
     createAndFundAccount(): Promise<void>;
     initRootAccount(): Promise<void>;
     createFrom(config: Config): Promise<AccountManager>;
-}
-export declare class TestnetSubaccountManager extends TestnetManager {
-    subAccount: string;
-    get rootAccountId(): string;
-    get realRoot(): NearAccount;
-    init(): Promise<AccountManager>;
     cleanup(): Promise<void>;
-    get initialBalance(): string;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;

@@ -22,6 +22,7 @@ export abstract class Runtime {
 
   constructor(config: Config, accounts?: ReturnedAccounts) {
     this.config = config;
+    this.manager = AccountManager.create(config);
     if (accounts) {
       this.createdAccounts = accounts;
     }
@@ -134,13 +135,12 @@ export abstract class Runtime {
 }
 
 export class TestnetRuntime extends Runtime {
-  static async create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime> {
+  static async create(config: Partial<Config>, initFn?: CreateRunnerFn): Promise<TestnetRuntime> {
     // Add better error handling
-    const fullConfig = {...this.defaultConfig, initFn: fn, ...config};
+    const fullConfig = {...this.defaultConfig, initFn, ...config};
     // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
     debug('Skipping initialization function for testnet; will run before each `runner.run`');
     const runtime = new TestnetRuntime(fullConfig);
-    runtime.manager = await AccountManager.create(runtime.config);
     return runtime;
   }
 
@@ -245,7 +245,6 @@ export class SandboxRuntime extends Runtime {
     let config = await SandboxRuntime.defaultConfig();
     config = {...this.config, ...config, init: false, refDir: this.homeDir};
     const runtime = new SandboxRuntime(config, this.createdAccounts);
-    runtime.manager = await this.manager.createFrom(runtime.config);
     return runtime;
   }
 
@@ -285,9 +284,6 @@ export class SandboxRuntime extends Runtime {
 
     this.server = await SandboxServer.init(this.config);
     await this.server.start();
-    if (this.init) {
-      this.manager = await AccountManager.create(this.config);
-    }
   }
 
   async afterRun(): Promise<void> {

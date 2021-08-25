@@ -27,7 +27,7 @@ export declare abstract class Runtime {
     protected abstract afterRun(): Promise<void>;
 }
 export declare class TestnetRuntime extends Runtime {
-    static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime>;
+    static create(config: Partial<Config>, initFn?: CreateRunnerFn): Promise<TestnetRuntime>;
     createFrom(): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
     static get clientConfig(): ClientConfig;
