@@ -140,7 +140,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
   [Jest]: https://jestjs.io/
   [Yarn]: https://yarnpkg.com/
 
-See the [__tests__](./__tests__) directory in this project for more examples.
+See the [\_\_tests__](./__tests__) directory in this project for more examples.
 
 
 How It Works
