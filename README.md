@@ -77,7 +77,7 @@ near-runner works with any JS testing library/framework. Feel free to bring your
    import path from 'path';
    import {Runner} from 'near-runner';
 
-   describe('my app', () => {
+   describe('my contract', () => {
      let runner;
      jest.setTimeout(60_000);
 
