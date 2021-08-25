@@ -125,14 +125,16 @@ class AccountManager {
             oldKey = await this.getKey(account.accountId);
             await this.setKey(account.accountId, keyPair);
         }
-        const before = Date.now();
+        const start = Date.now();
         // @ts-expect-error access shouldn't be protected
         const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions });
-        const after = Date.now();
+        const end = Date.now();
         if (oldKey) {
             await this.setKey(account.accountId, oldKey);
         }
-        return new execution_result_1.ExecutionResult(outcome, after - before);
+        const result = new execution_result_1.ExecutionResult(outcome, start, end);
+        console.log(result.summary());
+        return result;
     }
     addAccountCreated(account, _sender) {
         this.accountsCreated.add(account);

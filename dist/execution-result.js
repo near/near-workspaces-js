@@ -80,9 +80,13 @@ class PromiseOutcome {
 }
 exports.PromiseOutcome = PromiseOutcome;
 class ExecutionResult {
-    constructor(result, durationMs) {
+    constructor(result, startMs, endMs) {
         this.result = result;
-        this.durationMs = durationMs;
+        this.startMs = startMs;
+        this.endMs = endMs;
+    }
+    get durationMs() {
+        return this.endMs - this.startMs;
     }
     get outcomesWithId() {
         const { result } = this;
@@ -124,6 +128,12 @@ class ExecutionResult {
     findLogs(pattern) {
         return this.logs.filter(includes(pattern));
     }
+    promiseValuesContain(pattern) {
+        return this.promiseSuccessValues.some(includes(pattern));
+    }
+    findPromiseValues(pattern) {
+        return this.promiseSuccessValues.filter(includes(pattern));
+    }
     get finalExecutionStatus() {
         return this.status;
     }
@@ -133,15 +143,27 @@ class ExecutionResult {
         }
         return null;
     }
+    get promiseErrors() {
+        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionError) !== null && _a !== void 0 ? _a : []; });
+    }
+    get promiseSuccessValues() {
+        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.SuccessValue) !== null && _a !== void 0 ? _a : []; });
+    }
     parseResult() {
         if (this.succeeded) {
             return parseValue(this.SuccessValue);
         }
         throw new Error(JSON.stringify(this.status));
     }
-    promiseErrors() {
-        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionError) !== null && _a !== void 0 ? _a : []; });
+    parsedPromiseResults() {
+        return this.promiseSuccessValues.map(parseValue);
+    }
+    summary() {
+        return `(${this.durationMs} ms) ${transactionReceiptToString(this.transactionReceipt)}`;
     }
 }
 exports.ExecutionResult = ExecutionResult;
+function transactionReceiptToString(tx) {
+    return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
+}
 //# sourceMappingURL=execution-result.js.map

@@ -138,15 +138,17 @@ export abstract class AccountManager implements NearAccountManager {
       await this.setKey(account.accountId, keyPair);
     }
 
-    const before = Date.now();
+    const start = Date.now();
     // @ts-expect-error access shouldn't be protected
     const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
-    const after = Date.now();
+    const end = Date.now();
     if (oldKey) {
       await this.setKey(account.accountId, oldKey);
     }
 
-    return new ExecutionResult(outcome, after - before);
+    const result = new ExecutionResult(outcome, start, end);
+    console.log(result.summary());
+    return result;
   }
 
   addAccountCreated(account: string, _sender: string): void {

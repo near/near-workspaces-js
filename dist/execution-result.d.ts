@@ -16,8 +16,10 @@ export declare class PromiseOutcome {
 }
 export declare class ExecutionResult {
     readonly result: FinalExecutionOutcome;
-    readonly durationMs: number;
-    constructor(result: FinalExecutionOutcome, durationMs: number);
+    readonly startMs: number;
+    readonly endMs: number;
+    constructor(result: FinalExecutionOutcome, startMs: number, endMs: number);
+    get durationMs(): number;
     get outcomesWithId(): ExecutionOutcomeWithId[];
     get receipts_outcomes(): PromiseOutcome[];
     get outcome(): ExecutionOutcome[];
@@ -29,13 +31,18 @@ export declare class ExecutionResult {
     get succeeded(): boolean;
     logsContain(pattern: string | RegExp): boolean;
     findLogs(pattern: string | RegExp): string[];
+    promiseValuesContain(pattern: string | RegExp): boolean;
+    findPromiseValues(pattern: string | RegExp): string[];
     get finalExecutionStatus(): FinalExecutionStatus;
     get SuccessValue(): string | null;
+    get promiseErrors(): ExecutionError[];
+    get promiseSuccessValues(): string[];
     parseResult(): any;
-    promiseErrors(): ExecutionError[];
+    parsedPromiseResults(): any[];
+    summary(): string;
 }
 export interface TransactionReceipt {
-    action: Action[];
+    actions: Action[];
     hash: string;
     nonce: number;
     public_key: PublicKey;

@@ -72,7 +72,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Simple transfer', async () => {
+  test.only('Simple transfer', async () => {
     await runner.run(async ({ft, ali, root}) => {
       const initialAmount = new BN('10000');
       const transferAmount = new BN('100');
@@ -174,14 +174,16 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
       expect(result.parseResult()).toStrictEqual(true);
 
-      // Help: this index is diff from sim, we have 10 len when they have 4
-      const callbackOutcome = result.receipts_outcomes[5];
-      expect(callbackOutcome.logs[0]).toEqual(
+
+      expect(result.logs).toContain(
         'The account of the sender was deleted',
       );
-      expect(callbackOutcome.logs[1]).toEqual(
+      expect(result.logs).toContain(
         `Account @${root.accountId} burned ${burnAmount.toString()}`,
       );
+
+      // Help: this index is diff from sim, we have 10 len when they have 4
+      const callbackOutcome = result.receipts_outcomes[5];
 
       expect(callbackOutcome.parseResult()).toEqual(transferAmount.toString());
       const expectedAmount = transferAmount.sub(burnAmount).toString();

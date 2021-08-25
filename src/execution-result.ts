@@ -21,10 +21,7 @@ function includes(pattern: string | RegExp): (s: string) => boolean {
 }
 
 function parseValue(value: string): any {
-  const buffer = Buffer.from(
-    value,
-    'base64',
-  ).toString();
+  const buffer = Buffer.from(value, 'base64').toString();
   try {
     return JSON.parse(buffer);
   } catch {
@@ -109,7 +106,15 @@ export class PromiseOutcome {
 }
 
 export class ExecutionResult {
-  constructor(public readonly result: FinalExecutionOutcome, public readonly durationMs: number) {}
+  constructor(
+    public readonly result: FinalExecutionOutcome,
+    public readonly startMs: number,
+    public readonly endMs: number,
+  ) {}
+
+  get durationMs(): number {
+    return this.endMs - this.startMs;
+  }
 
   get outcomesWithId(): ExecutionOutcomeWithId[] {
     const {result} = this;
@@ -117,7 +122,9 @@ export class ExecutionResult {
   }
 
   get receipts_outcomes(): PromiseOutcome[] {
-    return this.result.receipts_outcome.flatMap(o => new PromiseOutcome(o.outcome));
+    return this.result.receipts_outcome.flatMap(
+      o => new PromiseOutcome(o.outcome),
+    );
   }
 
   get outcome(): ExecutionOutcome[] {
@@ -164,6 +171,14 @@ export class ExecutionResult {
     return this.logs.filter(includes(pattern));
   }
 
+  promiseValuesContain(pattern: string | RegExp): boolean {
+    return this.promiseSuccessValues.some(includes(pattern));
+  }
+
+  findPromiseValues(pattern: string | RegExp): string[] {
+    return this.promiseSuccessValues.filter(includes(pattern));
+  }
+
   get finalExecutionStatus(): FinalExecutionStatus {
     return this.status as FinalExecutionStatus;
   }
@@ -176,6 +191,14 @@ export class ExecutionResult {
     return null;
   }
 
+  get promiseErrors(): ExecutionError[] {
+    return this.receipts_outcomes.flatMap(o => o.executionError ?? []);
+  }
+
+  get promiseSuccessValues(): string[] {
+    return this.receipts_outcomes.flatMap(o => o.SuccessValue ?? []);
+  }
+
   parseResult(): any {
     if (this.succeeded) {
       return parseValue(this.SuccessValue!);
@@ -184,17 +207,25 @@ export class ExecutionResult {
     throw new Error(JSON.stringify(this.status));
   }
 
-  promiseErrors(): ExecutionError[] {
-    return this.receipts_outcomes.flatMap(o => o.executionError ?? []);
+  parsedPromiseResults(): any[] {
+    return this.promiseSuccessValues.map(parseValue);
+  }
+
+  summary(): string {
+    return `(${this.durationMs} ms) ${transactionReceiptToString(this.transactionReceipt)}`;
   }
 }
 
 export interface TransactionReceipt {
-  action: Action[];
+  actions: Action[];
   hash: string;
   nonce: number;
   public_key: PublicKey;
   receiver_id: string;
   signature: string;
   signer_id: string;
+}
+
+function transactionReceiptToString(tx: TransactionReceipt): string {
+  return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
 }
