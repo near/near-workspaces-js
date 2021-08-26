@@ -4,7 +4,6 @@ import {Buffer} from 'buffer';
 import sha256 from 'js-sha256';
 import base64url from 'base64url';
 import {CallSite} from 'callsites';
-import {debug} from '../internal-utils';
 import {KeyPair, KeyPairEd25519} from '../types';
 
 export function findCallerFile(): [string, number] {
@@ -45,12 +44,10 @@ export async function getKeyFromFile(filePath: string, create = true): Promise<K
       throw error;
     }
 
-    debug('about to write to ', filePath);
     const keyPair = KeyPairEd25519.fromRandom();
     await fs.writeFile(filePath, JSON.stringify({
       secret_key: keyPair.toString(),
     }));
-    debug('wrote to file ', filePath);
     return keyPair;
   }
 }

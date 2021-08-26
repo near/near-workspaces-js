@@ -28,7 +28,6 @@ const path_1 = require("path");
 const buffer_1 = require("buffer");
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const base64url_1 = __importDefault(require("base64url"));
-const internal_utils_1 = require("../internal-utils");
 const types_1 = require("../types");
 function findCallerFile() {
     const sites = callsites();
@@ -58,12 +57,10 @@ async function getKeyFromFile(filePath, create = true) {
         if (!create) {
             throw error;
         }
-        internal_utils_1.debug('about to write to ', filePath);
         const keyPair = types_1.KeyPairEd25519.fromRandom();
         await fs.writeFile(filePath, JSON.stringify({
             secret_key: keyPair.toString(),
         }));
-        internal_utils_1.debug('wrote to file ', filePath);
         return keyPair;
     }
 }
