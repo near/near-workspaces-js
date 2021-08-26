@@ -102,7 +102,6 @@ class TestnetRuntime extends Runtime {
     static async create(config, initFn) {
         // Add better error handling
         const fullConfig = { ...this.defaultConfig, initFn, ...config };
-        // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
         internal_utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
         const runtime = new TestnetRuntime(fullConfig);
         await runtime.manager.init();

@@ -57,7 +57,7 @@ export interface NearAccount {
    *
    * @returns any parsed return value, or throws with an error if call failed
    */
-  call(
+  call<T>(
     contractId: NearAccount | string,
     methodName: string,
     args: Record<string, unknown>,
@@ -66,7 +66,7 @@ export interface NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     },
-  ): Promise<any>;
+  ): Promise<T | string>;
 
   view_raw(method: string, args?: Record<string, unknown>): Promise<CodeResult>;
   view<T>(method: string, args?: Record<string, unknown>): Promise<T>;

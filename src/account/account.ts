@@ -10,11 +10,11 @@ import {
   FinalExecutionOutcome,
   AccountBalance,
   Args,
-  NO_DEPOSIT,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JSONRpc} from '../jsonrpc';
+import {NO_DEPOSIT} from '../utils';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
 
@@ -138,7 +138,7 @@ export class Account implements NearAccount {
    *
    * @returns any parsed return value, or throws with an error if call failed
    */
-  async call(
+  async call<T>(
     contractId: NearAccount | string,
     methodName: string,
     args: Record<string, unknown>,
@@ -151,7 +151,7 @@ export class Account implements NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     } = {},
-  ): Promise<any> {
+  ): Promise<T | string> {
     const txResult = await this.call_raw(contractId, methodName, args, {
       gas,
       attachedDeposit,

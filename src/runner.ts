@@ -1,6 +1,6 @@
 import process from 'process';
-import {Runtime, RunnerFn, CreateRunnerFn} from './runtime';
-import {Config} from './interfaces';
+import {Runtime} from './runtime';
+import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 
 export class Runner {
   private constructor(

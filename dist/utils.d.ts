@@ -6,3 +6,4 @@ export declare function createKeyPair(): KeyPair;
 export declare function tGas(x: string | number): string;
 export declare function randomAccountId(prefix?: string, suffix?: string): string;
 export declare function asId(id: string | NamedAccount): string;
+export declare const NO_DEPOSIT: BN;

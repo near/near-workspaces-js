@@ -30,3 +30,5 @@ export function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.r
 export function asId(id: string | NamedAccount): string {
   return typeof id === 'string' ? id : id.accountId;
 }
+
+export const NO_DEPOSIT = new BN('0');

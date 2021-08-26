@@ -109,12 +109,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
       await registerUser(ft, ali);
 
-      const result: boolean = await ali.call(
+      const result = await ali.call(
         ft,
         'storage_unregister',
         {},
         {attachedDeposit: '1'},
-      );
+      ) as boolean;
 
       expect(result).toStrictEqual(true);
     });

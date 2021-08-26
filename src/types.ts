@@ -1,5 +1,7 @@
+import {ChildProcess} from 'child_process';
 import _BN from 'bn.js';
 import {KeyPair} from 'near-api-js';
+import {Output} from 'promisify-child-process';
 
 export {KeyPair, Connection} from 'near-api-js';
 export {PublicKey, KeyPairEd25519} from 'near-api-js/lib/utils';
@@ -31,8 +33,6 @@ export class BN extends _BN {
 
 export type Args = Record<string, any>;
 
-export const NO_DEPOSIT = new BN('0');
-
 export interface NamedAccount {
   accountId: string;
 }
@@ -42,3 +42,5 @@ export interface CallOptions {
   attachedDeposit?: string | BN;
   signWithKey?: KeyPair;
 }
+
+export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;

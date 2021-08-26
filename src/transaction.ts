@@ -18,10 +18,10 @@ import {
   BN,
   DEFAULT_FUNCTION_CALL_GAS,
   KeyPair,
-  NO_DEPOSIT,
   NamedAccount,
 } from './types';
 import {isPathLike} from './internal-utils';
+import {NO_DEPOSIT} from './utils';
 
 export abstract class Transaction {
   readonly receiverId: string;

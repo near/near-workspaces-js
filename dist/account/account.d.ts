@@ -52,11 +52,11 @@ export declare class Account implements NearAccount {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
+    call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<any>;
+    }): Promise<T | string>;
     view_raw(method: string, args?: Args): Promise<CodeResult>;
     view(method: string, args?: Args): Promise<any>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;

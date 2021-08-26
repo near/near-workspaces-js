@@ -11,7 +11,6 @@ import {Config} from '../interfaces';
 import {
   debug,
   asyncSpawn,
-  ChildProcessPromise,
   exists,
   rm,
   spawn,
@@ -19,6 +18,7 @@ import {
   sandboxBinary,
   ensureBinary,
 } from '../internal-utils';
+import {ChildProcessPromise} from '../types';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',

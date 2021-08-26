@@ -28,6 +28,7 @@ const bn_js_1 = __importDefault(require("bn.js"));
 const borsh = __importStar(require("borsh"));
 const types_1 = require("../types");
 const contract_state_1 = require("../contract-state");
+const utils_1 = require("../utils");
 class Account {
     constructor(_accountId, manager) {
         this._accountId = _accountId;
@@ -67,7 +68,7 @@ class Account {
         const id = this.makeSubAccount(accountId);
         return new Account(id, this.manager);
     }
-    async createAndDeploy(accountId, wasm, { attachedDeposit = types_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, } = {}) {
+    async createAndDeploy(accountId, wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, } = {}) {
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
@@ -86,7 +87,7 @@ class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = types_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+    async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         return this.createTransaction(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .signAndSend(signWithKey);
@@ -98,7 +99,7 @@ class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = types_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+    async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const txResult = await this.call_raw(contractId, methodName, args, {
             gas,
             attachedDeposit,

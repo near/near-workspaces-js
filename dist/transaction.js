@@ -23,6 +23,7 @@ exports.Transaction = void 0;
 const fs = __importStar(require("fs/promises"));
 const types_1 = require("./types");
 const internal_utils_1 = require("./internal-utils");
+const utils_1 = require("./utils");
 class Transaction {
     constructor(sender, receiver) {
         this.actions = [];
@@ -52,7 +53,7 @@ class Transaction {
         this.actions.push(types_1.deployContract(code));
         return this;
     }
-    functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = types_1.NO_DEPOSIT, } = {}) {
+    functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
         this.actions.push(types_1.functionCall(methodName, args, new types_1.BN(gas), new types_1.BN(attachedDeposit)));
         return this;
     }

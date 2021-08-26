@@ -2,13 +2,14 @@ import process from 'process';
 import * as fs from 'fs/promises';
 import {PathLike} from 'fs';
 import {promisify} from 'util';
-import {ChildProcess, spawn as _spawn} from 'child_process';
+import {spawn as _spawn} from 'child_process';
 import {URL} from 'url';
-import {spawn as _asyncSpawn, Output} from 'promisify-child-process';
+import {spawn as _asyncSpawn} from 'promisify-child-process';
 import rimraf from 'rimraf';
 // @ts-expect-error no typings
 import getBinary from 'near-sandbox/getBinary';
 import fs_extra from 'fs-extra';
+import {ChildProcessPromise} from './types';
 
 export const rm = promisify(rimraf);
 export const sandboxBinary: () => string = () => getBinary().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
@@ -25,8 +26,6 @@ export async function exists(d: PathLike): Promise<boolean> {
 
   return true;
 }
-
-export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
 
 export async function asyncSpawn(...args: string[]): ChildProcessPromise {
   debug(`spawning \`${sandboxBinary()} ${args.join(' ')}\``);

@@ -10,9 +10,7 @@ import {KeyPair, KeyPairEd25519} from '../types';
 export function findCallerFile(): [string, number] {
   const sites: CallSite[] = callsites();
   const files: CallSite[] = sites.filter(s => s.getFileName());
-  const thisDir = __dirname;
   const parentDir = dirname(__dirname);
-  debug(`looking through ${files.join(', ')}, thisDir: ${thisDir}, parentDir:${parentDir}`);
   const i = files.findIndex(file => !file.getFileName()!.startsWith(parentDir));
   return [files[i].getFileName()!, files[i].getLineNumber()!];
 }
