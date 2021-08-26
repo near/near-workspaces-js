@@ -12,8 +12,26 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+      - uses: actions/cache@v2
+        with:
+          path: '$HOME/.near-credentials/near-runner'
+          key: ${{ matrix.platform }}${{ matrix.node-version }}
       - name: Run tests
         run: yarn && yarn test:testnet:ci
+  testnet-nocache:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: '$HOME/.near-credentials/near-runner'
+          key: ${{ matrix.platform }}${{ matrix.node-version }}
+      - name: Run tests
+        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01
   sandbox:
     strategy:
       matrix:
