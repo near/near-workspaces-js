@@ -12,8 +12,13 @@ export function createKeyPair(): KeyPair {
   return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
 
-export function tGas(s: string) {
-  return s + '0'.repeat(12);
+export function tGas(x: string | number) {
+  if (isNaN(parseInt(x))) {
+    throw new Error(
+      `tGas expects a number or a number-like string; got: ${x}`
+    );
+  }
+  return String(x) + '0'.repeat(12);
 }
 
 // Create random number with at least 7 digits by default

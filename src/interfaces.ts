@@ -29,7 +29,6 @@ export interface Provider {
 export interface NearRuntime {
   run(fn: RunnerFn): Promise<void>;
   createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
-  // CreateAndRun(fn: RunnerFn, config?: Partial<Config>): Promise<void>;
 }
 
 export interface RuntimeArg {

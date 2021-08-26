@@ -182,7 +182,12 @@ export class Account implements NearAccount {
   async view(method: string, args: Args = {}): Promise<any> {
     const result = await this.view_raw(method, args);
     if (result.result) {
-      return JSON.parse(Buffer.from(result.result).toString()); // eslint-disable-line @typescript-eslint/no-unsafe-return
+      const value = Buffer.from(result.result).toString();
+      try {
+        return JSON.parse(value);  // eslint-disable-line @typescript-eslint/no-unsafe-return
+      } catch {
+        return value
+      }
     }
 
     return result.result;

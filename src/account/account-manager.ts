@@ -22,9 +22,9 @@ async function findAccountsWithPrefix(
   network: string,
 ): Promise<string[]> {
   const accounts = await keyStore.getAccounts(network);
-  debug(`Looking ${prefix} in ${accounts.join('\n')}`);
+  debug(`Looking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
   const paths = accounts.filter(f => f.startsWith(prefix));
-  debug(`found [${paths.join(', ')}]`);
+  debug(`Found:\n  ${paths.join('\n  ')}`);
   if (paths.length > 0) {
     return paths;
   }
@@ -47,7 +47,7 @@ export abstract class AccountManager implements NearAccountManager {
         return new SandboxManager(config);
       case 'testnet':
         return new TestnetManager(config);
-      default: throw new Error(`Bad network id: ${network as string} expected "testnet" or "sandbox"`);
+      default: throw new Error(`Bad network id: "${network as string}"; expected "testnet" or "sandbox"`);
     }
   }
 
@@ -91,7 +91,7 @@ export abstract class AccountManager implements NearAccountManager {
     return this.keyStore.getKey(this.networkId, accountId);
   }
 
-  /** Sets the provider key to store, otherwise creates a new one */
+  /** Sets the provided key to store, otherwise creates a new one */
   async setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair> {
     const key = keyPair ?? KeyPairEd25519.fromRandom();
     await this.keyStore.setKey(this.networkId, accountId, key);
