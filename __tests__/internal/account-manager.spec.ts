@@ -1,5 +1,5 @@
-import {AccountManager, TestnetManager} from '../src/account/account-manager';
-import {TestnetRuntime, Runner, BN} from '../src';
+import {AccountManager, TestnetManager} from '../../src/account/account-manager';
+import {TestnetRuntime, Runner, BN} from '../../src';
 
 jest.setTimeout(500_000);
 
@@ -11,12 +11,14 @@ describe('Account Manager', () => {
 
   test('should create a new account', async () => {
     const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
+    await accountManager.init();
     const {root} = accountManager;
     expect(await root.exists()).toBe(true);
   });
 
   test('should be able to add funds', async () => {
     const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
+    await accountManager.init();
     const {root} = accountManager;
     const balance = await root.balance();
     await (accountManager as TestnetManager).addFunds();

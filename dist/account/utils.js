@@ -67,7 +67,8 @@ async function getKeyFromFile(filePath, create = true) {
 exports.getKeyFromFile = getKeyFromFile;
 function hashPathBase64(s) {
     // Currently base64url is in newest version of node, but need to use polyfill for now
-    return base64url_1.default.encode(buffer_1.Buffer.from(js_sha256_1.default.sha256.arrayBuffer(s)));
+    const result = base64url_1.default.encode(buffer_1.Buffer.from(js_sha256_1.default.sha256.arrayBuffer(s)));
+    return result;
 }
 exports.hashPathBase64 = hashPathBase64;
 function sanitize(s) {

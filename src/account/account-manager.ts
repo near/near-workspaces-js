@@ -257,7 +257,7 @@ export class TestnetManager extends AccountManager {
     const p = path.parse(fileName);
     if (['.ts', '.js'].includes(p.ext)) {
       const hash: string = sanitize(hashPathBase64(fileName));
-      const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}}`;
+      const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
       TestnetManager.numRootAccounts++;
       const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
 

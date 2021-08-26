@@ -212,7 +212,7 @@ class TestnetManager extends AccountManager {
         const p = path.parse(fileName);
         if (['.ts', '.js'].includes(p.ext)) {
             const hash = utils_2.sanitize(utils_2.hashPathBase64(fileName));
-            const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}}`;
+            const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
             TestnetManager.numRootAccounts++;
             const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
             const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
