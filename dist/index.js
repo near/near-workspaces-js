@@ -12,7 +12,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./runner"), exports);
 __exportStar(require("./runtime"), exports);
-__exportStar(require("./helper-funcs"), exports);
+__exportStar(require("./utils"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./account"), exports);
 //# sourceMappingURL=index.js.map

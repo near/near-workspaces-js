@@ -22,68 +22,32 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
-const process_1 = __importDefault(require("process"));
-const fs = __importStar(require("fs/promises"));
-const util_1 = require("util");
-const child_process_1 = require("child_process");
-Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
-const url_1 = require("url");
-const promisify_child_process_1 = require("promisify-child-process");
-const rimraf_1 = __importDefault(require("rimraf"));
-// @ts-expect-error no typings
-const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
-const fs_extra_1 = __importDefault(require("fs-extra"));
-exports.rm = util_1.promisify(rimraf_1.default);
-const sandboxBinary = () => getBinary_1.default().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
-exports.sandboxBinary = sandboxBinary;
-async function exists(d) {
-    let file;
-    try {
-        file = await fs.open(d, 'r');
-    }
-    catch {
-        return false;
-    }
-    finally {
-        await (file === null || file === void 0 ? void 0 : file.close());
-    }
-    return true;
+exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+const bn_js_1 = __importDefault(require("bn.js"));
+const nearAPI = __importStar(require("near-api-js"));
+exports.ONE_NEAR = new bn_js_1.default('1' + '0'.repeat(24));
+function toYocto(amount) {
+    return nearAPI.utils.format.parseNearAmount(amount);
 }
-exports.exists = exists;
-async function asyncSpawn(...args) {
-    debug(`spawning \`${exports.sandboxBinary()} ${args.join(' ')}\``);
-    return promisify_child_process_1.spawn(exports.sandboxBinary(), args, { encoding: 'utf8' });
+exports.toYocto = toYocto;
+function createKeyPair() {
+    return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
-exports.asyncSpawn = asyncSpawn;
-async function install() {
-    const runPath = require.resolve('near-sandbox/install');
-    try {
-        debug(`spawning \`node ${runPath}\``);
-        await promisify_child_process_1.spawn('node', [runPath]);
+exports.createKeyPair = createKeyPair;
+function tGas(x) {
+    if (typeof x === 'string' && Number.isNaN(Number.parseInt(x, 10))) {
+        throw new TypeError(`tGas expects a number or a number-like string; got: ${x}`);
     }
-    catch (error) {
-        console.error(error);
-        throw new Error('Failed to install binary');
-    }
+    return String(x) + '0'.repeat(12);
 }
-function debug(...args) {
-    if (process_1.default.env.NEAR_RUNNER_DEBUG) {
-        console.error(...args);
-    }
+exports.tGas = tGas;
+// Create random number with at least 7 digits by default
+function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9999999 - 1000000)) + 1000000)}`) {
+    return `${prefix}${Date.now()}${suffix}`;
 }
-exports.debug = debug;
-exports.copyDir = util_1.promisify(fs_extra_1.default.copy);
-async function ensureBinary() {
-    const binPath = exports.sandboxBinary();
-    if (!await exists(binPath)) {
-        debug(`binPath=${binPath} doesn't yet exist; installing`);
-        await install();
-    }
+exports.randomAccountId = randomAccountId;
+function asId(id) {
+    return typeof id === 'string' ? id : id.accountId;
 }
-exports.ensureBinary = ensureBinary;
-function isPathLike(something) {
-    return typeof something === 'string' || something instanceof url_1.URL;
-}
-exports.isPathLike = isPathLike;
+exports.asId = asId;
 //# sourceMappingURL=utils.js.map

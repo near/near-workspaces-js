@@ -23,9 +23,9 @@ exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = e
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 const nearAPI = __importStar(require("near-api-js"));
-const helper_funcs_1 = require("../helper-funcs");
-const types_1 = require("../types");
 const utils_1 = require("../utils");
+const types_1 = require("../types");
+const internal_utils_1 = require("../internal-utils");
 const transaction_1 = require("../transaction");
 const jsonrpc_1 = require("../jsonrpc");
 const account_1 = require("./account");
@@ -35,9 +35,9 @@ function timeSuffix(prefix, length = 99999) {
 }
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
-    utils_1.debug(`Looking ${prefix} in ${accounts.join('\n')}`);
+    internal_utils_1.debug(`Looking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
     const paths = accounts.filter(f => f.startsWith(prefix));
-    utils_1.debug(`found [${paths.join(', ')}]`);
+    internal_utils_1.debug(`Found:\n  ${paths.join('\n  ')}`);
     if (paths.length > 0) {
         return paths;
     }
@@ -55,7 +55,7 @@ class AccountManager {
                 return new SandboxManager(config);
             case 'testnet':
                 return new TestnetManager(config);
-            default: throw new Error(`Bad network id: ${network} expected "testnet" or "sandbox"`);
+            default: throw new Error(`Bad network id: "${network}"; expected "testnet" or "sandbox"`);
         }
     }
     getAccount(accountId) {
@@ -65,9 +65,9 @@ class AccountManager {
         return this.getAccount(accountId.split('.').slice(1).join('.'));
     }
     async deleteKey(account_id) {
-        utils_1.debug(`About to delete key for ${account_id}`);
+        internal_utils_1.debug(`About to delete key for ${account_id}`);
         await this.keyStore.removeKey(this.networkId, account_id);
-        utils_1.debug('deleted Key');
+        internal_utils_1.debug('deleted Key');
     }
     async init() {
         return this;
@@ -88,11 +88,11 @@ class AccountManager {
     async getKey(accountId) {
         return this.keyStore.getKey(this.networkId, accountId);
     }
-    /** Sets the provider key to store, otherwise creates a new one */
+    /** Sets the provided key to store, otherwise creates a new one */
     async setKey(accountId, keyPair) {
         const key = keyPair !== null && keyPair !== void 0 ? keyPair : types_1.KeyPairEd25519.fromRandom();
         await this.keyStore.setKey(this.networkId, accountId, key);
-        utils_1.debug(`setting keys for ${accountId}`);
+        internal_utils_1.debug(`setting keys for ${accountId}`);
         return (await this.getKey(accountId));
     }
     async removeKey(accountId) {
@@ -109,10 +109,10 @@ class AccountManager {
         return keyPair;
     }
     async balance(account) {
-        return this.provider.account_balance(helper_funcs_1.asId(account));
+        return this.provider.account_balance(utils_1.asId(account));
     }
     async exists(accountId) {
-        return this.provider.accountExists(helper_funcs_1.asId(accountId));
+        return this.provider.accountExists(utils_1.asId(accountId));
     }
     async executeTransaction(tx, keyPair) {
         const account = new nearAPI.Account(this.connection, tx.senderId);
@@ -156,7 +156,7 @@ class TestnetManager extends AccountManager {
         return keyStore;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return helper_funcs_1.toYocto('10');
+        return utils_1.toYocto('10');
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -178,8 +178,8 @@ class TestnetManager extends AccountManager {
         return this.getAccount(accountId);
     }
     async addFunds() {
-        const temporaryId = helper_funcs_1.randomAccountId();
-        utils_1.debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
+        const temporaryId = utils_1.randomAccountId();
+        internal_utils_1.debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
         const keyPair = await this.getRootKey();
         const { keyStore } = this;
         await keyStore.setKey(this.networkId, temporaryId, keyPair);
@@ -194,10 +194,10 @@ class TestnetManager extends AccountManager {
             const { keyStore } = this;
             await keyStore.setKey(this.networkId, accountId, keyPair);
             await this.createAccount(accountId, keyPair);
-            utils_1.debug(`Added masterAccount ${accountId}
+            internal_utils_1.debug(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
-        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(helper_funcs_1.toYocto('499')))) {
+        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(utils_1.toYocto('499')))) {
             await this.addFunds();
         }
     }
@@ -250,7 +250,7 @@ class SandboxManager extends AccountManager {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return helper_funcs_1.toYocto('200');
+        return utils_1.toYocto('200');
     }
     get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.config.homeDir);

@@ -1,11 +1,11 @@
 import {Buffer} from 'buffer';
 import {join} from 'path';
-import {toYocto} from '../helper-funcs';
+import {toYocto} from '../utils';
 import {FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, ClientConfig, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
 import {JSONRpc} from '../jsonrpc';
-import {debug} from '../utils';
+import {debug} from '../internal-utils';
 import {SandboxServer} from './server';
 
 type AccountShortName = string;

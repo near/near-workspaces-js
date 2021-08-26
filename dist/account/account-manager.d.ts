@@ -19,7 +19,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     get provider(): JSONRpc;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
-    /** Sets the provider key to store, otherwise creates a new one */
+    /** Sets the provided key to store, otherwise creates a new one */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     removeKey(accountId: string): Promise<void>;
     deleteAccount(accountId: string, beneficiaryId: string): Promise<void>;

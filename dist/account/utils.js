@@ -28,14 +28,14 @@ const path_1 = require("path");
 const buffer_1 = require("buffer");
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const base64url_1 = __importDefault(require("base64url"));
-const utils_1 = require("../utils");
+const internal_utils_1 = require("../internal-utils");
 const types_1 = require("../types");
 function findCallerFile() {
     const sites = callsites();
     const files = sites.filter(s => s.getFileName());
     const thisDir = __dirname;
     const parentDir = path_1.dirname(__dirname);
-    utils_1.debug(`looking through ${files.join(', ')}, thisDir: ${thisDir}, parentDir:${parentDir}`);
+    internal_utils_1.debug(`looking through ${files.join(', ')}, thisDir: ${thisDir}, parentDir:${parentDir}`);
     const i = files.findIndex(file => !file.getFileName().startsWith(parentDir));
     return [files[i].getFileName(), files[i].getLineNumber()];
 }
@@ -60,12 +60,12 @@ async function getKeyFromFile(filePath, create = true) {
         if (!create) {
             throw error;
         }
-        utils_1.debug('about to write to ', filePath);
+        internal_utils_1.debug('about to write to ', filePath);
         const keyPair = types_1.KeyPairEd25519.fromRandom();
         await fs.writeFile(filePath, JSON.stringify({
             secret_key: keyPair.toString(),
         }));
-        utils_1.debug('wrote to file ', filePath);
+        internal_utils_1.debug('wrote to file ', filePath);
         return keyPair;
     }
 }

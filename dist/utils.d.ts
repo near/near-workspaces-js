@@ -1,15 +1,8 @@
-/// <reference types="node" />
-import { PathLike } from 'fs';
-import { ChildProcess, spawn as _spawn } from 'child_process';
-import { URL } from 'url';
-import { Output } from 'promisify-child-process';
-export declare const rm: (arg1: string) => Promise<void>;
-export declare const sandboxBinary: () => string;
-export declare function exists(d: PathLike): Promise<boolean>;
-export declare type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
-export declare function asyncSpawn(...args: string[]): ChildProcessPromise;
-export { _spawn as spawn };
-export declare function debug(...args: any[]): void;
-export declare const copyDir: (arg1: string, arg2: string) => Promise<void>;
-export declare function ensureBinary(): Promise<void>;
-export declare function isPathLike(something: any): something is URL | string;
+import BN from 'bn.js';
+import { NamedAccount, KeyPair } from './types';
+export declare const ONE_NEAR: BN;
+export declare function toYocto(amount: string): string;
+export declare function createKeyPair(): KeyPair;
+export declare function tGas(x: string | number): string;
+export declare function randomAccountId(prefix?: string, suffix?: string): string;
+export declare function asId(id: string | NamedAccount): string;

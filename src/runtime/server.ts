@@ -18,7 +18,7 @@ import {
   copyDir,
   sandboxBinary,
   ensureBinary,
-} from '../utils';
+} from '../internal-utils';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',

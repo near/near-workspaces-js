@@ -21,7 +21,7 @@ import {
   NO_DEPOSIT,
   NamedAccount,
 } from './types';
-import {isPathLike} from './utils';
+import {isPathLike} from './internal-utils';
 
 export abstract class Transaction {
   readonly receiverId: string;

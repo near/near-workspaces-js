@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as os from 'os';
 import * as nearAPI from 'near-api-js';
-import {asId, randomAccountId, toYocto} from '../helper-funcs';
+import {asId, randomAccountId, toYocto} from '../utils';
 import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount} from '../types';
-import {debug} from '../utils';
+import {debug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';

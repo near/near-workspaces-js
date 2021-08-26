@@ -1,5 +1,5 @@
 export * from './runner';
 export * from './runtime';
-export * from './helper-funcs';
+export * from './utils';
 export * from './types';
 export * from './account';

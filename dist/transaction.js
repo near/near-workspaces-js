@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
 const fs = __importStar(require("fs/promises"));
 const types_1 = require("./types");
-const utils_1 = require("./utils");
+const internal_utils_1 = require("./internal-utils");
 class Transaction {
     constructor(sender, receiver) {
         this.actions = [];
@@ -46,7 +46,7 @@ class Transaction {
         return this;
     }
     async deployContractFile(code) {
-        return this.deployContract(utils_1.isPathLike(code) ? await fs.readFile(code) : code);
+        return this.deployContract(internal_utils_1.isPathLike(code) ? await fs.readFile(code) : code);
     }
     deployContract(code) {
         this.actions.push(types_1.deployContract(code));

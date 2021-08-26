@@ -184,9 +184,9 @@ export class Account implements NearAccount {
     if (result.result) {
       const value = Buffer.from(result.result).toString();
       try {
-        return JSON.parse(value);  // eslint-disable-line @typescript-eslint/no-unsafe-return
+        return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
       } catch {
-        return value
+        return value;
       }
     }
 

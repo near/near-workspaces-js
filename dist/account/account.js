@@ -122,7 +122,13 @@ class Account {
     async view(method, args = {}) {
         const result = await this.view_raw(method, args);
         if (result.result) {
-            return JSON.parse(buffer_1.Buffer.from(result.result).toString()); // eslint-disable-line @typescript-eslint/no-unsafe-return
+            const value = buffer_1.Buffer.from(result.result).toString();
+            try {
+                return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+            }
+            catch {
+                return value;
+            }
         }
         return result.result;
     }
