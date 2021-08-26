@@ -17,7 +17,7 @@ jobs:
           path: '$HOME/.near-credentials/near-runner'
           key: ${{ matrix.platform }}${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && yarn test:testnet:ci
+        run: yarn && yarn test:testnet:ci 01
   testnet-nocache:
     strategy:
       matrix:
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01
+        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager
   sandbox:
     strategy:
       matrix:
