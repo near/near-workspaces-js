@@ -2,14 +2,14 @@ import * as path from 'path';
 import * as os from 'os';
 import * as nearAPI from 'near-api-js';
 import {asId, randomAccountId, toYocto} from '../helper-funcs';
-import {PublicKey, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount} from '../types';
+import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount} from '../types';
 import {debug} from '../utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';
 import {Account} from './account';
 import {NearAccount} from './near-account';
-import {findCallerFile, getKeyFromFile, hashPathBase64} from './utils';
+import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
 function timeSuffix(prefix: string, length = 99_999): string {
@@ -53,6 +53,10 @@ export abstract class AccountManager implements NearAccountManager {
 
   getAccount(accountId: string): NearAccount {
     return new Account(accountId, this);
+  }
+
+  getParentAccount(accountId: string): NearAccount {
+    return this.getAccount(accountId.split('.').slice(1).join('.'));
   }
 
   async deleteKey(
@@ -148,7 +152,6 @@ export abstract class AccountManager implements NearAccountManager {
     return this.config.rootAccount!;
   }
 
-  // Abstract initRootAccount(): Promise<string>;
   abstract get DEFAULT_INITIAL_BALANCE(): string;
   abstract createFrom(config: Config): Promise<NearAccountManager>;
   abstract get defaultKeyStore(): KeyStore;
@@ -173,6 +176,8 @@ export abstract class AccountManager implements NearAccountManager {
 export class TestnetManager extends AccountManager {
   static readonly KEYSTORE_PATH: string = path.join(os.homedir(), '.near-credentials', 'near-runner');
   static readonly KEY_DIR_PATH: string = path.join(TestnetManager.KEYSTORE_PATH, 'testnet');
+  private static numRootAccounts = 0;
+  private static numTestAccounts = 0;
 
   static get defaultKeyStore(): KeyStore {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
@@ -194,12 +199,18 @@ export class TestnetManager extends AccountManager {
     return this;
   }
 
-  async createAccount(accountId: string, pubKey: PublicKey): Promise<NearAccount> {
-    const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
-      {} as any, // ignored
-      this.config.helperUrl!,
-    );
-    await accountCreator.createAccount(accountId, pubKey);
+  async createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount> {
+    if (accountId.includes('.')) {
+      await this.getParentAccount(accountId).createAccount(accountId, {keyPair});
+      this.accountsCreated.delete(accountId);
+    } else {
+      const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
+        {} as any, // ignored
+        this.config.helperUrl!,
+      );
+      await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+    }
+
     return this.getAccount(accountId);
   }
 
@@ -209,7 +220,7 @@ export class TestnetManager extends AccountManager {
     const keyPair = await this.getRootKey();
     const {keyStore} = this;
     await keyStore.setKey(this.networkId, temporaryId, keyPair);
-    const account = await this.createAccount(temporaryId, keyPair.getPublicKey());
+    const account = await this.createAccount(temporaryId, keyPair);
     await account.delete(this.rootAccountId);
   }
 
@@ -220,14 +231,14 @@ export class TestnetManager extends AccountManager {
       const keyPair = await this.getRootKey();
       const {keyStore} = this;
       await keyStore.setKey(this.networkId, accountId, keyPair);
-      await this.createAccount(accountId, keyPair.getPublicKey());
+      await this.createAccount(accountId, keyPair);
       debug(`Added masterAccount ${
         accountId
       }
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
     }
 
-    if (new BN((await this.root.balance()).available).lt(new BN(toYocto('1000')))) {
+    if (new BN((await this.root.balance()).available).lt(new BN(toYocto('499')))) {
       await this.addFunds();
     }
   }
@@ -237,11 +248,13 @@ export class TestnetManager extends AccountManager {
       return;
     }
 
-    const [fileName, lineNumber] = findCallerFile();
+    const fileName = findCallerFile()[0];
     const p = path.parse(fileName);
     if (['.ts', '.js'].includes(p.ext)) {
-      const hash: string = hashPathBase64(fileName);
-      const name = `l${lineNumber}${hash.slice(0, 6)}`;
+      const hash: string = sanitize(hashPathBase64(fileName));
+      const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}}`;
+      TestnetManager.numRootAccounts++;
+      const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
 
       const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
       const accountId = accounts.shift()!;
@@ -255,12 +268,16 @@ export class TestnetManager extends AccountManager {
     }
 
     throw new Error(
-      `Bad filename/account name passed: ${fileName}`,
+      `Bad filename name passed by callsites: ${fileName}`,
     );
   }
 
   async createFrom(config: Config): Promise<AccountManager> {
-    return (new TestnetManager({...config, ...this.config, rootAccount: undefined})).init();
+    const currentRunAccount = TestnetManager.numTestAccounts;
+    const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
+    TestnetManager.numTestAccounts += 1;
+    const newConfig = {...config, rootAccount: `t${prefix}.${config.rootAccount!}`};
+    return (new TestnetManager(newConfig)).init();
   }
 
   async cleanup(): Promise<void> {
@@ -302,7 +319,7 @@ export class SandboxManager extends AccountManager {
 
 export class ManagedTransaction extends Transaction {
   private delete = false;
-  constructor(private readonly manager: NearAccountManager, sender: NamedAccount | string, receiver: NamedAccount | string) {
+  constructor(private readonly manager: AccountManager, sender: NamedAccount | string, receiver: NamedAccount | string) {
     super(sender, receiver);
   }
 

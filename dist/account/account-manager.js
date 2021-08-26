@@ -61,6 +61,9 @@ class AccountManager {
     getAccount(accountId) {
         return new account_1.Account(accountId, this);
     }
+    getParentAccount(accountId) {
+        return this.getAccount(accountId.split('.').slice(1).join('.'));
+    }
     async deleteKey(account_id) {
         utils_1.debug(`About to delete key for ${account_id}`);
         await this.keyStore.removeKey(this.networkId, account_id);
@@ -162,10 +165,16 @@ class TestnetManager extends AccountManager {
         await this.createAndFundAccount();
         return this;
     }
-    async createAccount(accountId, pubKey) {
-        const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
-        this.config.helperUrl);
-        await accountCreator.createAccount(accountId, pubKey);
+    async createAccount(accountId, keyPair) {
+        if (accountId.includes('.')) {
+            await this.getParentAccount(accountId).createAccount(accountId, { keyPair });
+            this.accountsCreated.delete(accountId);
+        }
+        else {
+            const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
+            this.config.helperUrl);
+            await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+        }
         return this.getAccount(accountId);
     }
     async addFunds() {
@@ -174,7 +183,7 @@ class TestnetManager extends AccountManager {
         const keyPair = await this.getRootKey();
         const { keyStore } = this;
         await keyStore.setKey(this.networkId, temporaryId, keyPair);
-        const account = await this.createAccount(temporaryId, keyPair.getPublicKey());
+        const account = await this.createAccount(temporaryId, keyPair);
         await account.delete(this.rootAccountId);
     }
     async createAndFundAccount() {
@@ -184,11 +193,11 @@ class TestnetManager extends AccountManager {
             const keyPair = await this.getRootKey();
             const { keyStore } = this;
             await keyStore.setKey(this.networkId, accountId, keyPair);
-            await this.createAccount(accountId, keyPair.getPublicKey());
+            await this.createAccount(accountId, keyPair);
             utils_1.debug(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
-        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(helper_funcs_1.toYocto('1000')))) {
+        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(helper_funcs_1.toYocto('499')))) {
             await this.addFunds();
         }
     }
@@ -196,11 +205,13 @@ class TestnetManager extends AccountManager {
         if (this.config.rootAccount !== undefined) {
             return;
         }
-        const [fileName, lineNumber] = utils_2.findCallerFile();
+        const fileName = utils_2.findCallerFile()[0];
         const p = path.parse(fileName);
         if (['.ts', '.js'].includes(p.ext)) {
-            const hash = utils_2.hashPathBase64(fileName);
-            const name = `l${lineNumber}${hash.slice(0, 6)}`;
+            const hash = utils_2.sanitize(utils_2.hashPathBase64(fileName));
+            const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}}`;
+            TestnetManager.numRootAccounts++;
+            const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
             const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
             const accountId = accounts.shift();
             await Promise.all(accounts.map(async (acc) => {
@@ -209,10 +220,14 @@ class TestnetManager extends AccountManager {
             this.config.rootAccount = accountId;
             return;
         }
-        throw new Error(`Bad filename/account name passed: ${fileName}`);
+        throw new Error(`Bad filename name passed by callsites: ${fileName}`);
     }
     async createFrom(config) {
-        return (new TestnetManager({ ...config, ...this.config, rootAccount: undefined })).init();
+        const currentRunAccount = TestnetManager.numTestAccounts;
+        const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
+        TestnetManager.numTestAccounts += 1;
+        const newConfig = { ...config, rootAccount: `t${prefix}.${config.rootAccount}` };
+        return (new TestnetManager(newConfig)).init();
     }
     async cleanup() {
         await Promise.all([...this.accountsCreated.values()]
@@ -222,6 +237,8 @@ class TestnetManager extends AccountManager {
 exports.TestnetManager = TestnetManager;
 TestnetManager.KEYSTORE_PATH = path.join(os.homedir(), '.near-credentials', 'near-runner');
 TestnetManager.KEY_DIR_PATH = path.join(TestnetManager.KEYSTORE_PATH, 'testnet');
+TestnetManager.numRootAccounts = 0;
+TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {
     async init() {
         if (!await this.getKey(this.rootAccountId)) {

@@ -8,6 +8,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
     "callsites": "^4.0.0",

@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxRuntime = exports.TestnetRuntime = exports.Runtime = void 0;
 const buffer_1 = require("buffer");
 const path_1 = require("path");
-const fs_1 = require("fs");
 const helper_funcs_1 = require("../helper-funcs");
 const account_1 = require("../account");
 const jsonrpc_1 = require("../jsonrpc");
@@ -59,8 +58,6 @@ class Runtime {
     async run(fn) {
         utils_1.debug('About to runtime.run with config', this.config);
         try {
-            utils_1.debug('About to call setup');
-            await this.setup();
             utils_1.debug('About to call beforeRun');
             await this.beforeRun();
             await fn(this.accounts, this);
@@ -79,8 +76,6 @@ class Runtime {
     async createRun(fn) {
         utils_1.debug('About to runtime.createRun with config', this.config);
         try {
-            utils_1.debug('About to call setup');
-            await this.setup();
             utils_1.debug('About to call beforeRun');
             await this.beforeRun();
             const accounts = await fn({ runtime: this, root: this.root });
@@ -110,6 +105,7 @@ class TestnetRuntime extends Runtime {
         // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
         utils_1.debug('Skipping initialization function for testnet; will run before each `runner.run`');
         const runtime = new TestnetRuntime(fullConfig);
+        await runtime.manager.init();
         return runtime;
     }
     async createFrom() {
@@ -142,9 +138,6 @@ class TestnetRuntime extends Runtime {
     }
     static get baseAccountId() {
         return 'testnet';
-    }
-    async setup() {
-        // Not needed
     }
     async beforeRun() {
         if (this.config.initFn) {
@@ -210,18 +203,18 @@ class SandboxRuntime extends Runtime {
         return `http://localhost:${this.config.port}`;
     }
     async beforeRun() {
-        if (this.config.init) {
-            await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
-            utils_1.debug('Deployed \'sandbox\' linkdrop contract');
-        }
-    }
-    async setup() {
-        if (!(await utils_1.exists(SandboxRuntime.LINKDROP_PATH))) {
-            utils_1.debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
-            await fs_1.promises.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
-        }
+        // If (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
+        //   debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
+        //   await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
+        // }
         this.server = await server_1.SandboxServer.init(this.config);
         await this.server.start();
+        if (this.config.init) {
+            await this.manager.init();
+            //   Console.log(await this.manager.getKey(this.config.rootAccount!))
+            // await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
+            // debug('Deployed \'sandbox\' linkdrop contract');
+        }
     }
     async afterRun() {
         utils_1.debug(`Closing server with port ${this.config.port}`);

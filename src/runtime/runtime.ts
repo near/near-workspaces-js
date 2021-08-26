@@ -1,12 +1,11 @@
 import {Buffer} from 'buffer';
 import {join} from 'path';
-import {promises as fs} from 'fs';
 import {toYocto} from '../helper-funcs';
 import {FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, ClientConfig, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
 import {JSONRpc} from '../jsonrpc';
-import {debug, exists} from '../utils';
+import {debug} from '../utils';
 import {SandboxServer} from './server';
 
 type AccountShortName = string;
@@ -85,8 +84,6 @@ export abstract class Runtime {
   async run(fn: RunnerFn): Promise<void> {
     debug('About to runtime.run with config', this.config);
     try {
-      debug('About to call setup');
-      await this.setup();
       debug('About to call beforeRun');
       await this.beforeRun();
       await fn(this.accounts, this);
@@ -105,8 +102,6 @@ export abstract class Runtime {
   async createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts> {
     debug('About to runtime.createRun with config', this.config);
     try {
-      debug('About to call setup');
-      await this.setup();
       debug('About to call beforeRun');
       await this.beforeRun();
       const accounts = await fn({runtime: this, root: this.root});
@@ -129,7 +124,6 @@ export abstract class Runtime {
   }
 
   abstract createFrom(): Promise<Runtime>;
-  protected abstract setup(): Promise<void>;
   protected abstract beforeRun(): Promise<void>;
   protected abstract afterRun(): Promise<void>;
 }
@@ -141,6 +135,7 @@ export class TestnetRuntime extends Runtime {
     // Const accountManager = await AccountManager.create(fullConfig.rootAccount ?? filename, TestnetRuntime.KEYSTORE_PATH, TestnetRuntime);
     debug('Skipping initialization function for testnet; will run before each `runner.run`');
     const runtime = new TestnetRuntime(fullConfig);
+    await runtime.manager.init();
     return runtime;
   }
 
@@ -178,10 +173,6 @@ export class TestnetRuntime extends Runtime {
 
   static get baseAccountId(): string {
     return 'testnet';
-  }
-
-  async setup(): Promise<void> {
-    // Not needed
   }
 
   async beforeRun(): Promise<void> {
@@ -270,20 +261,19 @@ export class SandboxRuntime extends Runtime {
   }
 
   async beforeRun(): Promise<void> {
-    if (this.config.init) {
-      await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
-      debug('Deployed \'sandbox\' linkdrop contract');
-    }
-  }
-
-  async setup(): Promise<void> {
-    if (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
-      debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
-      await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
-    }
+    // If (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
+    //   debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
+    //   await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
+    // }
 
     this.server = await SandboxServer.init(this.config);
     await this.server.start();
+    if (this.config.init) {
+      await this.manager.init();
+    //   Console.log(await this.manager.getKey(this.config.rootAccount!))
+      // await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
+      // debug('Deployed \'sandbox\' linkdrop contract');
+    }
   }
 
   async afterRun(): Promise<void> {

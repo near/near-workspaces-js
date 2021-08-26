@@ -8,25 +8,17 @@ import {Transaction} from '../transaction';
 
 export interface NearAccount {
   accountId: string;
-
   balance(): Promise<AccountBalance>;
-
   createTransaction(receiver: NearAccount | string): Transaction;
-
   exists(): Promise<boolean>;
-
   getKey(): Promise<KeyPair | null>;
-
   setKey(keyPair: KeyPair): Promise<PublicKey>;
-
   createAccount(
     accountId: string,
     options?: {keyPair?: KeyPair; initialBalance?: string},
   ): Promise<NearAccount>;
-
   /** Adds suffix to accountId if account isn't sub account or have full including top level account */
   getAccount(accountId: string): NearAccount;
-
   createAndDeploy(
     accountId: string,
     wasm: string | URL | Uint8Array | Buffer,
@@ -77,21 +69,14 @@ export interface NearAccount {
   ): Promise<any>;
 
   view_raw(method: string, args: Record<string, unknown>): Promise<CodeResult>;
-
   view<T>(method: string, args: Record<string, unknown>): Promise<T>;
-
   viewState(): Promise<ContractState> ;
-
   patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
 
   /** Delete account and sends funds to beneficiaryId */
   delete(beneficiaryId: string): Promise<FinalExecutionOutcome>;
-
   makeSubAccount(accountId: string): string;
-
   subAccountOf(accountId: string): boolean;
-
   toJSON(): string;
-
 }
 

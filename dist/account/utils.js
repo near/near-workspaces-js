@@ -22,11 +22,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hashPathBase64 = exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
+exports.sanitize = exports.hashPathBase64 = exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
 const fs = __importStar(require("fs/promises"));
 const path_1 = require("path");
 const buffer_1 = require("buffer");
 const js_sha256_1 = __importDefault(require("js-sha256"));
+const base64url_1 = __importDefault(require("base64url"));
 const utils_1 = require("../utils");
 const types_1 = require("../types");
 function findCallerFile() {
@@ -70,7 +71,12 @@ async function getKeyFromFile(filePath, create = true) {
 }
 exports.getKeyFromFile = getKeyFromFile;
 function hashPathBase64(s) {
-    return buffer_1.Buffer.from(js_sha256_1.default.sha256.arrayBuffer(s)).toString('base64');
+    // Currently base64url is in newest version of node, but need to use polyfill for now
+    return base64url_1.default.encode(buffer_1.Buffer.from(js_sha256_1.default.sha256.arrayBuffer(s)));
 }
 exports.hashPathBase64 = hashPathBase64;
+function sanitize(s) {
+    return s.toLowerCase();
+}
+exports.sanitize = sanitize;
 //# sourceMappingURL=utils.js.map

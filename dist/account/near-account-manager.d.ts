@@ -20,4 +20,5 @@ export interface NearAccountManager {
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     createFrom(config: Config): Promise<NearAccountManager>;
+    init(): Promise<NearAccountManager>;
 }

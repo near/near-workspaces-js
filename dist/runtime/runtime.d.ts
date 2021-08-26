@@ -22,7 +22,6 @@ export declare abstract class Runtime {
     createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
     abstract createFrom(): Promise<Runtime>;
-    protected abstract setup(): Promise<void>;
     protected abstract beforeRun(): Promise<void>;
     protected abstract afterRun(): Promise<void>;
 }
@@ -33,7 +32,6 @@ export declare class TestnetRuntime extends Runtime {
     static get clientConfig(): ClientConfig;
     static get provider(): JSONRpc;
     static get baseAccountId(): string;
-    setup(): Promise<void>;
     beforeRun(): Promise<void>;
     afterRun(): Promise<void>;
 }
@@ -50,7 +48,6 @@ export declare class SandboxRuntime extends Runtime {
     get provider(): JSONRpc;
     get rpcAddr(): string;
     beforeRun(): Promise<void>;
-    setup(): Promise<void>;
     afterRun(): Promise<void>;
 }
 export {};

@@ -2,6 +2,7 @@ import * as fs from 'fs/promises';
 import {dirname} from 'path';
 import {Buffer} from 'buffer';
 import sha256 from 'js-sha256';
+import base64url from 'base64url';
 import {CallSite} from 'callsites';
 import {debug} from '../utils';
 import {KeyPair, KeyPairEd25519} from '../types';
@@ -57,5 +58,10 @@ export async function getKeyFromFile(filePath: string, create = true): Promise<K
 }
 
 export function hashPathBase64(s: string): string {
-  return Buffer.from(sha256.sha256.arrayBuffer(s)).toString('base64');
+  // Currently base64url is in newest version of node, but need to use polyfill for now
+  return base64url.encode(Buffer.from(sha256.sha256.arrayBuffer(s)));
+}
+
+export function sanitize(s: string): string {
+  return s.toLowerCase();
 }

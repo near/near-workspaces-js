@@ -10,13 +10,13 @@ describe('Account Manager', () => {
   }
 
   test('should create a new account', async () => {
-    const accountManager = await AccountManager.create(TestnetRuntime.defaultConfig);
+    const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
     const {root} = accountManager;
     expect(await root.exists()).toBe(true);
   });
 
   test('should be able to add funds', async () => {
-    const accountManager = await AccountManager.create(TestnetRuntime.defaultConfig);
+    const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
     const {root} = accountManager;
     const balance = await root.balance();
     await (accountManager as TestnetManager).addFunds();

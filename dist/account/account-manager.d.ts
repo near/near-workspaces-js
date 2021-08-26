@@ -1,5 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { PublicKey, KeyPair, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount } from '../types';
+import { KeyPair, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
 import { Config } from '../interfaces';
@@ -11,6 +11,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     constructor(config: Config);
     static create(config: Config): AccountManager;
     getAccount(accountId: string): NearAccount;
+    getParentAccount(accountId: string): NearAccount;
     deleteKey(account_id: string): Promise<void>;
     init(): Promise<AccountManager>;
     get root(): NearAccount;
@@ -40,11 +41,13 @@ export declare abstract class AccountManager implements NearAccountManager {
 export declare class TestnetManager extends AccountManager {
     static readonly KEYSTORE_PATH: string;
     static readonly KEY_DIR_PATH: string;
+    private static numRootAccounts;
+    private static numTestAccounts;
     static get defaultKeyStore(): KeyStore;
     get DEFAULT_INITIAL_BALANCE(): string;
     get defaultKeyStore(): KeyStore;
     init(): Promise<AccountManager>;
-    createAccount(accountId: string, pubKey: PublicKey): Promise<NearAccount>;
+    createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount>;
     addFunds(): Promise<void>;
     createAndFundAccount(): Promise<void>;
     initRootAccount(): Promise<void>;
@@ -61,7 +64,7 @@ export declare class SandboxManager extends AccountManager {
 export declare class ManagedTransaction extends Transaction {
     private readonly manager;
     private delete;
-    constructor(manager: NearAccountManager, sender: NamedAccount | string, receiver: NamedAccount | string);
+    constructor(manager: AccountManager, sender: NamedAccount | string, receiver: NamedAccount | string);
     createAccount(): this;
     deleteAccount(beneficiaryId: string): this;
     /**
