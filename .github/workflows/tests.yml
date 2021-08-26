@@ -15,7 +15,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: '$HOME/.near-credentials/near-runner'
-          key: ${{ matrix.platform }}${{ matrix.node-version }}
+          key: ${{ matrix.platform }}${{ runner.os }}-${{ hashFiles('$HOME/.near-credentials/near-runner/testnet/*') }}
       - name: Run tests
         run: yarn && yarn test:testnet:ci 01
   testnet-nocache:
