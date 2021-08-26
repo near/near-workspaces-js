@@ -11,6 +11,7 @@
     "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
+    "bs58": "^4.0.1",
     "callsites": "^4.0.0",
     "fs-extra": "^10.0.0",
     "js-sha256": "^0.9.0",
@@ -42,6 +43,7 @@
   ],
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
+    "@types/bs58": "^4.0.1",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.10",
@@ -74,7 +76,8 @@
       "unicorn/prefer-node-protocol": 0,
       "unicorn/prefer-module": 0,
       "unicorn/no-array-callback-reference": 0,
-      "node/prefer-global/url": 0
+      "node/prefer-global/url": 0,
+      "unicorn/filename-case": 0
     },
     "overrides": [
       {

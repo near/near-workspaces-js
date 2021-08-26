@@ -30,6 +30,7 @@ const transaction_1 = require("../transaction");
 const jsonrpc_1 = require("../jsonrpc");
 const account_1 = require("./account");
 const utils_2 = require("./utils");
+const TransactionManager_1 = require("../transaction-manager/TransactionManager");
 function timeSuffix(prefix, length = 99999) {
     return `${prefix}${Date.now() % length}`;
 }
@@ -124,8 +125,10 @@ class AccountManager {
             oldKey = await this.getKey(account.accountId);
             await this.setKey(account.accountId, keyPair);
         }
-        // @ts-expect-error access shouldn't be protected
-        const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions });
+        const txManager = TransactionManager_1.TransactionManager.fromAccount(account);
+        // @ ts-expect-error access shouldn't be protected
+        // const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
+        const outcome = await txManager.createSignAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions });
         if (oldKey) {
             await this.setKey(account.accountId, oldKey);
         }

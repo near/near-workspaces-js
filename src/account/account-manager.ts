@@ -11,6 +11,7 @@ import {Account} from './account';
 import {NearAccount} from './near-account';
 import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
 import {NearAccountManager} from './near-account-manager';
+import { TransactionManager } from '../transaction-manager/TransactionManager';
 
 function timeSuffix(prefix: string, length = 99_999): string {
   return `${prefix}${Date.now() % length}`;
@@ -137,8 +138,11 @@ export abstract class AccountManager implements NearAccountManager {
       await this.setKey(account.accountId, keyPair);
     }
 
-    // @ts-expect-error access shouldn't be protected
-    const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
+    const txManager = TransactionManager.fromAccount(account);
+
+    // @ ts-expect-error access shouldn't be protected
+    // const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
+    const outcome: FinalExecutionOutcome = await txManager.createSignAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
 
     if (oldKey) {
       await this.setKey(account.accountId, oldKey);
