@@ -68,7 +68,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({ft, ali}) => {
       await init_ft(ft, ali, '1000');
 
-      const totalSupply: string = await ft.view('ft_total_supply', {});
+      const totalSupply: string = await ft.view('ft_total_supply');
       expect(totalSupply).toEqual('1000');
     });
   });
@@ -212,7 +212,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
       const expectedAmount = transferAmount.sub(burnAmount).toString();
 
-      const totalSupply: string = await ft.view('ft_total_supply', {});
+      const totalSupply: string = await ft.view('ft_total_supply');
       expect(totalSupply).toEqual(expectedAmount);
 
       const defiBalance: string = await ft.view('ft_balance_of', {

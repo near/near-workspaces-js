@@ -68,8 +68,8 @@ export interface NearAccount {
     },
   ): Promise<any>;
 
-  view_raw(method: string, args: Record<string, unknown>): Promise<CodeResult>;
-  view<T>(method: string, args: Record<string, unknown>): Promise<T>;
+  view_raw(method: string, args?: Record<string, unknown>): Promise<CodeResult>;
+  view<T>(method: string, args?: Record<string, unknown>): Promise<T>;
   viewState(): Promise<ContractState> ;
   patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
 
