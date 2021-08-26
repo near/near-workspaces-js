@@ -73,7 +73,10 @@ class AccountManager {
         return this;
     }
     get root() {
-        return new account_1.Account(this.rootAccountId, this);
+        if (!this._root) {
+            this._root = new account_1.Account(this.rootAccountId, this);
+        }
+        return this._root;
     }
     get initialBalance() {
         var _a;

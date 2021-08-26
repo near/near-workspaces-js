@@ -8,6 +8,7 @@ import { NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
     protected config: Config;
     accountsCreated: Set<string>;
+    private _root?;
     constructor(config: Config);
     static create(config: Config): AccountManager;
     getAccount(accountId: string): NearAccount;

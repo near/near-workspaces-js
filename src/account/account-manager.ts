@@ -34,6 +34,7 @@ async function findAccountsWithPrefix(
 
 export abstract class AccountManager implements NearAccountManager {
   accountsCreated: Set<string> = new Set();
+  private _root?: NearAccount;
   constructor(
     protected config: Config,
   ) {}
@@ -72,7 +73,11 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   get root(): NearAccount {
-    return new Account(this.rootAccountId, this);
+    if (!this._root) {
+      this._root = new Account(this.rootAccountId, this);
+    }
+
+    return this._root;
   }
 
   get initialBalance(): string {
