@@ -72,7 +72,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test.only('Simple transfer', async () => {
+  test('Simple transfer', async () => {
     await runner.run(async ({ft, ali, root}) => {
       const initialAmount = new BN('10000');
       const transferAmount = new BN('100');
@@ -250,19 +250,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {attachedDeposit: '1', gas: '150000000000000'},
       );
-
-      const promiseOutcome = result.receipts_outcomes[2];
-      if (
-        typeof promiseOutcome.status === 'object'
-        && typeof promiseOutcome.status.Failure === 'object'
-      ) {
-        // Help: update the API so hacky solutions like this aren't required
-        expect(JSON.stringify(promiseOutcome.status.Failure)).toContain(
-          'ParseIntError',
-        );
-      } else {
-        throw new TypeError('unexpected promise outcome');
-      }
+      expect(result.promiseErrorMessagesContain('ParseIntError')).toBeTruthy()
 
       const rootBalance: string = await ft.view('ft_balance_of', {
         account_id: root,

@@ -31,10 +31,7 @@ class PromiseOutcome {
         if (typeof this.status === 'string') {
             return false;
         }
-        if (this.status.SuccessValue !== undefined) {
-            return true;
-        }
-        return false;
+        return this.status.SuccessValue !== undefined;
     }
     get isFailure() {
         if (typeof this.status === 'string') {
@@ -117,10 +114,7 @@ class ExecutionResult {
         if (typeof this.result.status === 'string') {
             return false;
         }
-        if (this.result.status.SuccessValue !== undefined) {
-            return true;
-        }
-        return false;
+        return this.result.status.SuccessValue !== undefined;
     }
     logsContain(pattern) {
         return this.logs.some(includes(pattern));
@@ -148,6 +142,12 @@ class ExecutionResult {
     }
     get promiseSuccessValues() {
         return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.SuccessValue) !== null && _a !== void 0 ? _a : []; });
+    }
+    get promiseErrorMessages() {
+        return this.promiseErrors.map(error => JSON.stringify(error));
+    }
+    promiseErrorMessagesContain(pattern) {
+        return this.promiseErrorMessages.some(includes(pattern));
     }
     parseResult() {
         if (this.succeeded) {

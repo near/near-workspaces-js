@@ -32,3 +32,15 @@ export function asId(id: string | NamedAccount): string {
 }
 
 export const NO_DEPOSIT = new BN('0');
+
+export async function captureError(fn: () => Promise<any>): Promise<string> {
+  try {
+    await fn();
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return error.message;
+    }
+  }
+
+  throw new Error('fn succeeded when expected to throw an exception');
+}

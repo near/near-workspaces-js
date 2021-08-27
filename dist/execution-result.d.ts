@@ -37,6 +37,8 @@ export declare class ExecutionResult {
     get SuccessValue(): string | null;
     get promiseErrors(): ExecutionError[];
     get promiseSuccessValues(): string[];
+    get promiseErrorMessages(): string[];
+    promiseErrorMessagesContain(pattern: string | RegExp): boolean;
     parseResult(): any;
     parsedPromiseResults(): any[];
     summary(): string;

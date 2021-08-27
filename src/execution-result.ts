@@ -45,11 +45,7 @@ export class PromiseOutcome {
       return false;
     }
 
-    if (this.status.SuccessValue !== undefined) {
-      return true;
-    }
-
-    return false;
+    return this.status.SuccessValue !== undefined;
   }
 
   get isFailure(): boolean {
@@ -156,11 +152,7 @@ export class ExecutionResult {
       return false;
     }
 
-    if (this.result.status.SuccessValue !== undefined) {
-      return true;
-    }
-
-    return false;
+    return this.result.status.SuccessValue !== undefined;
   }
 
   logsContain(pattern: string | RegExp): boolean {
@@ -197,6 +189,14 @@ export class ExecutionResult {
 
   get promiseSuccessValues(): string[] {
     return this.receipts_outcomes.flatMap(o => o.SuccessValue ?? []);
+  }
+
+  get promiseErrorMessages(): string[] {
+    return this.promiseErrors.map(error => JSON.stringify(error));
+  }
+
+  promiseErrorMessagesContain(pattern: string | RegExp): boolean {
+    return this.promiseErrorMessages.some(includes(pattern));
   }
 
   parseResult(): any {

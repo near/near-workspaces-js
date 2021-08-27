@@ -134,7 +134,7 @@ class AccountManager {
             await this.setKey(account.accountId, oldKey);
         }
         const result = new execution_result_1.ExecutionResult(outcome, start, end);
-        console.log(result.summary());
+        internal_utils_1.debug(result.summary());
         return result;
     }
     addAccountCreated(account, _sender) {

@@ -148,7 +148,7 @@ export abstract class AccountManager implements NearAccountManager {
     }
 
     const result = new ExecutionResult(outcome, start, end);
-    console.log(result.summary());
+    debug(result.summary());
     return result;
   }
 
