@@ -113,7 +113,7 @@ export interface NearAccount {
    * @param method contract method
    * @param args args to pass to method if required
    */
-  view<T>(method: string, args?: Record<string, unknown>): Promise<T|string>;
+  view<T>(method: string, args?: Record<string, unknown>): Promise<T | string>;
 
   /**
    * Get the data of a contract as a map of raw key/values
