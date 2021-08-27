@@ -63,7 +63,6 @@ class Account {
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId) {
         const id = this.makeSubAccount(accountId);
         return new Account(id, this.manager);
@@ -80,25 +79,11 @@ class Account {
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    /**
-     * Call a NEAR contract and return full results with raw receipts, etc. Example:
-     *
-     *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-     *
-     * @returns nearAPI.providers.FinalExecutionOutcome
-     */
     async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         return this.createTransaction(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .signAndSend(signWithKey);
     }
-    /**
-     * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
-     *
-     *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-     *
-     * @returns any parsed return value, or throws with an error if call failed
-     */
     async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const txResult = await this.call_raw(contractId, methodName, args, {
             gas,
@@ -109,7 +94,7 @@ class Account {
             && typeof txResult.status.SuccessValue === 'string') {
             const value = buffer_1.Buffer.from(txResult.status.SuccessValue, 'base64').toString();
             try {
-                return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+                return JSON.parse(value);
             }
             catch {
                 return value;
@@ -125,7 +110,7 @@ class Account {
         if (result.result) {
             const value = buffer_1.Buffer.from(result.result).toString();
             try {
-                return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+                return JSON.parse(value);
             }
             catch {
                 return value;
@@ -138,8 +123,7 @@ class Account {
     }
     async patchState(key, value_, borshSchema) {
         const data_key = buffer_1.Buffer.from(key).toString('base64');
-        let value = borshSchema ? borsh.serialize(borshSchema, value_) : value_; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-        value = buffer_1.Buffer.from(value).toString('base64');
+        const value = buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_).toString('base64');
         const account_id = this.accountId;
         return this.provider.sandbox_patch_state({
             records: [
@@ -147,13 +131,12 @@ class Account {
                     Data: {
                         account_id,
                         data_key,
-                        value, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+                        value,
                     },
                 },
             ],
         });
     }
-    /** Delete account and sends funds to beneficiaryId */
     async delete(beneficiaryId) {
         return this.createTransaction(this)
             .deleteAccount(beneficiaryId)

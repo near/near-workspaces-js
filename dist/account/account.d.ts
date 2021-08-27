@@ -23,7 +23,6 @@ export declare class Account implements NearAccount {
         keyPair?: KeyPair;
         initialBalance?: string;
     }): Promise<NearAccount>;
-    /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId: string): NearAccount;
     createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
         args?: Record<string, unknown> | Uint8Array;
@@ -33,35 +32,20 @@ export declare class Account implements NearAccount {
         keyPair?: KeyPair;
         method?: string;
     }): Promise<NearAccount>;
-    /**
-     * Call a NEAR contract and return full results with raw receipts, etc. Example:
-     *
-     *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-     *
-     * @returns nearAPI.providers.FinalExecutionOutcome
-     */
     call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<FinalExecutionOutcome>;
-    /**
-     * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
-     *
-     *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-     *
-     * @returns any parsed return value, or throws with an error if call failed
-     */
     call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<T | string>;
     view_raw(method: string, args?: Args): Promise<CodeResult>;
-    view(method: string, args?: Args): Promise<any>;
+    view<T>(method: string, args?: Args): Promise<T | string>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
-    /** Delete account and sends funds to beneficiaryId */
     delete(beneficiaryId: string): Promise<FinalExecutionOutcome>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;

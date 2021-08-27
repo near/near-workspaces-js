@@ -67,7 +67,6 @@ export class Account implements NearAccount {
     return this.getAccount(accountId);
   }
 
-  /** Adds suffix to accountId if account isn't sub account or have full including top level account */
   getAccount(accountId: string): NearAccount {
     const id = this.makeSubAccount(accountId);
     return new Account(id, this.manager);
@@ -105,13 +104,6 @@ export class Account implements NearAccount {
     return this.getAccount(accountId);
   }
 
-  /**
-   * Call a NEAR contract and return full results with raw receipts, etc. Example:
-   *
-   *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-   *
-   * @returns nearAPI.providers.FinalExecutionOutcome
-   */
   async call_raw(
     contractId: NearAccount | string,
     methodName: string,
@@ -131,13 +123,6 @@ export class Account implements NearAccount {
       .signAndSend(signWithKey);
   }
 
-  /**
-   * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
-   *
-   *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
-   *
-   * @returns any parsed return value, or throws with an error if call failed
-   */
   async call<T>(
     contractId: NearAccount | string,
     methodName: string,
@@ -166,7 +151,7 @@ export class Account implements NearAccount {
         'base64',
       ).toString();
       try {
-        return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+        return JSON.parse(value) as T;
       } catch {
         return value;
       }
@@ -179,12 +164,12 @@ export class Account implements NearAccount {
     return this.provider.view_call(this.accountId, method, args);
   }
 
-  async view(method: string, args: Args = {}): Promise<any> {
+  async view<T>(method: string, args: Args = {}): Promise<T | string> {
     const result = await this.view_raw(method, args);
     if (result.result) {
       const value = Buffer.from(result.result).toString();
       try {
-        return JSON.parse(value); // eslint-disable-line @typescript-eslint/no-unsafe-return
+        return JSON.parse(value) as T;
       } catch {
         return value;
       }
@@ -201,8 +186,7 @@ export class Account implements NearAccount {
 
   async patchState(key: string, value_: any, borshSchema?: any): Promise<any> {
     const data_key = Buffer.from(key).toString('base64');
-    let value = borshSchema ? borsh.serialize(borshSchema, value_) : value_; // eslint-disable-line @typescript-eslint/no-unsafe-assignment
-    value = Buffer.from(value).toString('base64');
+    const value = Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_).toString('base64');
     const account_id = this.accountId;
     return this.provider.sandbox_patch_state({
       records: [
@@ -210,14 +194,13 @@ export class Account implements NearAccount {
           Data: {
             account_id,
             data_key,
-            value, // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+            value,
           },
         },
       ],
     });
   }
 
-  /** Delete account and sends funds to beneficiaryId */
   async delete(beneficiaryId: string): Promise<FinalExecutionOutcome> {
     return this.createTransaction(this)
       .deleteAccount(beneficiaryId)

@@ -36,7 +36,7 @@ function timeSuffix(prefix, length = 99999) {
 }
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
-    internal_utils_1.debug(`HOME: ${os.homedir()} PWD: ${process.cwd()} Looking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
+    internal_utils_1.debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
     const paths = accounts.filter(f => f.startsWith(prefix));
     internal_utils_1.debug(`Found:\n  ${paths.join('\n  ')}`);
     if (paths.length > 0) {
