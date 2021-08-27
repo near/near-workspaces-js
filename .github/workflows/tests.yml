@@ -14,7 +14,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - uses: actions/cache@v2
         with:
-          path: '$HOME/.near-credentials/near-runner'
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: '/home/runner/.near-credentials/near-runner'
           key: ${{ matrix.platform }}${{ runner.os }}-${{ hashFiles('$HOME/.near-credentials/near-runner/testnet/*') }}
       - name: Run tests
         run: yarn && yarn test:testnet:ci 01
@@ -39,6 +43,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Run tests
         run: yarn && yarn test:sandbox
   near-sandbox-install:

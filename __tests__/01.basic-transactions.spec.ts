@@ -36,7 +36,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test('Ali sets then gets status', async () => {
     await runner.run(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
-      const result = await contract.view('get_status', {
+      const result: string = await contract.view('get_status', {
         account_id: ali.accountId,
       });
       expect(result).toBe('hello');
@@ -46,7 +46,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test('Root and Ali have different statuses', async () => {
     await runner.run(async ({contract, root, ali}) => {
       await root.call(contract, 'set_status', {message: 'world'});
-      const rootStatus = await contract.view('get_status', {
+      const rootStatus: string = await contract.view('get_status', {
         account_id: root.accountId,
       });
       expect(rootStatus).toBe('world');

@@ -1,7 +1,7 @@
 import {AccountManager, TestnetManager} from '../../src/account/account-manager';
 import {TestnetRuntime, Runner, BN} from '../../src';
 
-jest.setTimeout(500_000);
+jest.setTimeout(300_000);
 
 describe('Account Manager', () => {
   if (!Runner.networkIsTestnet()) {

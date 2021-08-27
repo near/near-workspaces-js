@@ -22,6 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = exports.AccountManager = void 0;
 const path = __importStar(require("path"));
 const os = __importStar(require("os"));
+const process = __importStar(require("process"));
 const nearAPI = __importStar(require("near-api-js"));
 const utils_1 = require("../utils");
 const types_1 = require("../types");
@@ -36,7 +37,7 @@ function timeSuffix(prefix, length = 99999) {
 }
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
-    internal_utils_1.debug(`Looking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
+    internal_utils_1.debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
     const paths = accounts.filter(f => f.startsWith(prefix));
     internal_utils_1.debug(`Found:\n  ${paths.join('\n  ')}`);
     if (paths.length > 0) {
