@@ -23,7 +23,7 @@ async function findAccountsWithPrefix(
   network: string,
 ): Promise<string[]> {
   const accounts = await keyStore.getAccounts(network);
-  debug(`HOME: ${os.homedir()} PWD: ${process.cwd()} Looking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
+  debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
   const paths = accounts.filter(f => f.startsWith(prefix));
   debug(`Found:\n  ${paths.join('\n  ')}`);
   if (paths.length > 0) {
