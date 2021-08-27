@@ -78,7 +78,7 @@
     },
     "overrides": [
       {
-        "files": "__tests__/*.spec.ts",
+        "files": "__tests__/**/*.spec.ts",
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
           "unicorn/prefer-module": 0,
