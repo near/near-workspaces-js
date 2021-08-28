@@ -150,7 +150,7 @@ export class Account {
   async call_raw(
     contractId: Account | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
@@ -176,7 +176,7 @@ export class Account {
   async call(
     contractId: Account | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
