@@ -56,7 +56,7 @@ export declare class Account {
      *
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
+    call_raw(contractId: Account | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -68,7 +68,7 @@ export declare class Account {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call(contractId: Account | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
+    call(contractId: Account | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
