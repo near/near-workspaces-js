@@ -174,7 +174,6 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
 
       expect(result.parseResult()).toStrictEqual(true);
 
-
       expect(result.logs).toContain(
         'The account of the sender was deleted',
       );
@@ -250,7 +249,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {attachedDeposit: '1', gas: '150000000000000'},
       );
-      expect(result.promiseErrorMessagesContain('ParseIntError')).toBeTruthy()
+      expect(result.promiseErrorMessagesContain('ParseIntError')).toBeTruthy();
 
       const rootBalance: string = await ft.view('ft_balance_of', {
         account_id: root,

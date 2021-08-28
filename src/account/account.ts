@@ -142,6 +142,7 @@ export class Account implements NearAccount {
       attachedDeposit,
       signWithKey,
     });
+
     return txResult.parseResult();
   }
 
