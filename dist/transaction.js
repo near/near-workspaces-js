@@ -30,39 +30,39 @@ class Transaction {
         this.senderId = typeof sender === 'string' ? sender : sender.accountId;
         this.receiverId = typeof receiver === 'string' ? receiver : receiver.accountId;
     }
-    addKey(publicKey, accessKey = types_1.fullAccessKey()) {
-        this.actions.push(types_1.addKey(types_1.PublicKey.from(publicKey), accessKey));
+    addKey(publicKey, accessKey = (0, types_1.fullAccessKey)()) {
+        this.actions.push((0, types_1.addKey)(types_1.PublicKey.from(publicKey), accessKey));
         return this;
     }
     createAccount() {
-        this.actions.push(types_1.createAccount());
+        this.actions.push((0, types_1.createAccount)());
         return this;
     }
     deleteAccount(beneficiaryId) {
-        this.actions.push(types_1.deleteAccount(beneficiaryId));
+        this.actions.push((0, types_1.deleteAccount)(beneficiaryId));
         return this;
     }
     deleteKey(publicKey) {
-        this.actions.push(types_1.deleteKey(types_1.PublicKey.from(publicKey)));
+        this.actions.push((0, types_1.deleteKey)(types_1.PublicKey.from(publicKey)));
         return this;
     }
     async deployContractFile(code) {
-        return this.deployContract(internal_utils_1.isPathLike(code) ? await fs.readFile(code) : code);
+        return this.deployContract((0, internal_utils_1.isPathLike)(code) ? await fs.readFile(code) : code);
     }
     deployContract(code) {
-        this.actions.push(types_1.deployContract(code));
+        this.actions.push((0, types_1.deployContract)(code));
         return this;
     }
     functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
-        this.actions.push(types_1.functionCall(methodName, args, new types_1.BN(gas), new types_1.BN(attachedDeposit)));
+        this.actions.push((0, types_1.functionCall)(methodName, args, new types_1.BN(gas), new types_1.BN(attachedDeposit)));
         return this;
     }
     stake(amount, publicKey) {
-        this.actions.push(types_1.stake(new types_1.BN(amount), types_1.PublicKey.from(publicKey)));
+        this.actions.push((0, types_1.stake)(new types_1.BN(amount), types_1.PublicKey.from(publicKey)));
         return this;
     }
     transfer(amount) {
-        this.actions.push(types_1.transfer(new types_1.BN(amount)));
+        this.actions.push((0, types_1.transfer)(new types_1.BN(amount)));
         return this;
     }
 }

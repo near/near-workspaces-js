@@ -32,12 +32,12 @@ export declare class Account implements NearAccount {
         keyPair?: KeyPair;
         method?: string;
     }): Promise<NearAccount>;
-    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
+    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<FinalExecutionOutcome>;
-    call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
+    call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
