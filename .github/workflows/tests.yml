@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn --ignore-scripts && yarn test:sandbox
+        run: yarn && node node_modules/near-sandbox/install && yarn test:sandbox
   near-sandbox-install:
     strategy:
       matrix:
