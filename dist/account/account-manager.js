@@ -36,9 +36,9 @@ function timeSuffix(prefix, length = 99999) {
 }
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
-    (0, internal_utils_1.debug)(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
+    internal_utils_1.debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
     const paths = accounts.filter(f => f.startsWith(prefix));
-    (0, internal_utils_1.debug)(`Found:\n  ${paths.join('\n  ')}`);
+    internal_utils_1.debug(`Found:\n  ${paths.join('\n  ')}`);
     if (paths.length > 0) {
         return paths;
     }
@@ -66,9 +66,9 @@ class AccountManager {
         return this.getAccount(accountId.split('.').slice(1).join('.'));
     }
     async deleteKey(account_id) {
-        (0, internal_utils_1.debug)(`About to delete key for ${account_id}`);
+        internal_utils_1.debug(`About to delete key for ${account_id}`);
         await this.keyStore.removeKey(this.networkId, account_id);
-        (0, internal_utils_1.debug)('deleted Key');
+        internal_utils_1.debug('deleted Key');
     }
     async init() {
         return this;
@@ -96,7 +96,7 @@ class AccountManager {
     async setKey(accountId, keyPair) {
         const key = keyPair !== null && keyPair !== void 0 ? keyPair : types_1.KeyPairEd25519.fromRandom();
         await this.keyStore.setKey(this.networkId, accountId, key);
-        (0, internal_utils_1.debug)(`setting keys for ${accountId}`);
+        internal_utils_1.debug(`setting keys for ${accountId}`);
         return (await this.getKey(accountId));
     }
     async removeKey(accountId) {
@@ -113,10 +113,10 @@ class AccountManager {
         return keyPair;
     }
     async balance(account) {
-        return this.provider.account_balance((0, utils_1.asId)(account));
+        return this.provider.account_balance(utils_1.asId(account));
     }
     async exists(accountId) {
-        return this.provider.accountExists((0, utils_1.asId)(accountId));
+        return this.provider.accountExists(utils_1.asId(accountId));
     }
     async executeTransaction(tx, keyPair) {
         const account = new nearAPI.Account(this.connection, tx.senderId);
@@ -160,7 +160,7 @@ class TestnetManager extends AccountManager {
         return keyStore;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return (0, utils_1.toYocto)('10');
+        return utils_1.toYocto('10');
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -182,8 +182,8 @@ class TestnetManager extends AccountManager {
         return this.getAccount(accountId);
     }
     async addFunds() {
-        const temporaryId = (0, utils_1.randomAccountId)();
-        (0, internal_utils_1.debug)(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
+        const temporaryId = utils_1.randomAccountId();
+        internal_utils_1.debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
         const keyPair = await this.getRootKey();
         const { keyStore } = this;
         await keyStore.setKey(this.networkId, temporaryId, keyPair);
@@ -198,10 +198,10 @@ class TestnetManager extends AccountManager {
             const { keyStore } = this;
             await keyStore.setKey(this.networkId, accountId, keyPair);
             await this.createAccount(accountId, keyPair);
-            (0, internal_utils_1.debug)(`Added masterAccount ${accountId}
+            internal_utils_1.debug(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
-        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN((0, utils_1.toYocto)('499')))) {
+        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN(utils_1.toYocto('499')))) {
             await this.addFunds();
         }
     }
@@ -209,10 +209,10 @@ class TestnetManager extends AccountManager {
         if (this.config.rootAccount !== undefined) {
             return;
         }
-        const fileName = (0, utils_2.findCallerFile)()[0];
+        const fileName = utils_2.findCallerFile()[0];
         const p = path.parse(fileName);
         if (['.ts', '.js'].includes(p.ext)) {
-            const hash = (0, utils_2.sanitize)((0, utils_2.hashPathBase64)(fileName));
+            const hash = utils_2.sanitize(utils_2.hashPathBase64(fileName));
             const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
             TestnetManager.numRootAccounts++;
             const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
@@ -246,7 +246,7 @@ TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {
     async init() {
         if (!await this.getKey(this.rootAccountId)) {
-            await this.setKey(this.rootAccountId, await (0, utils_2.getKeyFromFile)(this.keyFilePath));
+            await this.setKey(this.rootAccountId, await utils_2.getKeyFromFile(this.keyFilePath));
         }
         return this;
     }
@@ -254,7 +254,7 @@ class SandboxManager extends AccountManager {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return (0, utils_1.toYocto)('200');
+        return utils_1.toYocto('200');
     }
     get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.config.homeDir);
