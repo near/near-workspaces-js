@@ -107,7 +107,7 @@ export class Account implements NearAccount {
   async call_raw(
     contractId: NearAccount | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
@@ -126,7 +126,7 @@ export class Account implements NearAccount {
   async call<T>(
     contractId: NearAccount | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     {
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
