@@ -6,7 +6,7 @@ import { KeyPair } from 'near-api-js';
 import { AccountBalance, PublicKey, CodeResult } from '../types';
 import { ContractState } from '../contract-state';
 import { Transaction } from '../transaction';
-import { ExecutionResult } from '../execution-result';
+import { TransactionResult } from '../transaction-result';
 export interface NearAccount {
     /** Full account id for given account. */
     readonly accountId: string;
@@ -73,7 +73,7 @@ export interface NearAccount {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<ExecutionResult>;
+    }): Promise<TransactionResult>;
     /**
      * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
      *
@@ -111,7 +111,7 @@ export interface NearAccount {
      */
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
     /** Delete account and sends funds to beneficiaryId */
-    delete(beneficiaryId: string): Promise<ExecutionResult>;
+    delete(beneficiaryId: string): Promise<TransactionResult>;
     /**
      * Adds the current account's id as the root account `<accountId>.<thisAccountID>`
      * @param accountId prefix of subaccount

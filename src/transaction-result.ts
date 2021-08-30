@@ -20,10 +20,10 @@ function includes(pattern: string | RegExp): (s: string) => boolean {
   return s => pattern.test(s);
 }
 
-function parseValue(value: string): any {
+function parseValue<T>(value: string): T | string {
   const buffer = Buffer.from(value, 'base64').toString();
   try {
-    return JSON.parse(buffer);
+    return JSON.parse(buffer) as T;
   } catch {
     return buffer;
   }
@@ -53,11 +53,7 @@ export class PromiseOutcome {
       return false;
     }
 
-    if (this.status.Failure !== undefined) {
-      return true;
-    }
-
-    return false;
+    return this.status.Failure !== undefined;
   }
 
   get executionStatus(): ExecutionStatus {
@@ -101,7 +97,7 @@ export class PromiseOutcome {
   }
 }
 
-export class ExecutionResult {
+export class TransactionResult {
   constructor(
     public readonly result: FinalExecutionOutcome,
     public readonly startMs: number,
@@ -155,6 +151,14 @@ export class ExecutionResult {
     return this.result.status.SuccessValue !== undefined;
   }
 
+  get failed(): boolean {
+    if (typeof this.result.status === 'string') {
+      return false;
+    }
+
+    return this.result.status.Failure !== undefined;
+  }
+
   logsContain(pattern: string | RegExp): boolean {
     return this.logs.some(includes(pattern));
   }
@@ -199,9 +203,9 @@ export class ExecutionResult {
     return this.promiseErrorMessages.some(includes(pattern));
   }
 
-  parseResult(): any {
+  parseResult<T>(): T {
     if (this.succeeded) {
-      return parseValue(this.SuccessValue!);
+      return parseValue<T>(this.SuccessValue!) as T;
     }
 
     throw new Error(JSON.stringify(this.status));
@@ -229,3 +233,15 @@ export interface TransactionReceipt {
 function transactionReceiptToString(tx: TransactionReceipt): string {
   return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
 }
+
+export class TransactionError extends Error {
+  constructor(result: TransactionResult) {
+    super(JSON.stringify(result));
+  }
+
+  parse(): ExecutionOutcome {
+    return JSON.parse(this.message) as ExecutionOutcome;
+  }
+}
+
+export type TxResult = TransactionResult;

@@ -32,7 +32,7 @@ const types_1 = require("../types");
 function findCallerFile() {
     const sites = callsites();
     const files = sites.filter(s => s.getFileName());
-    const parentDir = path_1.dirname(__dirname);
+    const parentDir = (0, path_1.dirname)(__dirname);
     const i = files.findIndex(file => !file.getFileName().startsWith(parentDir));
     return [files[i].getFileName(), files[i].getLineNumber()];
 }

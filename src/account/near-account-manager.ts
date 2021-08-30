@@ -1,5 +1,5 @@
 import {KeyPair} from 'near-api-js';
-import {ExecutionResult} from '../execution-result';
+import {TransactionResult} from '../transaction-result';
 import {Config} from '../interfaces';
 import {JSONRpc} from '../jsonrpc';
 import {Transaction} from '../transaction';
@@ -11,7 +11,7 @@ export interface NearAccountManager {
   readonly initialBalance: string;
   readonly root: NearAccount;
   balance(accountId: string | NearAccount): Promise<AccountBalance>;
-  executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<ExecutionResult>;
+  executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
   addAccountCreated(account: string, sender: string): void;
   getAccount(accountId: string): NearAccount;
   getKey(accountId: string): Promise<KeyPair | null>;

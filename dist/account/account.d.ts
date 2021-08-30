@@ -6,7 +6,7 @@ import { KeyPair, PublicKey, CodeResult, AccountBalance, Args } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JSONRpc } from '../jsonrpc';
-import { ExecutionResult } from '../execution-result';
+import { TransactionResult } from '../transaction-result';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
@@ -37,7 +37,7 @@ export declare class Account implements NearAccount {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<ExecutionResult>;
+    }): Promise<TransactionResult>;
     call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
@@ -47,7 +47,7 @@ export declare class Account implements NearAccount {
     view<T>(method: string, args?: Args): Promise<T | string>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
-    delete(beneficiaryId: string): Promise<ExecutionResult>;
+    delete(beneficiaryId: string): Promise<TransactionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
     toJSON(): string;

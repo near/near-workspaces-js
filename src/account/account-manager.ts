@@ -8,7 +8,7 @@ import {debug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';
-import {ExecutionResult} from '../execution-result';
+import {TransactionResult} from '../transaction-result';
 import {Account} from './account';
 import {NearAccount} from './near-account';
 import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
@@ -131,7 +131,7 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.accountExists(asId(accountId));
   }
 
-  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<ExecutionResult> {
+  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
     const account: nearAPI.Account = new nearAPI.Account(this.connection, tx.senderId);
     let oldKey: KeyPair | null = null;
     if (keyPair) {
@@ -141,13 +141,13 @@ export abstract class AccountManager implements NearAccountManager {
 
     const start = Date.now();
     // @ts-expect-error access shouldn't be protected
-    const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions});
+    const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions, returnError: false});
     const end = Date.now();
     if (oldKey) {
       await this.setKey(account.accountId, oldKey);
     }
 
-    const result = new ExecutionResult(outcome, start, end);
+    const result = new TransactionResult(outcome, start, end);
     debug(result.summary());
     return result;
   }
@@ -348,7 +348,7 @@ export class ManagedTransaction extends Transaction {
    * @param keyPair Temporary key to sign transaction
    * @returns
    */
-  async signAndSend(keyPair?: KeyPair): Promise<ExecutionResult> {
+  async signAndSend(keyPair?: KeyPair): Promise<TransactionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
     if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);

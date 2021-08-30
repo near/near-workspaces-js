@@ -29,6 +29,7 @@ const borsh = __importStar(require("borsh"));
 const types_1 = require("../types");
 const contract_state_1 = require("../contract-state");
 const utils_1 = require("../utils");
+const transaction_result_1 = require("../transaction-result");
 class Account {
     constructor(_accountId, manager) {
         this._accountId = _accountId;
@@ -90,6 +91,9 @@ class Account {
             attachedDeposit,
             signWithKey,
         });
+        if (txResult.failed) {
+            throw new transaction_result_1.TransactionError(txResult);
+        }
         return txResult.parseResult();
     }
     async view_raw(method, args = {}) {

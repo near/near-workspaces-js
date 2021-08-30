@@ -29,6 +29,7 @@ export declare class ExecutionResult {
     get errors(): Array<Record<string, unknown>>;
     get status(): FinalExecutionStatus | FinalExecutionStatusBasic;
     get succeeded(): boolean;
+    get failed(): boolean;
     logsContain(pattern: string | RegExp): boolean;
     findLogs(pattern: string | RegExp): string[];
     promiseValuesContain(pattern: string | RegExp): boolean;
@@ -39,7 +40,7 @@ export declare class ExecutionResult {
     get promiseSuccessValues(): string[];
     get promiseErrorMessages(): string[];
     promiseErrorMessagesContain(pattern: string | RegExp): boolean;
-    parseResult(): any;
+    parseResult<T>(): T;
     parsedPromiseResults(): any[];
     summary(): string;
 }
@@ -51,4 +52,8 @@ export interface TransactionReceipt {
     receiver_id: string;
     signature: string;
     signer_id: string;
+}
+export declare class TransactionError extends Error {
+    constructor(result: ExecutionResult);
+    parse(): ExecutionOutcome;
 }

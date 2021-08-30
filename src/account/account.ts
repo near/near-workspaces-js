@@ -14,7 +14,7 @@ import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JSONRpc} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
-import {ExecutionResult} from '../execution-result';
+import {TransactionResult, TransactionError} from '../transaction-result';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
 
@@ -117,7 +117,7 @@ export class Account implements NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     } = {},
-  ): Promise<ExecutionResult> {
+  ): Promise<TransactionResult> {
     return this.createTransaction(contractId)
       .functionCall(methodName, args, {gas, attachedDeposit})
       .signAndSend(signWithKey);
@@ -142,8 +142,11 @@ export class Account implements NearAccount {
       attachedDeposit,
       signWithKey,
     });
+    if (txResult.failed) {
+      throw new TransactionError(txResult);
+    }
 
-    return txResult.parseResult();
+    return txResult.parseResult<T>();
   }
 
   async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
@@ -187,7 +190,7 @@ export class Account implements NearAccount {
     });
   }
 
-  async delete(beneficiaryId: string): Promise<ExecutionResult> {
+  async delete(beneficiaryId: string): Promise<TransactionResult> {
     return this.createTransaction(this)
       .deleteAccount(beneficiaryId)
       .signAndSend();

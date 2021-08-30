@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExecutionResult = exports.PromiseOutcome = void 0;
+exports.TransactionError = exports.ExecutionResult = exports.PromiseOutcome = void 0;
 const buffer_1 = require("buffer");
 function includes(pattern) {
     if (typeof pattern === 'string') {
@@ -37,10 +37,7 @@ class PromiseOutcome {
         if (typeof this.status === 'string') {
             return false;
         }
-        if (this.status.Failure !== undefined) {
-            return true;
-        }
-        return false;
+        return this.status.Failure !== undefined;
     }
     get executionStatus() {
         return this.status;
@@ -116,6 +113,12 @@ class ExecutionResult {
         }
         return this.result.status.SuccessValue !== undefined;
     }
+    get failed() {
+        if (typeof this.result.status === 'string') {
+            return false;
+        }
+        return this.result.status.Failure !== undefined;
+    }
     logsContain(pattern) {
         return this.logs.some(includes(pattern));
     }
@@ -166,4 +169,13 @@ exports.ExecutionResult = ExecutionResult;
 function transactionReceiptToString(tx) {
     return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
 }
+class TransactionError extends Error {
+    constructor(result) {
+        super(JSON.stringify(result));
+    }
+    parse() {
+        return JSON.parse(this.message);
+    }
+}
+exports.TransactionError = TransactionError;
 //# sourceMappingURL=execution-result.js.map

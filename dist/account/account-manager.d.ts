@@ -3,7 +3,7 @@ import { KeyPair, KeyStore, AccountBalance, NamedAccount } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
 import { Config } from '../interfaces';
-import { ExecutionResult } from '../execution-result';
+import { TransactionResult } from '../transaction-result';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
@@ -28,7 +28,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
     exists(accountId: string | NearAccount): Promise<boolean>;
-    executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<ExecutionResult>;
+    executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     addAccountCreated(account: string, _sender: string): void;
     cleanup(): Promise<void>;
     get rootAccountId(): string;
@@ -74,5 +74,5 @@ export declare class ManagedTransaction extends Transaction {
      * @param keyPair Temporary key to sign transaction
      * @returns
      */
-    signAndSend(keyPair?: KeyPair): Promise<ExecutionResult>;
+    signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
 }
