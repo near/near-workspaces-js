@@ -42,7 +42,6 @@ export declare abstract class AccountManager implements NearAccountManager {
 }
 export declare class TestnetManager extends AccountManager {
     static readonly KEYSTORE_PATH: string;
-    static readonly KEY_DIR_PATH: string;
     private static numRootAccounts;
     private static numTestAccounts;
     static get defaultKeyStore(): KeyStore;

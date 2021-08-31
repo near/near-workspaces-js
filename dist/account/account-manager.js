@@ -244,8 +244,7 @@ class TestnetManager extends AccountManager {
     }
 }
 exports.TestnetManager = TestnetManager;
-TestnetManager.KEYSTORE_PATH = path.join(os.homedir(), '.near-credentials', 'near-runner');
-TestnetManager.KEY_DIR_PATH = path.join(TestnetManager.KEYSTORE_PATH, 'testnet');
+TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials');
 TestnetManager.numRootAccounts = 0;
 TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {
