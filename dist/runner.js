@@ -8,14 +8,7 @@ const process_1 = __importDefault(require("process"));
 const runtime_1 = require("./runtime");
 class Runner {
     constructor(runtimePromise) {
-        let runtimeReady;
-        this.ready = new Promise(resolve => {
-            runtimeReady = resolve;
-        });
-        runtimePromise.then(runtime => {
-            this.runtime = runtime;
-            runtimeReady();
-        });
+        this.ready = this.startWaiting(runtimePromise);
     }
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
@@ -24,8 +17,7 @@ class Runner {
         var _a;
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         config.network = (_a = config.network) !== null && _a !== void 0 ? _a : this.getNetworkFromEnv();
-        const runtime = runtime_1.Runtime.create(config, fn);
-        return new Runner(runtime);
+        return new Runner(runtime_1.Runtime.create(config, fn));
     }
     static networkIsTestnet() {
         return this.getNetworkFromEnv() === 'testnet';
@@ -45,6 +37,9 @@ class Runner {
                 throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
                     + 'use \'testnet\' or \'sandbox\' (the default)');
         }
+    }
+    async startWaiting(runtime) {
+        this.runtime = await runtime;
     }
     /**
      * Sets up the context, runs the function, and tears it down.

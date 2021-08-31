@@ -2,7 +2,6 @@ import { Runtime } from './runtime';
 import { Config, RunnerFn, CreateRunnerFn } from './interfaces';
 export declare class Runner {
     private runtime?;
-    private readonly runnerReady;
     private readonly ready;
     private constructor();
     /** Create the initial enviorment for the test to run in.
@@ -12,6 +11,7 @@ export declare class Runner {
     static networkIsTestnet(): boolean;
     static networkIsSandbox(): boolean;
     static getNetworkFromEnv(): 'sandbox' | 'testnet';
+    startWaiting(runtime: Promise<Runtime>): Promise<void>;
     /**
      * Sets up the context, runs the function, and tears it down.
      * @param fn function to pass runtime to.

@@ -45,25 +45,21 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
   );
 }
 
+jest.setTimeout(500_000);
+const runner = Runner.create(async ({root}) => ({
+  ft: await root.createAndDeploy(
+    'fungible-token',
+    path.join(__dirname, 'build', 'debug', 'fungible_token.wasm'),
+  ),
+  defi: await root.createAndDeploy(
+    'defi',
+    path.join(__dirname, 'build', 'debug', 'defi.wasm'),
+  ),
+  ali: await root.createAccount('ali'),
+}));
+
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-  let runner: Runner;
-  jest.setTimeout(500_000);
-
-  beforeAll(async () => {
-    runner = await Runner.create(async ({root}) => ({
-      ft: await root.createAndDeploy(
-        'fungible-token',
-        path.join(__dirname, 'build', 'debug', 'fungible_token.wasm'),
-      ),
-      defi: await root.createAndDeploy(
-        'defi',
-        path.join(__dirname, 'build', 'debug', 'defi.wasm'),
-      ),
-      ali: await root.createAccount('ali'),
-    }));
-  });
-
-  test('Total supply', async () => {
+  test.concurrent('Total supply', async () => {
     await runner.run(async ({ft, ali}) => {
       await init_ft(ft, ali, '1000');
 
@@ -72,7 +68,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Simple transfer', async () => {
+  test.concurrent('Simple transfer', async () => {
     await runner.run(async ({ft, ali, root}) => {
       const initialAmount = new BN('10000');
       const transferAmount = new BN('100');
@@ -102,7 +98,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Can close empty balance account', async () => {
+  test.concurrent('Can close empty balance account', async () => {
     await runner.run(async ({ft, ali, root}) => {
       await init_ft(ft, root);
 
@@ -119,7 +115,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Can force close non-empty balance account', async () => {
+  test.concurrent('Can force close non-empty balance account', async () => {
     await runner.run(async ({ft, root}) => {
       await init_ft(ft, root, '100');
       const errorString = await captureError(async () =>
@@ -139,7 +135,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Transfer call with burned amount', async () => {
+  test.concurrent('Transfer call with burned amount', async () => {
     await runner.run(async ({ft, defi, root}) => {
       const initialAmount = new BN(10_000);
       const transferAmount = new BN(100);
@@ -197,7 +193,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Transfer call immediate return no refund', async () => {
+  test.concurrent('Transfer call immediate return no refund', async () => {
     await runner.run(async ({ft, defi, root}) => {
       const initialAmount = new BN(10_000);
       const transferAmount = new BN(100);
@@ -229,7 +225,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Transfer call promise panics for a full refund', async () => {
+  test.concurrent('Transfer call promise panics for a full refund', async () => {
     await runner.run(async ({ft, defi, root}) => {
       const initialAmount = new BN(10_000);
       const transferAmount = new BN(100);

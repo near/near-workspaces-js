@@ -11,20 +11,16 @@ import path from 'path';
 import {Runner} from '../src';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-  let runner: Runner;
   jest.setTimeout(60_000);
+  const runner = Runner.create(async ({root}) => ({
+    contract: await root.createAndDeploy(
+      'status-message',
+      path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
+    ),
+    ali: await root.createAccount('ali'),
+  }));
 
-  beforeAll(async () => {
-    runner = await Runner.create(async ({root}) => ({
-      contract: await root.createAndDeploy(
-        'status-message',
-        path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
-      ),
-      ali: await root.createAccount('ali'),
-    }));
-  });
-
-  test('Root gets null status', async () => {
+  test.concurrent('Root gets null status', async () => {
     await runner.run(async ({contract, root}) => {
       const result = await contract.view('get_status', {
         account_id: root.accountId,
@@ -33,7 +29,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Ali sets then gets status', async () => {
+  test.concurrent('Ali sets then gets status', async () => {
     await runner.run(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
       const result: string = await contract.view('get_status', {
@@ -43,7 +39,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Root and Ali have different statuses', async () => {
+  test.concurrent('Root and Ali have different statuses', async () => {
     await runner.run(async ({contract, root, ali}) => {
       await root.call(contract, 'set_status', {message: 'world'});
       const rootStatus: string = await contract.view('get_status', {

@@ -4,18 +4,10 @@ import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 
 export class Runner {
   private runtime?: Runtime;
-  private readonly runnerReady: any;
   private readonly ready: Promise<void>;
   private constructor(runtimePromise: Promise<Runtime>,
   ) {
-    let runtimeReady: any;
-    this.ready = new Promise(resolve => {
-      runtimeReady = resolve;
-    });
-    runtimePromise.then(runtime => {
-      this.runtime = runtime;
-      runtimeReady();
-    });
+    this.ready = this.startWaiting(runtimePromise);
   }
 
   /** Create the initial enviorment for the test to run in.
@@ -27,8 +19,7 @@ export class Runner {
   ): Runner {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     config.network = config.network ?? this.getNetworkFromEnv();
-    const runtime = Runtime.create(config, fn);
-    return new Runner(runtime);
+    return new Runner(Runtime.create(config, fn));
   }
 
   static networkIsTestnet(): boolean {
@@ -53,6 +44,10 @@ export class Runner {
           + 'use \'testnet\' or \'sandbox\' (the default)',
         );
     }
+  }
+
+  async startWaiting(runtime: Promise<Runtime>): Promise<void> {
+    this.runtime = await runtime;
   }
 
   /**

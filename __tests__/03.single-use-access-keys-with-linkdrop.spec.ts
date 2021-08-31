@@ -28,18 +28,14 @@ impl Linkdrop {
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60_000);
-  let runner: Runner;
+  const runner = Runner.create(async ({root}) => ({
+    linkdrop: await root.createAndDeploy(
+      'linkdrop',
+      path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
+    ),
+  }));
 
-  beforeAll(async () => {
-    runner = await Runner.create(async ({root}) => ({
-      linkdrop: await root.createAndDeploy(
-        'linkdrop',
-        path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
-      ),
-    }));
-  });
-
-  test('Use `create_account_and_claim` to create a new account', async () => {
+  test.concurrent('Use `create_account_and_claim` to create a new account', async () => {
     await runner.run(async ({root, linkdrop}) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
@@ -82,7 +78,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     });
   });
 
-  test('Use `claim` to transfer to an existing account', async () => {
+  test.concurrent('Use `claim` to transfer to an existing account', async () => {
     await runner.run(async ({root, linkdrop}) => {
       const bob = await root.createAccount('bob');
       const originalBalance = await bob.balance();
