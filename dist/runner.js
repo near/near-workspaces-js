@@ -7,17 +7,24 @@ exports.Runner = void 0;
 const process_1 = __importDefault(require("process"));
 const runtime_1 = require("./runtime");
 class Runner {
-    constructor(runtime) {
-        this.runtime = runtime;
+    constructor(runtimePromise) {
+        let runtimeReady;
+        this.ready = new Promise(resolve => {
+            runtimeReady = resolve;
+        });
+        runtimePromise.then(runtime => {
+            this.runtime = runtime;
+            runtimeReady();
+        });
     }
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
      */
-    static async create(configOrFunction, f) {
+    static create(configOrFunction, f) {
         var _a;
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         config.network = (_a = config.network) !== null && _a !== void 0 ? _a : this.getNetworkFromEnv();
-        const runtime = await runtime_1.Runtime.create(config, fn);
+        const runtime = runtime_1.Runtime.create(config, fn);
         return new Runner(runtime);
     }
     static networkIsTestnet() {
@@ -45,6 +52,7 @@ class Runner {
      * @returns the runtime used
      */
     async run(fn) {
+        await this.ready;
         const runtime = await this.runtime.createFrom();
         await runtime.run(fn);
         return runtime;
@@ -55,6 +63,7 @@ class Runner {
      * @returns
      */
     async runSandbox(fn) {
+        await this.ready;
         if (this.runtime.config.network === 'sandbox') {
             return this.run(fn);
         }

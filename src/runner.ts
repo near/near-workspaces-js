@@ -3,20 +3,31 @@ import {Runtime} from './runtime';
 import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 
 export class Runner {
-  private constructor(
-    private readonly runtime: Runtime,
-  ) { /* auto-assigns to this.config & this.args */ }
+  private runtime?: Runtime;
+  private readonly runnerReady: any;
+  private readonly ready: Promise<void>;
+  private constructor(runtimePromise: Promise<Runtime>,
+  ) {
+    let runtimeReady: any;
+    this.ready = new Promise(resolve => {
+      runtimeReady = resolve;
+    });
+    runtimePromise.then(runtime => {
+      this.runtime = runtime;
+      runtimeReady();
+    });
+  }
 
   /** Create the initial enviorment for the test to run in.
    * For example create accounts and deploy contracts that future tests will use.
    */
-  static async create(
+  static create(
     configOrFunction: CreateRunnerFn | Partial<Config>,
     f?: CreateRunnerFn,
-  ): Promise<Runner> {
+  ): Runner {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     config.network = config.network ?? this.getNetworkFromEnv();
-    const runtime = await Runtime.create(config, fn);
+    const runtime = Runtime.create(config, fn);
     return new Runner(runtime);
   }
 
@@ -50,7 +61,8 @@ export class Runner {
    * @returns the runtime used
    */
   async run(fn: RunnerFn): Promise<Runtime> {
-    const runtime = await this.runtime.createFrom();
+    await this.ready;
+    const runtime = await this.runtime!.createFrom();
     await runtime.run(fn);
     return runtime;
   }
@@ -61,7 +73,8 @@ export class Runner {
    * @returns
    */
   async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
-    if (this.runtime.config.network === 'sandbox') {
+    await this.ready;
+    if (this.runtime!.config.network === 'sandbox') {
       return this.run(fn);
     }
 

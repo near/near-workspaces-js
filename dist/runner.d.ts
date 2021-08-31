@@ -1,12 +1,14 @@
 import { Runtime } from './runtime';
 import { Config, RunnerFn, CreateRunnerFn } from './interfaces';
 export declare class Runner {
-    private readonly runtime;
+    private runtime?;
+    private readonly runnerReady;
+    private readonly ready;
     private constructor();
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
      */
-    static create(configOrFunction: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Promise<Runner>;
+    static create(configOrFunction: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Runner;
     static networkIsTestnet(): boolean;
     static networkIsSandbox(): boolean;
     static getNetworkFromEnv(): 'sandbox' | 'testnet';
