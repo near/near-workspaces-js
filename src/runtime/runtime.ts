@@ -97,7 +97,8 @@ export abstract class Runtime {
         await this.afterRun();
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.error('Failed to clean up after run');
+          debug('Failed to clean up after run');
+          debug(error);
           throw error; // eslint-disable-line no-unsafe-finally
         }
       }

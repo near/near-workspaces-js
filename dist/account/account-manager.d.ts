@@ -25,7 +25,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     /** Sets the provided key to store, otherwise creates a new one */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     removeKey(accountId: string): Promise<void>;
-    deleteAccount(accountId: string, beneficiaryId: string): Promise<void>;
+    deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
     exists(accountId: string | NearAccount): Promise<boolean>;

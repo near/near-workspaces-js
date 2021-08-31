@@ -74,7 +74,8 @@ class Runtime {
             }
             catch (error) {
                 if (error instanceof Error) {
-                    console.error('Failed to clean up after run');
+                    (0, internal_utils_1.debug)('Failed to clean up after run');
+                    (0, internal_utils_1.debug)(error);
                     throw error; // eslint-disable-line no-unsafe-finally
                 }
             }

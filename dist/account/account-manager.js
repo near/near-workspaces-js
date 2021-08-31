@@ -68,8 +68,13 @@ class AccountManager {
     }
     async deleteKey(account_id) {
         (0, internal_utils_1.debug)(`About to delete key for ${account_id}`);
-        await this.keyStore.removeKey(this.networkId, account_id);
-        (0, internal_utils_1.debug)('deleted Key');
+        try {
+            await this.keyStore.removeKey(this.networkId, account_id);
+            (0, internal_utils_1.debug)('deleted Key');
+        }
+        catch {
+            (0, internal_utils_1.debug)('failed to delete key');
+        }
     }
     async init() {
         return this;
@@ -107,8 +112,11 @@ class AccountManager {
     async removeKey(accountId) {
         await this.keyStore.removeKey(this.networkId, accountId);
     }
-    async deleteAccount(accountId, beneficiaryId) {
-        await this.getAccount(accountId).delete(beneficiaryId);
+    async deleteAccount(accountId, beneficiaryId, keyPair) {
+        if (keyPair) {
+            return this.createTransaction(accountId, accountId).deleteAccount(beneficiaryId).signAndSend(keyPair);
+        }
+        return this.getAccount(accountId).delete(beneficiaryId);
     }
     async getRootKey() {
         const keyPair = await this.getKey(this.rootAccountId);
@@ -205,6 +213,7 @@ class TestnetManager extends AccountManager {
             const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
             this.config.helperUrl);
             await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+            (0, internal_utils_1.debug)(`Created account ${accountId} with account creator`);
         }
         return this.getAccount(accountId);
     }
@@ -228,13 +237,13 @@ class TestnetManager extends AccountManager {
             (0, internal_utils_1.debug)(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
-        if (new types_1.BN((await this.root.balance()).available).lt(new types_1.BN((0, utils_1.toYocto)('499')))) {
-            await this.addFunds();
-        }
     }
     async deleteAccounts(accounts, beneficiaryId) {
-        return Promise.all(accounts.map(async (acc) => {
-            await this.deleteAccount(acc, beneficiaryId);
+        var _a;
+        const keyPair = (_a = await this.getKey(this.rootAccountId)) !== null && _a !== void 0 ? _a : undefined;
+        return Promise.all(accounts.map(async (accountId) => {
+            await this.deleteAccount(accountId, beneficiaryId, keyPair);
+            await this.deleteKey(accountId);
         }));
     }
     async initRootAccount() {
@@ -257,17 +266,10 @@ class TestnetManager extends AccountManager {
         throw new Error(`Bad filename name passed by callsites: ${fileName}`);
     }
     async createFrom(config) {
-        var _a;
         const currentRunAccount = TestnetManager.numTestAccounts;
         const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
         TestnetManager.numTestAccounts += 1;
         const newConfig = { ...config, rootAccount: `t${prefix}.${config.rootAccount}` };
-        if (!await this.exists(newConfig.rootAccount)) {
-            const balance = await this.balance(this.rootAccountId);
-            if (new types_1.BN(balance.available).lt(new types_1.BN((_a = newConfig.initialBalance) !== null && _a !== void 0 ? _a : (0, utils_1.toYocto)('25')))) {
-                await this.addFunds(this.rootAccountId);
-            }
-        }
         return (new TestnetManager(newConfig)).init();
     }
     async cleanup() {

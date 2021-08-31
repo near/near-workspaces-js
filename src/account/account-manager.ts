@@ -66,8 +66,12 @@ export abstract class AccountManager implements NearAccountManager {
     account_id: string,
   ): Promise<void> {
     debug(`About to delete key for ${account_id}`);
-    await this.keyStore.removeKey(this.networkId, account_id);
-    debug('deleted Key');
+    try {
+      await this.keyStore.removeKey(this.networkId, account_id);
+      debug('deleted Key');
+    } catch {
+      debug('failed to delete key');
+    }
   }
 
   async init(): Promise<AccountManager> {
@@ -114,8 +118,12 @@ export abstract class AccountManager implements NearAccountManager {
     await this.keyStore.removeKey(this.networkId, accountId);
   }
 
-  async deleteAccount(accountId: string, beneficiaryId: string): Promise<void> {
-    await this.getAccount(accountId).delete(beneficiaryId);
+  async deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
+    if (keyPair) {
+      return this.createTransaction(accountId, accountId).deleteAccount(beneficiaryId).signAndSend(keyPair);
+    }
+
+    return this.getAccount(accountId).delete(beneficiaryId);
   }
 
   async getRootKey(): Promise<KeyPair> {
@@ -239,6 +247,7 @@ export class TestnetManager extends AccountManager {
         this.config.helperUrl!,
       );
       await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+      debug(`Created account ${accountId} with account creator`);
     }
 
     return this.getAccount(accountId);
@@ -267,16 +276,14 @@ export class TestnetManager extends AccountManager {
       }
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
     }
-
-    if (new BN((await this.root.balance()).available).lt(new BN(toYocto('499')))) {
-      await this.addFunds();
-    }
   }
 
   async deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]> {
+    const keyPair = await this.getKey(this.rootAccountId) ?? undefined;
     return Promise.all(
-      accounts.map(async acc => {
-        await this.deleteAccount(acc, beneficiaryId);
+      accounts.map(async accountId => {
+        await this.deleteAccount(accountId, beneficiaryId, keyPair);
+        await this.deleteKey(accountId);
       }),
     );
   }
@@ -311,13 +318,6 @@ export class TestnetManager extends AccountManager {
     const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
     TestnetManager.numTestAccounts += 1;
     const newConfig = {...config, rootAccount: `t${prefix}.${config.rootAccount!}`};
-    if (!await this.exists(newConfig.rootAccount)) {
-      const balance = await this.balance(this.rootAccountId);
-      if (new BN(balance.available).lt(new BN(newConfig.initialBalance ?? toYocto('25')))) {
-        await this.addFunds(this.rootAccountId);
-      }
-    }
-
     return (new TestnetManager(newConfig)).init();
   }
 

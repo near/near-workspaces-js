@@ -14,7 +14,7 @@ export interface NearAccountManager {
     addAccountCreated(account: string, sender: string): void;
     getAccount(accountId: string): NearAccount;
     getKey(accountId: string): Promise<KeyPair | null>;
-    deleteAccount(accountId: string, beneficiaryId: string): Promise<void>;
+    deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     deleteKey(accountId: string): Promise<void>;
     cleanup(): Promise<void>;
     /** Creates a KeyPair if one is not provided */
