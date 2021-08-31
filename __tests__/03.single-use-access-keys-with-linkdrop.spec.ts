@@ -103,7 +103,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         linkdrop,
         'claim',
         {
-          account_id: bob.accountId,
+          account_id: bob,
         },
         {
           signWithKey: senderKey,

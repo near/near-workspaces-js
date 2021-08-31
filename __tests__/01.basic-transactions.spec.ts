@@ -23,7 +23,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test.concurrent('Root gets null status', async () => {
     await runner.run(async ({contract, root}) => {
       const result = await contract.view('get_status', {
-        account_id: root.accountId,
+        account_id: root,
       });
       expect(result).toBeNull();
     });
@@ -33,7 +33,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
       const result: string = await contract.view('get_status', {
-        account_id: ali.accountId,
+        account_id: ali,
       });
       expect(result).toBe('hello');
     });
@@ -43,12 +43,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     await runner.run(async ({contract, root, ali}) => {
       await root.call(contract, 'set_status', {message: 'world'});
       const rootStatus: string = await contract.view('get_status', {
-        account_id: root.accountId,
+        account_id: root,
       });
       expect(rootStatus).toBe('world');
 
       const aliStatus = await contract.view('get_status', {
-        account_id: ali.accountId,
+        account_id: ali,
       });
       expect(aliStatus).toBeNull();
     });

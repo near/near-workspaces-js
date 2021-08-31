@@ -10,8 +10,6 @@ import {SandboxServer} from './server';
 
 type AccountShortName = string;
 type AccountId = string;
-
-const DEFAULT_INITIAL_DEPOSIT: string = toYocto('100');
 export abstract class Runtime {
   config: Config; // Should be protected?
   returnedAccounts: Map<AccountId, AccountShortName> = new Map();
@@ -168,7 +166,7 @@ export class TestnetRuntime extends Runtime {
       rpcAddr: 'https://rpc.testnet.near.org',
       walletUrl: 'https://wallet.testnet.near.org',
       helperUrl: 'https://helper.testnet.near.org',
-      explorerUrl: 'https://explorer.testnet.near.org'
+      explorerUrl: 'https://explorer.testnet.near.org',
     };
   }
 

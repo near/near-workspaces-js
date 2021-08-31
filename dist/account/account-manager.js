@@ -128,6 +128,7 @@ class AccountManager {
         return balance.gt(new types_1.BN(this.initialBalance));
     }
     async executeTransaction(tx, keyPair) {
+        var _a;
         const account = new nearAPI.Account(this.connection, tx.senderId);
         let oldKey = null;
         if (keyPair) {
@@ -151,7 +152,8 @@ class AccountManager {
         }
         catch (error) {
             if (error instanceof Error) {
-                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${await this.getKey(tx.receiverId)} ${JSON.stringify(tx.actions).slice(0, 200)}`);
+                const key = await this.getPublicKey(tx.receiverId);
+                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
                 (0, internal_utils_1.debug)(error);
             }
             throw error;
@@ -231,7 +233,7 @@ class TestnetManager extends AccountManager {
         }
     }
     async deleteAccounts(accounts, beneficiaryId) {
-        await Promise.all(accounts.map(async (acc) => {
+        return Promise.all(accounts.map(async (acc) => {
             await this.deleteAccount(acc, beneficiaryId);
         }));
     }
@@ -269,19 +271,19 @@ class TestnetManager extends AccountManager {
         return (new TestnetManager(newConfig)).init();
     }
     async cleanup() {
-        await Promise.all([...this.accountsCreated.values()]
-            .map(async (id) => this.getAccount(id).delete(this.rootAccountId)));
+        return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId);
     }
     async executeTransaction(tx, keyPair) {
         if (tx.accountCreated) {
             // Delete new account if it exists
             if (await this.exists(tx.receiverId)) {
+                const account = new nearAPI.Account(this.connection, tx.senderId);
                 const deleteTx = this.createTransaction(tx.receiverId, tx.receiverId).deleteAccount(tx.senderId);
                 // @ts-expect-error access shouldn't be protected
                 await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: deleteTx.actions });
             }
             // Add funds to root account sender if needed.
-            if (this.rootAccountId === tx.senderId && !this.canCoverInitBalance(tx.senderId)) {
+            if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
                 await this.addFunds(tx.senderId);
             }
             // Add root's key as a full access key to new account

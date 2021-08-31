@@ -53,7 +53,7 @@ export declare class TestnetManager extends AccountManager {
     createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount>;
     addFunds(accountId?: string): Promise<void>;
     createAndFundAccount(): Promise<void>;
-    deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void>;
+    deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]>;
     initRootAccount(): Promise<void>;
     createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;

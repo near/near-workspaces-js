@@ -8,7 +8,6 @@ const account_1 = require("../account");
 const jsonrpc_1 = require("../jsonrpc");
 const internal_utils_1 = require("../internal-utils");
 const server_1 = require("./server");
-const DEFAULT_INITIAL_DEPOSIT = (0, utils_1.toYocto)('100');
 class Runtime {
     constructor(config, accounts) {
         this.returnedAccounts = new Map();
@@ -136,7 +135,7 @@ class TestnetRuntime extends Runtime {
             rpcAddr: 'https://rpc.testnet.near.org',
             walletUrl: 'https://wallet.testnet.near.org',
             helperUrl: 'https://helper.testnet.near.org',
-            explorerUrl: 'https://explorer.testnet.near.org'
+            explorerUrl: 'https://explorer.testnet.near.org',
         };
     }
     static get provider() {

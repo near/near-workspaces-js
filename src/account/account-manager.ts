@@ -164,7 +164,8 @@ export abstract class AccountManager implements NearAccountManager {
       return result;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        debug(`TX FAILED: receiver ${tx.receiverId} with key ${await this.getKey(tx.receiverId)} ${JSON.stringify(tx.actions).slice(0, 200)}`);
+        const key = await this.getPublicKey(tx.receiverId);
+        debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
         debug(error);
       }
 
@@ -272,8 +273,8 @@ export class TestnetManager extends AccountManager {
     }
   }
 
-  async deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void> {
-    await Promise.all(
+  async deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]> {
+    return Promise.all(
       accounts.map(async acc => {
         await this.deleteAccount(acc, beneficiaryId);
       }),
@@ -321,23 +322,21 @@ export class TestnetManager extends AccountManager {
   }
 
   async cleanup(): Promise<void> {
-    await Promise.all(
-      [...this.accountsCreated.values()]
-        .map(async id => this.getAccount(id).delete(this.rootAccountId)),
-    );
+    return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId) as unknown as void;
   }
 
   async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
     if (tx.accountCreated) {
       // Delete new account if it exists
       if (await this.exists(tx.receiverId)) {
+        const account: nearAPI.Account = new nearAPI.Account(this.connection, tx.senderId);
         const deleteTx = this.createTransaction(tx.receiverId, tx.receiverId).deleteAccount(tx.senderId);
         // @ts-expect-error access shouldn't be protected
         await account.signAndSendTransaction({receiverId: tx.receiverId, actions: deleteTx.actions});
       }
 
       // Add funds to root account sender if needed.
-      if (this.rootAccountId === tx.senderId && !this.canCoverInitBalance(tx.senderId)) {
+      if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
         await this.addFunds(tx.senderId);
       }
 
