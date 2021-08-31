@@ -69,8 +69,16 @@ class Runtime {
             throw error; // Figure out better error handling
         }
         finally {
-            // Do any needed teardown
-            await this.afterRun();
+            try {
+                // Do any needed teardown
+                await this.afterRun();
+            }
+            catch (error) {
+                if (error instanceof Error) {
+                    console.error('Failed to clean up after run');
+                    throw error; // eslint-disable-line no-unsafe-finally
+                }
+            }
         }
     }
     async createRun(fn) {
@@ -128,8 +136,7 @@ class TestnetRuntime extends Runtime {
             rpcAddr: 'https://rpc.testnet.near.org',
             walletUrl: 'https://wallet.testnet.near.org',
             helperUrl: 'https://helper.testnet.near.org',
-            explorerUrl: 'https://explorer.testnet.near.org',
-            initialBalance: DEFAULT_INITIAL_DEPOSIT,
+            explorerUrl: 'https://explorer.testnet.near.org'
         };
     }
     static get provider() {

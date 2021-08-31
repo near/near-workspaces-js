@@ -25,6 +25,7 @@ export declare class Account implements NearAccount {
         initialBalance?: string;
     }): Promise<NearAccount>;
     getAccount(accountId: string): NearAccount;
+    getFullAccount(accountId: string): NearAccount;
     createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, }?: {
         args?: Record<string, unknown> | Uint8Array;
         attachedDeposit?: string | BN;

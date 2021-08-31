@@ -69,7 +69,11 @@ export class Account implements NearAccount {
 
   getAccount(accountId: string): NearAccount {
     const id = this.makeSubAccount(accountId);
-    return new Account(id, this.manager);
+    return this.getFullAccount(id);
+  }
+
+  getFullAccount(accountId: string): NearAccount {
+    return new Account(accountId, this.manager);
   }
 
   async createAndDeploy(
@@ -223,7 +227,7 @@ export class Account implements NearAccount {
     }: {keyPair?: KeyPair; initialBalance?: string | BN} = {},
   ): Promise<Transaction> {
     const newAccountId = this.makeSubAccount(accountId);
-    const pubKey = (
+    const pubKey = (await this.manager.getKey(newAccountId))?.getPublicKey() ?? (
       await this.manager.setKey(newAccountId, keyPair)
     ).getPublicKey();
     const amount = new BN(initialBalance ?? this.manager.initialBalance);

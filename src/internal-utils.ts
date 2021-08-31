@@ -51,6 +51,12 @@ export function debug(...args: any[]): void {
   }
 }
 
+export function txDebug(tx: string): void {
+  if (process.env.NEAR_RUNNER_TXDEBUG) {
+    console.error(tx);
+  }
+}
+
 export const copyDir = promisify(fs_extra.copy);
 
 export async function ensureBinary(): Promise<void> {

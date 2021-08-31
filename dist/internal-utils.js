@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.txDebug = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const process_1 = __importDefault(require("process"));
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
@@ -73,6 +73,12 @@ function debug(...args) {
     }
 }
 exports.debug = debug;
+function txDebug(tx) {
+    if (process_1.default.env.NEAR_RUNNER_TXDEBUG) {
+        console.error(tx);
+    }
+}
+exports.txDebug = txDebug;
 exports.copyDir = (0, util_1.promisify)(fs_extra_1.default.copy);
 async function ensureBinary() {
     const binPath = (0, exports.sandboxBinary)();

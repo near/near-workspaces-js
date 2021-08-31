@@ -1,5 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { KeyPair, KeyStore, AccountBalance, NamedAccount } from '../types';
+import { KeyPair, KeyStore, AccountBalance, NamedAccount, PublicKey } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
 import { Config } from '../interfaces';
@@ -21,6 +21,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     get provider(): JSONRpc;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
+    getPublicKey(accountId: string): Promise<PublicKey | null>;
     /** Sets the provided key to store, otherwise creates a new one */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     removeKey(accountId: string): Promise<void>;
@@ -28,6 +29,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
     exists(accountId: string | NearAccount): Promise<boolean>;
+    canCoverInitBalance(accountId: string): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     addAccountCreated(account: string, _sender: string): void;
     cleanup(): Promise<void>;
@@ -49,11 +51,13 @@ export declare class TestnetManager extends AccountManager {
     get defaultKeyStore(): KeyStore;
     init(): Promise<AccountManager>;
     createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount>;
-    addFunds(): Promise<void>;
+    addFunds(accountId?: string): Promise<void>;
     createAndFundAccount(): Promise<void>;
+    deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void>;
     initRootAccount(): Promise<void>;
     createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;
+    executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;

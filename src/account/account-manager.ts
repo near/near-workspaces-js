@@ -3,8 +3,8 @@ import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {asId, randomAccountId, toYocto} from '../utils';
-import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount} from '../types';
-import {debug} from '../internal-utils';
+import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey} from '../types';
+import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
 import {Config} from '../interfaces';
@@ -98,6 +98,10 @@ export abstract class AccountManager implements NearAccountManager {
     return this.keyStore.getKey(this.networkId, accountId);
   }
 
+  async getPublicKey(accountId: string): Promise<PublicKey | null> {
+    return (await this.getKey(accountId))?.getPublicKey() ?? null;
+  }
+
   /** Sets the provided key to store, otherwise creates a new one */
   async setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair> {
     const key = keyPair ?? KeyPairEd25519.fromRandom();
@@ -131,6 +135,11 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.accountExists(asId(accountId));
   }
 
+  async canCoverInitBalance(accountId: string): Promise<boolean> {
+    const balance = new BN((await this.balance(accountId)).available);
+    return balance.gt(new BN(this.initialBalance));
+  }
+
   async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
     const account: nearAPI.Account = new nearAPI.Account(this.connection, tx.senderId);
     let oldKey: KeyPair | null = null;
@@ -139,17 +148,28 @@ export abstract class AccountManager implements NearAccountManager {
       await this.setKey(account.accountId, keyPair);
     }
 
-    const start = Date.now();
-    // @ts-expect-error access shouldn't be protected
-    const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions, returnError: false});
-    const end = Date.now();
-    if (oldKey) {
-      await this.setKey(account.accountId, oldKey);
-    }
+    try {
+      const start = Date.now();
+      // @ts-expect-error access shouldn't be protected
+      const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions, returnError: false});
+      const end = Date.now();
+      if (oldKey) {
+        await this.setKey(account.accountId, oldKey);
+      } else if (keyPair) {
+        await this.deleteKey(tx.senderId);
+      }
 
-    const result = new TransactionResult(outcome, start, end);
-    debug(result.summary());
-    return result;
+      const result = new TransactionResult(outcome, start, end);
+      txDebug(result.summary());
+      return result;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        debug(`TX FAILED: receiver ${tx.receiverId} with key ${await this.getKey(tx.receiverId)} ${JSON.stringify(tx.actions).slice(0, 200)}`);
+        debug(error);
+      }
+
+      throw error;
+    }
   }
 
   addAccountCreated(account: string, _sender: string): void {
@@ -223,14 +243,14 @@ export class TestnetManager extends AccountManager {
     return this.getAccount(accountId);
   }
 
-  async addFunds(): Promise<void> {
+  async addFunds(accountId: string = this.rootAccountId): Promise<void> {
     const temporaryId = randomAccountId();
     debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
     const keyPair = await this.getRootKey();
     const {keyStore} = this;
     await keyStore.setKey(this.networkId, temporaryId, keyPair);
     const account = await this.createAccount(temporaryId, keyPair);
-    await account.delete(this.rootAccountId);
+    await account.delete(accountId);
   }
 
   async createAndFundAccount(): Promise<void> {
@@ -252,6 +272,14 @@ export class TestnetManager extends AccountManager {
     }
   }
 
+  async deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void> {
+    await Promise.all(
+      accounts.map(async acc => {
+        await this.deleteAccount(acc, beneficiaryId);
+      }),
+    );
+  }
+
   async initRootAccount(): Promise<void> {
     if (this.config.rootAccount !== undefined) {
       return;
@@ -267,11 +295,7 @@ export class TestnetManager extends AccountManager {
 
       const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
       const accountId = accounts.shift()!;
-      await Promise.all(
-        accounts.map(async acc => {
-          await this.deleteAccount(acc, accountId);
-        }),
-      );
+      await this.deleteAccounts(accounts, accountId);
       this.config.rootAccount = accountId;
       return;
     }
@@ -286,6 +310,13 @@ export class TestnetManager extends AccountManager {
     const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
     TestnetManager.numTestAccounts += 1;
     const newConfig = {...config, rootAccount: `t${prefix}.${config.rootAccount!}`};
+    if (!await this.exists(newConfig.rootAccount)) {
+      const balance = await this.balance(this.rootAccountId);
+      if (new BN(balance.available).lt(new BN(newConfig.initialBalance ?? toYocto('25')))) {
+        await this.addFunds(this.rootAccountId);
+      }
+    }
+
     return (new TestnetManager(newConfig)).init();
   }
 
@@ -294,6 +325,27 @@ export class TestnetManager extends AccountManager {
       [...this.accountsCreated.values()]
         .map(async id => this.getAccount(id).delete(this.rootAccountId)),
     );
+  }
+
+  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
+    if (tx.accountCreated) {
+      // Delete new account if it exists
+      if (await this.exists(tx.receiverId)) {
+        const deleteTx = this.createTransaction(tx.receiverId, tx.receiverId).deleteAccount(tx.senderId);
+        // @ts-expect-error access shouldn't be protected
+        await account.signAndSendTransaction({receiverId: tx.receiverId, actions: deleteTx.actions});
+      }
+
+      // Add funds to root account sender if needed.
+      if (this.rootAccountId === tx.senderId && !this.canCoverInitBalance(tx.senderId)) {
+        await this.addFunds(tx.senderId);
+      }
+
+      // Add root's key as a full access key to new account
+      tx.addKey((await this.getPublicKey(tx.senderId))!);
+    }
+
+    return super.executeTransaction(tx, keyPair);
   }
 }
 

@@ -9,6 +9,7 @@ export declare function exists(d: PathLike): Promise<boolean>;
 export declare function asyncSpawn(...args: string[]): ChildProcessPromise;
 export { _spawn as spawn };
 export declare function debug(...args: any[]): void;
+export declare function txDebug(tx: string): void;
 export declare const copyDir: (arg1: string, arg2: string) => Promise<void>;
 export declare function ensureBinary(): Promise<void>;
 export declare function isPathLike(something: any): something is URL | string;

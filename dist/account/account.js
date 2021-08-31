@@ -66,7 +66,10 @@ class Account {
     }
     getAccount(accountId) {
         const id = this.makeSubAccount(accountId);
-        return new Account(id, this.manager);
+        return this.getFullAccount(id);
+    }
+    getFullAccount(accountId) {
+        return new Account(accountId, this.manager);
     }
     async createAndDeploy(accountId, wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, } = {}) {
         let tx = await this.internalCreateAccount(accountId, {
@@ -150,8 +153,9 @@ class Account {
         return this.accountId;
     }
     async internalCreateAccount(accountId, { keyPair, initialBalance, } = {}) {
+        var _a, _b;
         const newAccountId = this.makeSubAccount(accountId);
-        const pubKey = (await this.manager.setKey(newAccountId, keyPair)).getPublicKey();
+        const pubKey = (_b = (_a = (await this.manager.getKey(newAccountId))) === null || _a === void 0 ? void 0 : _a.getPublicKey()) !== null && _b !== void 0 ? _b : (await this.manager.setKey(newAccountId, keyPair)).getPublicKey();
         const amount = new bn_js_1.default(initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance);
         return this.createTransaction(newAccountId)
             .createAccount()

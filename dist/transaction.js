@@ -27,6 +27,7 @@ const utils_1 = require("./utils");
 class Transaction {
     constructor(sender, receiver) {
         this.actions = [];
+        this.accountToBeCreated = false;
         this.senderId = typeof sender === 'string' ? sender : sender.accountId;
         this.receiverId = typeof receiver === 'string' ? receiver : receiver.accountId;
     }
@@ -35,6 +36,7 @@ class Transaction {
         return this;
     }
     createAccount() {
+        this.accountToBeCreated = true;
         this.actions.push((0, types_1.createAccount)());
         return this;
     }
@@ -64,6 +66,9 @@ class Transaction {
     transfer(amount) {
         this.actions.push((0, types_1.transfer)(new types_1.BN(amount)));
         return this;
+    }
+    get accountCreated() {
+        return this.accountToBeCreated;
     }
 }
 exports.Transaction = Transaction;
