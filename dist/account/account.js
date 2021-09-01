@@ -35,6 +35,9 @@ class Account {
         this._accountId = _accountId;
         this.manager = manager;
     }
+    async accountView() {
+        return this.manager.accountView(this._accountId);
+    }
     async exists() {
         return this.provider.accountExists(this.accountId);
     }

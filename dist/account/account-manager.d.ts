@@ -1,5 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { KeyPair, KeyStore, AccountBalance, NamedAccount, PublicKey } from '../types';
+import { KeyPair, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
 import { Config } from '../interfaces';
@@ -12,6 +12,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     private _root?;
     constructor(config: Config);
     static create(config: Config): AccountManager;
+    accountView(accountId: string): Promise<AccountView>;
     getAccount(accountId: string): NearAccount;
     getParentAccount(accountId: string): NearAccount;
     deleteKey(account_id: string): Promise<void>;

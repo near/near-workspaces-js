@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {asId, randomAccountId, toYocto} from '../utils';
-import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey} from '../types';
+import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
@@ -52,6 +52,10 @@ export abstract class AccountManager implements NearAccountManager {
         return new TestnetManager(config);
       default: throw new Error(`Bad network id: "${network as string}"; expected "testnet" or "sandbox"`);
     }
+  }
+
+  async accountView(accountId: string): Promise<AccountView> {
+    return this.provider.viewAccount(accountId);
   }
 
   getAccount(accountId: string): NearAccount {

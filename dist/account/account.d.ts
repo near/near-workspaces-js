@@ -2,7 +2,7 @@
 import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
-import { KeyPair, PublicKey, CodeResult, AccountBalance, Args } from '../types';
+import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JSONRpc } from '../jsonrpc';
@@ -13,6 +13,7 @@ export declare class Account implements NearAccount {
     private readonly _accountId;
     private readonly manager;
     constructor(_accountId: string, manager: NearAccountManager);
+    accountView(): Promise<AccountView>;
     exists(): Promise<boolean>;
     protected get provider(): JSONRpc;
     get accountId(): string;

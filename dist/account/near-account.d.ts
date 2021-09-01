@@ -3,13 +3,18 @@ import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
 import { KeyPair } from 'near-api-js';
-import { AccountBalance, PublicKey, CodeResult } from '../types';
+import { AccountBalance, PublicKey, CodeResult, AccountView } from '../types';
 import { ContractState } from '../contract-state';
 import { Transaction } from '../transaction';
 import { TransactionResult } from '../transaction-result';
 export interface NearAccount {
     /** Full account id for given account. */
     readonly accountId: string;
+    /**
+     * Returns infomation about the account.
+     * @see {@link https://docs.near.org/docs/develop/front-end/rpc#view-account}
+     */
+    accountView(): Promise<AccountView>;
     /** Current balance of account on network. */
     balance(): Promise<AccountBalance>;
     /**

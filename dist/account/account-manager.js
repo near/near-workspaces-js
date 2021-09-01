@@ -60,6 +60,9 @@ class AccountManager {
             default: throw new Error(`Bad network id: "${network}"; expected "testnet" or "sandbox"`);
         }
     }
+    async accountView(accountId) {
+        return this.provider.viewAccount(accountId);
+    }
     getAccount(accountId) {
         return new account_1.Account(accountId, this);
     }

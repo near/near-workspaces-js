@@ -9,6 +9,7 @@ import {
   CodeResult,
   AccountBalance,
   Args,
+  AccountView,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
@@ -17,12 +18,17 @@ import {NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
+import { debug } from '../internal-utils';
 
 export class Account implements NearAccount {
   constructor(
     private readonly _accountId: string,
     private readonly manager: NearAccountManager,
   ) {}
+
+  async accountView(): Promise<AccountView> {
+    return this.manager.accountView(this._accountId);
+  }
 
   async exists(): Promise<boolean> {
     return this.provider.accountExists(this.accountId);
