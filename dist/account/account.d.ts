@@ -49,12 +49,14 @@ export declare class Account implements NearAccount {
     view<T>(method: string, args?: Args): Promise<T | string>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
-    delete(beneficiaryId: string): Promise<TransactionResult>;
+    delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
     toJSON(): string;
+    transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
     protected internalCreateAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string | BN;
     }): Promise<Transaction>;
+    private getOrCreateKey;
 }

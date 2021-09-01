@@ -88,7 +88,7 @@ function getConfigAndFn(
     return {config: {}, fn: configOrFunction};
   }
 
-  if (type1 === 'object' && type2 === 'function') {
+  if (type1 === 'object' && (type2 === 'function' || type2 === 'undefined')) {
     // @ts-expect-error Type this|that not assignable to that
     return {config: configOrFunction, fn: f};
   }

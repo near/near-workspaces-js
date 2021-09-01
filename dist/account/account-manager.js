@@ -229,13 +229,28 @@ class TestnetManager extends AccountManager {
         const account = await this.createAccount(temporaryId, keyPair);
         await account.delete(accountId);
     }
+    async addFundsFromParent(accountId, amount) {
+        if (accountId === this.rootAccountId) {
+            await this.addFunds();
+            return;
+        }
+        const parent = this.getParentAccount(accountId);
+        if (new types_1.BN((await this.balance(parent)).available).lt(amount)) {
+            if (parent.accountId === this.rootAccountId) { // eslint-disable-line unicorn/prefer-ternary
+                await this.addFunds();
+            }
+            else {
+                await this.addFundsFromParent(parent.accountId, amount);
+            }
+        }
+        await parent.transfer(accountId, amount);
+    }
     async createAndFundAccount() {
         await this.initRootAccount();
         const accountId = this.rootAccountId;
-        if (!(await this.provider.accountExists(accountId))) {
+        if (!(await this.exists(accountId))) {
             const keyPair = await this.getRootKey();
-            const { keyStore } = this;
-            await keyStore.setKey(this.networkId, accountId, keyPair);
+            await this.setKey(accountId, keyPair);
             await this.createAccount(accountId, keyPair);
             (0, internal_utils_1.debug)(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
@@ -279,26 +294,24 @@ class TestnetManager extends AccountManager {
         return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId);
     }
     async executeTransaction(tx, keyPair) {
+        var _a;
         if (tx.accountCreated) {
             // Delete new account if it exists
             if (await this.exists(tx.receiverId)) {
-                const account = new nearAPI.Account(this.connection, tx.senderId);
-                const deleteTx = this.createTransaction(tx.receiverId, tx.receiverId).deleteAccount(tx.senderId);
-                // @ts-expect-error access shouldn't be protected
-                await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: deleteTx.actions });
+                await this.deleteAccount(tx.receiverId, tx.senderId, (_a = await this.getKey(tx.senderId)) !== null && _a !== void 0 ? _a : undefined);
             }
             // Add funds to root account sender if needed.
             if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-                await this.addFunds(tx.senderId);
+                await this.addFundsFromParent(tx.senderId, new types_1.BN(this.initialBalance));
             }
-            // Add root's key as a full access key to new account
+            // Add root's key as a full access key to new account so that it can delete account if needed
             tx.addKey((await this.getPublicKey(tx.senderId)));
         }
         return super.executeTransaction(tx, keyPair);
     }
 }
 exports.TestnetManager = TestnetManager;
-TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials');
+TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'runner');
 TestnetManager.numRootAccounts = 0;
 TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {

@@ -217,7 +217,7 @@ export abstract class AccountManager implements NearAccountManager {
 }
 
 export class TestnetManager extends AccountManager {
-  static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials');
+  static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials', 'runner');
   private static numRootAccounts = 0;
   private static numTestAccounts = 0;
 
@@ -267,13 +267,30 @@ export class TestnetManager extends AccountManager {
     await account.delete(accountId);
   }
 
+  async addFundsFromParent(accountId: string, amount: BN): Promise<void> {
+    if (accountId === this.rootAccountId) {
+      await this.addFunds();
+      return;
+    }
+
+    const parent = this.getParentAccount(accountId);
+    if (new BN((await this.balance(parent)).available).lt(amount)) {
+      if (parent.accountId === this.rootAccountId) { // eslint-disable-line unicorn/prefer-ternary
+        await this.addFunds();
+      } else {
+        await this.addFundsFromParent(parent.accountId, amount);
+      }
+    }
+
+    await parent.transfer(accountId, amount);
+  }
+
   async createAndFundAccount(): Promise<void> {
     await this.initRootAccount();
     const accountId: string = this.rootAccountId;
-    if (!(await this.provider.accountExists(accountId))) {
+    if (!(await this.exists(accountId))) {
       const keyPair = await this.getRootKey();
-      const {keyStore} = this;
-      await keyStore.setKey(this.networkId, accountId, keyPair);
+      await this.setKey(accountId, keyPair);
       await this.createAccount(accountId, keyPair);
       debug(`Added masterAccount ${
         accountId
@@ -333,18 +350,15 @@ export class TestnetManager extends AccountManager {
     if (tx.accountCreated) {
       // Delete new account if it exists
       if (await this.exists(tx.receiverId)) {
-        const account: nearAPI.Account = new nearAPI.Account(this.connection, tx.senderId);
-        const deleteTx = this.createTransaction(tx.receiverId, tx.receiverId).deleteAccount(tx.senderId);
-        // @ts-expect-error access shouldn't be protected
-        await account.signAndSendTransaction({receiverId: tx.receiverId, actions: deleteTx.actions});
+        await this.deleteAccount(tx.receiverId, tx.senderId, await this.getKey(tx.senderId) ?? undefined);
       }
 
       // Add funds to root account sender if needed.
       if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-        await this.addFunds(tx.senderId);
+        await this.addFundsFromParent(tx.senderId, new BN(this.initialBalance));
       }
 
-      // Add root's key as a full access key to new account
+      // Add root's key as a full access key to new account so that it can delete account if needed
       tx.addKey((await this.getPublicKey(tx.senderId))!);
     }
 

@@ -1,5 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { KeyPair, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
+import { KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
 import { Config } from '../interfaces';
@@ -53,6 +53,7 @@ export declare class TestnetManager extends AccountManager {
     init(): Promise<AccountManager>;
     createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount>;
     addFunds(accountId?: string): Promise<void>;
+    addFundsFromParent(accountId: string, amount: BN): Promise<void>;
     createAndFundAccount(): Promise<void>;
     deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]>;
     initRootAccount(): Promise<void>;

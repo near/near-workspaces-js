@@ -200,10 +200,15 @@ export class Account implements NearAccount {
     });
   }
 
-  async delete(beneficiaryId: string): Promise<TransactionResult> {
-    return this.createTransaction(this)
+  async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
+    const result = await this.createTransaction(this)
       .deleteAccount(beneficiaryId)
-      .signAndSend();
+      .signAndSend(keyPair);
+    if ( await this.getKey() !== null) {
+      this.manager.deleteKey(this.accountId);
+      debug(`Deleting key for ${this.accountId} after deletion and it still exists`)
+    }
+    return result;
   }
 
   makeSubAccount(accountId: string): string {
@@ -225,6 +230,10 @@ export class Account implements NearAccount {
     return this.accountId;
   }
 
+  async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
+    return this.createTransaction(accountId).transfer(amount).signAndSend();
+  }
+
   protected async internalCreateAccount(
     accountId: string,
     {
@@ -233,13 +242,15 @@ export class Account implements NearAccount {
     }: {keyPair?: KeyPair; initialBalance?: string | BN} = {},
   ): Promise<Transaction> {
     const newAccountId = this.makeSubAccount(accountId);
-    const pubKey = (await this.manager.getKey(newAccountId))?.getPublicKey() ?? (
-      await this.manager.setKey(newAccountId, keyPair)
-    ).getPublicKey();
+    const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
     const amount = new BN(initialBalance ?? this.manager.initialBalance);
     return this.createTransaction(newAccountId)
       .createAccount()
       .transfer(amount)
       .addKey(pubKey);
+  }
+
+  private async getOrCreateKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair> {
+    return (await this.manager.getKey(accountId)) ?? this.manager.setKey(accountId, keyPair);
   }
 }

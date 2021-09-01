@@ -30,6 +30,7 @@ const types_1 = require("../types");
 const contract_state_1 = require("../contract-state");
 const utils_1 = require("../utils");
 const transaction_result_1 = require("../transaction-result");
+const internal_utils_1 = require("../internal-utils");
 class Account {
     constructor(_accountId, manager) {
         this._accountId = _accountId;
@@ -137,10 +138,15 @@ class Account {
             ],
         });
     }
-    async delete(beneficiaryId) {
-        return this.createTransaction(this)
+    async delete(beneficiaryId, keyPair) {
+        const result = await this.createTransaction(this)
             .deleteAccount(beneficiaryId)
-            .signAndSend();
+            .signAndSend(keyPair);
+        if (await this.getKey() !== null) {
+            this.manager.deleteKey(this.accountId);
+            (0, internal_utils_1.debug)(`Deleting key for ${this.accountId} after deletion and it still exists`);
+        }
+        return result;
     }
     makeSubAccount(accountId) {
         if (this.subAccountOf(accountId)
@@ -155,15 +161,21 @@ class Account {
     toJSON() {
         return this.accountId;
     }
+    async transfer(accountId, amount) {
+        return this.createTransaction(accountId).transfer(amount).signAndSend();
+    }
     async internalCreateAccount(accountId, { keyPair, initialBalance, } = {}) {
-        var _a, _b;
         const newAccountId = this.makeSubAccount(accountId);
-        const pubKey = (_b = (_a = (await this.manager.getKey(newAccountId))) === null || _a === void 0 ? void 0 : _a.getPublicKey()) !== null && _b !== void 0 ? _b : (await this.manager.setKey(newAccountId, keyPair)).getPublicKey();
+        const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
         const amount = new bn_js_1.default(initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance);
         return this.createTransaction(newAccountId)
             .createAccount()
             .transfer(amount)
             .addKey(pubKey);
+    }
+    async getOrCreateKey(accountId, keyPair) {
+        var _a;
+        return (_a = (await this.manager.getKey(accountId))) !== null && _a !== void 0 ? _a : this.manager.setKey(accountId, keyPair);
     }
 }
 exports.Account = Account;

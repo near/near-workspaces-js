@@ -138,7 +138,7 @@ export interface NearAccount {
   patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
 
   /** Delete account and sends funds to beneficiaryId */
-  delete(beneficiaryId: string): Promise<TransactionResult>;
+  delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
   /**
    * Adds the current account's id as the root account `<accountId>.<thisAccountID>`
    * @param accountId prefix of subaccount
@@ -154,5 +154,10 @@ export interface NearAccount {
    * Used to encode the account as the the accountId string when used in `JSON.stringify`
    */
   toJSON(): string;
+
+  /**
+  * Transfer yoctoNear to another account
+  */
+  transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
 }
 
