@@ -50,6 +50,8 @@ export interface NearAccount {
     }): Promise<NearAccount>;
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */
     getAccount(accountId: string): NearAccount;
+    /** Does not attempt to make account a subaccount of current account. */
+    getFullAccount(accountId: string): NearAccount;
     /**
      * Creates an account for a contract and then deploys a Wasm binary to its account.
      * If method arguments are provided a function call to `method` will be added to the transaction so that

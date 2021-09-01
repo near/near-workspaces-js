@@ -123,11 +123,16 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   async deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
-    if (keyPair) {
-      return this.createTransaction(accountId, accountId).deleteAccount(beneficiaryId).signAndSend(keyPair);
-    }
+    try {
+      return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
+    } catch (error: unknown) {
+      if (keyPair) {
+        console.error(`failed to delete ${accountId} with different keyPair`);
+        return this.deleteAccount(accountId, beneficiaryId);
+      }
 
-    return this.getAccount(accountId).delete(beneficiaryId);
+      throw error;
+    }
   }
 
   async getRootKey(): Promise<KeyPair> {
@@ -168,6 +173,7 @@ export abstract class AccountManager implements NearAccountManager {
       if (oldKey) {
         await this.setKey(account.accountId, oldKey);
       } else if (keyPair) {
+        // sender account should only have account while execution transaction
         await this.deleteKey(tx.senderId);
       }
 
@@ -175,6 +181,10 @@ export abstract class AccountManager implements NearAccountManager {
       txDebug(result.summary());
       return result;
     } catch (error: unknown) {
+      // Add back oldKey if temporary one was used
+      if (oldKey) {
+        await this.setKey(account.accountId, oldKey);
+      }
       if (error instanceof Error) {
         const key = await this.getPublicKey(tx.receiverId);
         debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
@@ -259,12 +269,17 @@ export class TestnetManager extends AccountManager {
 
   async addFunds(accountId: string = this.rootAccountId): Promise<void> {
     const temporaryId = randomAccountId();
-    debug(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
-    const keyPair = await this.getRootKey();
-    const {keyStore} = this;
-    await keyStore.setKey(this.networkId, temporaryId, keyPair);
-    const account = await this.createAccount(temporaryId, keyPair);
-    await account.delete(accountId);
+    debug(`Trying to add funds to ${this.rootAccountId} using ${temporaryId}`);
+    try {
+      const keyPair = await this.getRootKey();
+      await this.setKey(temporaryId, keyPair);
+      const account = await this.createAccount(temporaryId, keyPair);
+      await account.delete(accountId);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        await this.removeKey(temporaryId);
+      }
+    }
   }
 
   async addFundsFromParent(accountId: string, amount: BN): Promise<void> {

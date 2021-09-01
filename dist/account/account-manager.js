@@ -116,10 +116,16 @@ class AccountManager {
         await this.keyStore.removeKey(this.networkId, accountId);
     }
     async deleteAccount(accountId, beneficiaryId, keyPair) {
-        if (keyPair) {
-            return this.createTransaction(accountId, accountId).deleteAccount(beneficiaryId).signAndSend(keyPair);
+        try {
+            return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
         }
-        return this.getAccount(accountId).delete(beneficiaryId);
+        catch (error) {
+            if (keyPair) {
+                console.error(`failed to delete ${accountId} with different keyPair`);
+                return this.deleteAccount(accountId, beneficiaryId);
+            }
+            throw error;
+        }
     }
     async getRootKey() {
         const keyPair = await this.getKey(this.rootAccountId);
@@ -155,6 +161,7 @@ class AccountManager {
                 await this.setKey(account.accountId, oldKey);
             }
             else if (keyPair) {
+                // sender account should only have account while execution transaction
                 await this.deleteKey(tx.senderId);
             }
             const result = new transaction_result_1.TransactionResult(outcome, start, end);
@@ -162,6 +169,10 @@ class AccountManager {
             return result;
         }
         catch (error) {
+            // Add back oldKey if temporary one was used
+            if (oldKey) {
+                await this.setKey(account.accountId, oldKey);
+            }
             if (error instanceof Error) {
                 const key = await this.getPublicKey(tx.receiverId);
                 (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
@@ -222,12 +233,18 @@ class TestnetManager extends AccountManager {
     }
     async addFunds(accountId = this.rootAccountId) {
         const temporaryId = (0, utils_1.randomAccountId)();
-        (0, internal_utils_1.debug)(`adding funds to ${this.rootAccountId} using ${temporaryId}`);
-        const keyPair = await this.getRootKey();
-        const { keyStore } = this;
-        await keyStore.setKey(this.networkId, temporaryId, keyPair);
-        const account = await this.createAccount(temporaryId, keyPair);
-        await account.delete(accountId);
+        (0, internal_utils_1.debug)(`Trying to add funds to ${this.rootAccountId} using ${temporaryId}`);
+        try {
+            const keyPair = await this.getRootKey();
+            await this.setKey(temporaryId, keyPair);
+            const account = await this.createAccount(temporaryId, keyPair);
+            await account.delete(accountId);
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                await this.removeKey(temporaryId);
+            }
+        }
     }
     async addFundsFromParent(accountId, amount) {
         if (accountId === this.rootAccountId) {
