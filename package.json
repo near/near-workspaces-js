@@ -34,7 +34,7 @@
     "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true jest --verbose",
     "test": "jest --verbose && yarn test:testnet",
     "prepare": "husky install",
-    "clean:accounts": "ts-node ./scripts/deleteAccounts.ts"
+    "clean:accounts": "ts-node ./scripts/delete-accounts.ts"
   },
   "files": [
     "dist/",

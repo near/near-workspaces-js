@@ -1,3 +1,4 @@
+import * as process from 'process';
 import * as fs from 'fs/promises';
 import {join, parse} from 'path';
 
@@ -12,23 +13,21 @@ async function deleteAccount(accountId: string, root: NearAccount, key?: KeyPair
   try {
     if (!await account.exists()) {
       console.log(`${accountId} ------- Doesn't Exists Deleting`);
-      // @ts-expect-error
+      // @ts-expect-error private method
       await account.manager.deleteKey(accountId);
       console.log(`${accountId} deleted!`);
       return null;
     }
 
-    const res = await account.delete('meta', key);
-    if (res.failed && key) {
+    const txResult = await account.delete('meta', key);
+    if (txResult.failed && key) {
       return await deleteAccount(accountId, root);
     }
 
     console.log(`${accountId} deleted!`);
 
-    return res;
-  } catch (error: unknown) {
-    if (error instanceof Error) {}
-
+    return txResult;
+  } catch {
     if (key) {
       return deleteAccount(accountId, root);
     }
@@ -44,7 +43,7 @@ async function pMap<I, O=I>(array: I[], fn: (i: I) => Promise<O>): Promise<O[]> 
 runtime.run(async ({root}) => {
   const accounts = (await fs.readdir(join(__dirname, '..', '.near-credentials', 'runner', 'testnet')))
     .map(s => parse(s).name);
-  const originalMap = new Map();
+  const originalMap: Map<string, string[]> = new Map();
   originalMap.set(root.accountId, []);
   const accountMap: Map<string, string[]> = accounts.reduce((acc, accountId) => {
     if (!pattern.test(accountId)) {
@@ -68,7 +67,7 @@ runtime.run(async ({root}) => {
     const rootAccount = root.getFullAccount(rootAccountId);
     const key = await rootAccount.getKey() ?? undefined;
     const txs = await pMap(subaccounts, async account => deleteAccount(account, rootAccount, key));
-    const errors = txs.filter(tx => tx !== null && tx.failed).map(tx => tx?.summary());
+    const errors = txs.filter(tx => tx?.failed).map(tx => tx?.summary());
     if (errors.length > 0) {
       console.log(errors);
     }

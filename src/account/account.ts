@@ -205,9 +205,10 @@ export class Account implements NearAccount {
       .deleteAccount(beneficiaryId)
       .signAndSend(keyPair);
     if (result.succeeded && await this.getKey() !== null) {
-      this.manager.deleteKey(this.accountId);
-      debug(`Deleting key for ${this.accountId} after deletion and it still exists`)
+      await this.manager.deleteKey(this.accountId);
+      debug(`Deleting key for ${this.accountId} after deletion and it still exists`);
     }
+
     return result;
   }
 
