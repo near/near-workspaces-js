@@ -44,3 +44,7 @@ export async function captureError(fn: () => Promise<any>): Promise<string> {
 
   throw new Error('fn succeeded when expected to throw an exception');
 }
+
+export function isTopLevelAccount(accountId: string): boolean {
+  return accountId.includes(".")
+}

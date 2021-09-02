@@ -17,6 +17,9 @@ export interface NearAccount {
    */
   accountView(): Promise<AccountView>;
 
+  /* How many liquid yNear tokens that belong to the user */
+  availableBalance(): Promise<BN>;
+
   /** Current balance of account on network. */
   balance(): Promise<AccountBalance>;
   /**

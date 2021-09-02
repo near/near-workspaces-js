@@ -13,8 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JsonRpcProvider = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = void 0;
+exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JsonRpcProvider = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = exports.ServerError = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
+var rpc_errors_1 = require("near-api-js/lib/utils/rpc_errors");
+Object.defineProperty(exports, "ServerError", { enumerable: true, get: function () { return rpc_errors_1.ServerError; } });
 var near_api_js_1 = require("near-api-js");
 Object.defineProperty(exports, "KeyPair", { enumerable: true, get: function () { return near_api_js_1.KeyPair; } });
 Object.defineProperty(exports, "Connection", { enumerable: true, get: function () { return near_api_js_1.Connection; } });

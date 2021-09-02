@@ -3,7 +3,7 @@ import {TransactionResult} from '../transaction-result';
 import {Config} from '../interfaces';
 import {JSONRpc} from '../jsonrpc';
 import {Transaction} from '../transaction';
-import {AccountBalance, AccountView} from '../types';
+import {AccountBalance, AccountView, BN} from '../types';
 import {NearAccount} from './near-account';
 
 export interface NearAccountManager {
@@ -11,6 +11,7 @@ export interface NearAccountManager {
   readonly initialBalance: string;
   readonly root: NearAccount;
   accountView(accountId: string): Promise<AccountView>;
+  availableBalance(account: string | NearAccount): Promise<BN>;
   balance(accountId: string | NearAccount): Promise<AccountBalance>;
   executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
   addAccountCreated(account: string, sender: string): void;

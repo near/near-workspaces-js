@@ -2,8 +2,8 @@ import * as path from 'path';
 import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
-import {asId, randomAccountId, toYocto} from '../utils';
-import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
+import {asId, isTopLevelAccount, randomAccountId, toYocto} from '../utils';
+import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JSONRpc} from '../jsonrpc';
@@ -157,13 +157,16 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.account_balance(asId(account));
   }
 
+  async availableBalance(account: string | NearAccount): Promise<BN> {
+    return new BN((await this.balance(account)).available);
+  }
+
   async exists(accountId: string | NearAccount): Promise<boolean> {
     return this.provider.accountExists(asId(accountId));
   }
 
-  async canCoverInitBalance(accountId: string): Promise<boolean> {
-    const balance = new BN((await this.balance(accountId)).available);
-    return balance.gt(this.doubleInitialBalance);
+  async canCoverBalance(account: string | NearAccount, amount: BN): Promise<boolean> {
+    return amount.lt(await this.availableBalance(account));
   }
 
   async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
@@ -291,7 +294,6 @@ export class TestnetManager extends AccountManager {
       const account = await this.createAccount(temporaryId, key);
       await account.delete(accountId, key);
     } catch (error: unknown) {
-      console.log(error);
       if (error instanceof Error) {
         await this.removeKey(temporaryId);
       }
@@ -300,15 +302,14 @@ export class TestnetManager extends AccountManager {
     }
   }
 
-  async addFundsFromParent(accountId: string, amount: BN): Promise<void> {
+  async addFunds(accountId: string, amount: BN): Promise<void> {
     const parent = this.getParentAccount(accountId);
     if (parent.accountId === accountId) {
       return this.addFundsFromNetwork(accountId);
     }
 
-    const parentBalance = new BN((await this.balance(parent)).available);
-    if (parentBalance.lt(amount)) {
-      await this.addFundsFromParent(parent.accountId, amount);
+    if (!(await this.canCoverBalance(parent, amount))) {
+      await this.addFunds(parent.accountId, amount);
     }
 
     await parent.transfer(accountId, amount);
@@ -379,16 +380,39 @@ export class TestnetManager extends AccountManager {
         await this.deleteAccount(tx.receiverId, tx.senderId, await this.getKey(tx.senderId) ?? keyPair);
       }
 
-      // Add funds to root account sender if needed.
-      if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-        await this.addFundsFromParent(tx.senderId, this.doubleInitialBalance);
-      }
-
       // Add root's key as a full access key to new account so that it can delete account if needed
       tx.addKey((await this.getPublicKey(tx.senderId))!);
     }
 
-    return super.executeTransaction(tx, keyPair);
+    const amount = tx.transferAmount;
+    // Add funds to root account sender if needed.
+    if (await this.needsFunds(tx.senderId, amount.ushln(4))
+        // Check a second time to be sure.  This is a really bad solution.
+        && !await this.canCoverBalance(tx.senderId, amount)) {
+      await this.addFunds(tx.senderId, amount);
+    }
+
+    try {
+      return await super.executeTransaction(tx, keyPair);
+    } catch (error: unknown) {
+      if (error instanceof ServerError && error.type === 'NotEnoughBalance'
+         && this.isRootOrTLAccount(tx.senderId)) {
+        console.log('trying again ' + tx.senderId);
+        await this.addFunds(tx.senderId, amount);
+        return this.executeTransaction(tx, keyPair);
+      }
+
+      throw error;
+    }
+  }
+
+  async needsFunds(accountId: string, amount: BN): Promise<boolean> {
+    return !amount.isZero() && this.isRootOrTLAccount(accountId)
+    && (!await this.canCoverBalance(accountId, amount));
+  }
+
+  isRootOrTLAccount(accountId: string): boolean {
+    return this.rootAccountId === accountId || isTopLevelAccount(accountId);
   }
 }
 

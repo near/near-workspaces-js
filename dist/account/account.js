@@ -48,6 +48,9 @@ class Account {
     get accountId() {
         return this._accountId;
     }
+    async availableBalance() {
+        return this.manager.availableBalance(this.accountId);
+    }
     async balance() {
         return this.manager.balance(this.accountId);
     }

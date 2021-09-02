@@ -8,6 +8,7 @@ export declare abstract class Transaction {
     readonly senderId: string;
     readonly actions: Action[];
     private accountToBeCreated;
+    private _transferAmount?;
     constructor(sender: NamedAccount | string, receiver: NamedAccount | string);
     addKey(publicKey: string | PublicKey, accessKey?: AccessKey): this;
     createAccount(): this;
@@ -22,5 +23,6 @@ export declare abstract class Transaction {
     stake(amount: BN | string, publicKey: PublicKey | string): this;
     transfer(amount: string | BN): this;
     get accountCreated(): boolean;
+    get transferAmount(): BN;
     abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
 }

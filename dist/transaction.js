@@ -64,11 +64,17 @@ class Transaction {
         return this;
     }
     transfer(amount) {
-        this.actions.push((0, types_1.transfer)(new types_1.BN(amount)));
+        const bnAmount = new types_1.BN(amount);
+        this._transferAmount = bnAmount;
+        this.actions.push((0, types_1.transfer)(bnAmount));
         return this;
     }
     get accountCreated() {
         return this.accountToBeCreated;
+    }
+    get transferAmount() {
+        var _a;
+        return (_a = this._transferAmount) !== null && _a !== void 0 ? _a : new types_1.BN('0');
     }
 }
 exports.Transaction = Transaction;

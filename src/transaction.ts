@@ -28,6 +28,7 @@ export abstract class Transaction {
   readonly senderId: string;
   readonly actions: Action[] = [];
   private accountToBeCreated = false;
+  private _transferAmount?: BN;
 
   constructor(sender: NamedAccount | string, receiver: NamedAccount | string) {
     this.senderId = typeof sender === 'string' ? sender : sender.accountId;
@@ -84,12 +85,18 @@ export abstract class Transaction {
   }
 
   transfer(amount: string | BN): this {
-    this.actions.push(transfer(new BN(amount)));
+    const bnAmount = new BN(amount);
+    this._transferAmount = bnAmount;
+    this.actions.push(transfer(bnAmount));
     return this;
   }
 
   get accountCreated(): boolean {
     return this.accountToBeCreated;
+  }
+
+  get transferAmount(): BN {
+    return this._transferAmount ?? new BN('0');
   }
 
   abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;

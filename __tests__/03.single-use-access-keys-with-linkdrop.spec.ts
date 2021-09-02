@@ -12,7 +12,7 @@
  * You can see this functionality in action below using `signWithKey`.
  */
 import path from 'path';
-import {Runner, toYocto, createKeyPair, BN, tGas} from '../src';
+import {Runner, toYocto, createKeyPair, tGas, BN} from '../src';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -69,11 +69,11 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
       );
       const bob = root.getAccount(new_account_id);
-      const balance = await bob.balance();
-      expect(balance.available).toBe('998180000000000000000000');
+      const balance = await bob.availableBalance();
+      expect(balance).toStrictEqual(new BN('998180000000000000000000'));
 
       console.log(
-        `Account ${new_account_id} claim and has ${balance.available} yoctoNear`,
+        `Account ${new_account_id} claim and has ${balance.toString()} yoctoNear liquid`,
       );
     });
   });
@@ -81,7 +81,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   test.concurrent('Use `claim` to transfer to an existing account', async () => {
     await runner.run(async ({root, linkdrop}) => {
       const bob = await root.createAccount('bob');
-      const originalBalance = await bob.balance();
+      const originalBalance = await bob.availableBalance();
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
@@ -111,14 +111,12 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
       );
 
-      const newBalance = await bob.balance();
-      const originalAvaiable = new BN(originalBalance.available);
-      const newAvaiable = new BN(newBalance.available);
-      expect(originalAvaiable.lt(newAvaiable)).toBeTruthy();
+      const newBalance = await bob.availableBalance();
+      expect(originalBalance.lt(newBalance)).toBeTruthy();
 
       console.log(
-        `${bob.accountId} claimed ${newAvaiable
-          .sub(originalAvaiable)
+        `${bob.accountId} claimed ${newBalance
+          .sub(originalBalance)
           .toString()} yoctoNear`,
       );
     });

@@ -51,13 +51,13 @@ runtime.run(async ({root}) => {
     }
 
     const parts = accountId.split('.');
-    const root = parts.pop();
-    if (!acc.has(root)) {
-      acc.set(root, []);
+    const rootId = parts.pop()!;
+    if (!acc.has(rootId)) {
+      acc.set(rootId, []);
     }
 
     if (parts.length > 0) {
-      acc.get(root).push(accountId);
+      acc.get(rootId)!.push(accountId);
     }
 
     return acc;

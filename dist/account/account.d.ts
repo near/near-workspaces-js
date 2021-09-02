@@ -17,6 +17,7 @@ export declare class Account implements NearAccount {
     exists(): Promise<boolean>;
     protected get provider(): JSONRpc;
     get accountId(): string;
+    availableBalance(): Promise<BN>;
     balance(): Promise<AccountBalance>;
     createTransaction(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;

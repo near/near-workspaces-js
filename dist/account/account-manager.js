@@ -144,12 +144,14 @@ class AccountManager {
     async balance(account) {
         return this.provider.account_balance((0, utils_1.asId)(account));
     }
+    async availableBalance(account) {
+        return new types_1.BN((await this.balance(account)).available);
+    }
     async exists(accountId) {
         return this.provider.accountExists((0, utils_1.asId)(accountId));
     }
-    async canCoverInitBalance(accountId) {
-        const balance = new types_1.BN((await this.balance(accountId)).available);
-        return balance.gt(this.doubleInitialBalance);
+    async canCoverBalance(account, amount) {
+        return amount.lt(await this.availableBalance(account));
     }
     async executeTransaction(tx, keyPair) {
         var _a;
@@ -251,21 +253,19 @@ class TestnetManager extends AccountManager {
             await account.delete(accountId, key);
         }
         catch (error) {
-            console.log(error);
             if (error instanceof Error) {
                 await this.removeKey(temporaryId);
             }
             throw error;
         }
     }
-    async addFundsFromParent(accountId, amount) {
+    async addFunds(accountId, amount) {
         const parent = this.getParentAccount(accountId);
         if (parent.accountId === accountId) {
             return this.addFundsFromNetwork(accountId);
         }
-        const parentBalance = new types_1.BN((await this.balance(parent)).available);
-        if (parentBalance.lt(amount)) {
-            await this.addFundsFromParent(parent.accountId, amount);
+        if (!(await this.canCoverBalance(parent, amount))) {
+            await this.addFunds(parent.accountId, amount);
         }
         await parent.transfer(accountId, amount);
     }
@@ -321,14 +321,35 @@ class TestnetManager extends AccountManager {
             if (await this.exists(tx.receiverId)) {
                 await this.deleteAccount(tx.receiverId, tx.senderId, (_a = await this.getKey(tx.senderId)) !== null && _a !== void 0 ? _a : keyPair);
             }
-            // Add funds to root account sender if needed.
-            if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-                await this.addFundsFromParent(tx.senderId, this.doubleInitialBalance);
-            }
             // Add root's key as a full access key to new account so that it can delete account if needed
             tx.addKey((await this.getPublicKey(tx.senderId)));
         }
-        return super.executeTransaction(tx, keyPair);
+        const amount = tx.transferAmount;
+        // Add funds to root account sender if needed.
+        if (await this.needsFunds(tx.senderId, amount.ushln(4))
+            // Check a second time to be sure.  This is a really bad solution.
+            && !await this.canCoverBalance(tx.senderId, amount)) {
+            await this.addFunds(tx.senderId, amount);
+        }
+        try {
+            return await super.executeTransaction(tx, keyPair);
+        }
+        catch (error) {
+            if (error instanceof types_1.ServerError && error.type === 'NotEnoughBalance'
+                && this.isRootOrTLAccount(tx.senderId)) {
+                console.log('trying again ' + tx.senderId);
+                await this.addFunds(tx.senderId, amount);
+                return this.executeTransaction(tx, keyPair);
+            }
+            throw error;
+        }
+    }
+    async needsFunds(accountId, amount) {
+        return !amount.isZero() && this.isRootOrTLAccount(accountId)
+            && (!await this.canCoverBalance(accountId, amount));
+    }
+    isRootOrTLAccount(accountId) {
+        return this.rootAccountId === accountId || (0, utils_1.isTopLevelAccount)(accountId);
     }
 }
 exports.TestnetManager = TestnetManager;

@@ -42,6 +42,10 @@ export class Account implements NearAccount {
     return this._accountId;
   }
 
+  async availableBalance(): Promise<BN> {
+    return this.manager.availableBalance(this.accountId);
+  }
+
   async balance(): Promise<AccountBalance> {
     return this.manager.balance(this.accountId);
   }

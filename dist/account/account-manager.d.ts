@@ -30,8 +30,9 @@ export declare abstract class AccountManager implements NearAccountManager {
     deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
+    availableBalance(account: string | NearAccount): Promise<BN>;
     exists(accountId: string | NearAccount): Promise<boolean>;
-    canCoverInitBalance(accountId: string): Promise<boolean>;
+    canCoverBalance(account: string | NearAccount, amount: BN): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     addAccountCreated(account: string, _sender: string): void;
     cleanup(): Promise<void>;
@@ -56,13 +57,15 @@ export declare class TestnetManager extends AccountManager {
     createAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void>;
     createAccount(accountId: string, keyPair?: KeyPair): Promise<NearAccount>;
     addFundsFromNetwork(accountId?: string): Promise<void>;
-    addFundsFromParent(accountId: string, amount: BN): Promise<void>;
+    addFunds(accountId: string, amount: BN): Promise<void>;
     createAndFundAccount(): Promise<void>;
     deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]>;
     initRootAccount(): Promise<void>;
     createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
+    needsFunds(accountId: string, amount: BN): Promise<boolean>;
+    isRootOrTLAccount(accountId: string): boolean;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;

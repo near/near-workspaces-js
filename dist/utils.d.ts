@@ -8,3 +8,4 @@ export declare function randomAccountId(prefix?: string, suffix?: string): strin
 export declare function asId(id: string | NamedAccount): string;
 export declare const NO_DEPOSIT: BN;
 export declare function captureError(fn: () => Promise<any>): Promise<string>;
+export declare function isTopLevelAccount(accountId: string): boolean;

@@ -3,6 +3,7 @@ import { ChildProcess } from 'child_process';
 import _BN from 'bn.js';
 import { KeyPair } from 'near-api-js';
 import { Output } from 'promisify-child-process';
+export { ServerError } from 'near-api-js/lib/utils/rpc_errors';
 export { KeyPair, Connection } from 'near-api-js';
 export { PublicKey, KeyPairEd25519 } from 'near-api-js/lib/utils';
 export { Action, createAccount, deployContract, functionCall, transfer, stake, addKey, deleteKey, deleteAccount, fullAccessKey, AccessKey, } from 'near-api-js/lib/transaction';

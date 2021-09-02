@@ -15,6 +15,7 @@ export interface NearAccount {
      * @see {@link https://docs.near.org/docs/develop/front-end/rpc#view-account}
      */
     accountView(): Promise<AccountView>;
+    availableBalance(): Promise<BN>;
     /** Current balance of account on network. */
     balance(): Promise<AccountBalance>;
     /**
