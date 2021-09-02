@@ -46,5 +46,5 @@ export async function captureError(fn: () => Promise<any>): Promise<string> {
 }
 
 export function isTopLevelAccount(accountId: string): boolean {
-  return accountId.includes(".")
+  return accountId.includes('.');
 }

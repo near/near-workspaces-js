@@ -64,7 +64,7 @@ async function captureError(fn) {
 }
 exports.captureError = captureError;
 function isTopLevelAccount(accountId) {
-    return accountId.includes(".");
+    return accountId.includes('.');
 }
 exports.isTopLevelAccount = isTopLevelAccount;
 //# sourceMappingURL=utils.js.map
