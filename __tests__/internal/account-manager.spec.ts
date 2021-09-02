@@ -21,7 +21,7 @@ describe('Account Manager', () => {
     await accountManager.init();
     const {root} = accountManager;
     const balance = await root.balance();
-    await (accountManager as TestnetManager).addFunds();
+    await (accountManager as TestnetManager).addFundsFromNetwork();
     const newBalance = await root.balance();
     expect(new BN(balance.available).lt(new BN(newBalance.available))).toBe(true);
   });
