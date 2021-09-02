@@ -5,13 +5,16 @@ import {KeyPair, NearAccount, Runner, TransactionResult} from '..';
 
 const runtime = Runner.create({network: 'testnet'});
 
-const pattern = process.argv.length > 2 ? new RegExp(process.argv[2]) : /.*/;
+const pattern = new RegExp(process.argv.length > 2 ? process.argv[2] : '');
 
 async function deleteAccount(accountId: string, root: NearAccount, key?: KeyPair): Promise<TransactionResult | null> {
   const account = root.getFullAccount(accountId);
   try {
     if (!await account.exists()) {
-      console.log(`${accountId} ------- Doesn't Exists`);
+      console.log(`${accountId} ------- Doesn't Exists Deleting`);
+      // @ts-expect-error
+      await account.manager.deleteKey(accountId);
+      console.log(`${accountId} deleted!`);
       return null;
     }
 
@@ -24,10 +27,7 @@ async function deleteAccount(accountId: string, root: NearAccount, key?: KeyPair
 
     return res;
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error(`account ${accountId} failed to be deleted.\n${error.message}`);
-      console.error(`${accountId} ${(await account.getKey())?.getPublicKey().toString()}`);
-    }
+    if (error instanceof Error) {}
 
     if (key) {
       return deleteAccount(accountId, root);
@@ -64,19 +64,16 @@ runtime.run(async ({root}) => {
     return acc;
   }, originalMap);
 
-  console.log(accountMap);
-
   await Promise.all([...accountMap.entries()].map(async ([rootAccountId, subaccounts]) => {
     const rootAccount = root.getFullAccount(rootAccountId);
     const key = await rootAccount.getKey() ?? undefined;
     const txs = await pMap(subaccounts, async account => deleteAccount(account, rootAccount, key));
-    const errors = txs.filter(tx => tx !== null && tx.failed).map(tx => tx.summary());
+    const errors = txs.filter(tx => tx !== null && tx.failed).map(tx => tx?.summary());
     if (errors.length > 0) {
       console.log(errors);
     }
 
     await deleteAccount(rootAccountId, rootAccount);
-    console.log(`${rootAccountId} deleted`);
   }));
 });
 

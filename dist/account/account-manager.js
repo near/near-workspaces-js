@@ -67,13 +67,17 @@ class AccountManager {
         return new account_1.Account(accountId, this);
     }
     getParentAccount(accountId) {
-        return this.getAccount(accountId.split('.').slice(1).join('.'));
+        const split = accountId.split('.');
+        if (split.length === 1) {
+            return this.getAccount(accountId);
+        }
+        return this.getAccount(split.slice(1).join('.'));
     }
     async deleteKey(account_id) {
         (0, internal_utils_1.debug)(`About to delete key for ${account_id}`);
         try {
             await this.keyStore.removeKey(this.networkId, account_id);
-            (0, internal_utils_1.debug)('deleted Key');
+            (0, internal_utils_1.debug)(`deleted Key for ${account_id}`);
         }
         catch {
             (0, internal_utils_1.debug)('failed to delete key');
@@ -91,6 +95,9 @@ class AccountManager {
     get initialBalance() {
         var _a;
         return (_a = this.config.initialBalance) !== null && _a !== void 0 ? _a : this.DEFAULT_INITIAL_BALANCE;
+    }
+    get doubleInitialBalance() {
+        return new types_1.BN(this.initialBalance).mul(new types_1.BN('2'));
     }
     get provider() {
         return jsonrpc_1.JSONRpc.from(this.config);
@@ -121,7 +128,7 @@ class AccountManager {
         }
         catch (error) {
             if (keyPair) {
-                console.error(`failed to delete ${accountId} with different keyPair`);
+                (0, internal_utils_1.debug)(`failed to delete ${accountId} with different keyPair`);
                 return this.deleteAccount(accountId, beneficiaryId);
             }
             throw error;
@@ -142,7 +149,7 @@ class AccountManager {
     }
     async canCoverInitBalance(accountId) {
         const balance = new types_1.BN((await this.balance(accountId)).available);
-        return balance.gt(new types_1.BN(this.initialBalance));
+        return balance.gt(this.doubleInitialBalance);
     }
     async executeTransaction(tx, keyPair) {
         var _a;
@@ -161,7 +168,7 @@ class AccountManager {
                 await this.setKey(account.accountId, oldKey);
             }
             else if (keyPair) {
-                // sender account should only have account while execution transaction
+                // Sender account should only have account while execution transaction
                 await this.deleteKey(tx.senderId);
             }
             const result = new transaction_result_1.TransactionResult(outcome, start, end);
@@ -175,7 +182,7 @@ class AccountManager {
             }
             if (error instanceof Error) {
                 const key = await this.getPublicKey(tx.receiverId);
-                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
+                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
                 (0, internal_utils_1.debug)(error);
             }
             throw error;
@@ -214,9 +221,16 @@ class TestnetManager extends AccountManager {
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
     }
+    get urlAccountCreator() {
+        return new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
+        this.config.helperUrl);
+    }
     async init() {
         await this.createAndFundAccount();
         return this;
+    }
+    async createAccountWithHelper(accountId, keyPair) {
+        await this.urlAccountCreator.createAccount(accountId, keyPair.getPublicKey());
     }
     async createAccount(accountId, keyPair) {
         if (accountId.includes('.')) {
@@ -224,41 +238,34 @@ class TestnetManager extends AccountManager {
             this.accountsCreated.delete(accountId);
         }
         else {
-            const accountCreator = new nearAPI.accountCreator.UrlAccountCreator({}, // ignored
-            this.config.helperUrl);
-            await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+            await this.createAccountWithHelper(accountId, keyPair !== null && keyPair !== void 0 ? keyPair : await this.getRootKey());
             (0, internal_utils_1.debug)(`Created account ${accountId} with account creator`);
         }
         return this.getAccount(accountId);
     }
-    async addFunds(accountId = this.rootAccountId) {
+    async addFundsFromNetwork(accountId = this.rootAccountId) {
         const temporaryId = (0, utils_1.randomAccountId)();
-        (0, internal_utils_1.debug)(`Trying to add funds to ${this.rootAccountId} using ${temporaryId}`);
         try {
-            const keyPair = await this.getRootKey();
-            await this.setKey(temporaryId, keyPair);
-            const account = await this.createAccount(temporaryId, keyPair);
-            await account.delete(accountId);
+            const key = await this.getRootKey();
+            const account = await this.createAccount(temporaryId, key);
+            await account.delete(accountId, key);
         }
         catch (error) {
+            console.log(error);
             if (error instanceof Error) {
                 await this.removeKey(temporaryId);
             }
+            throw error;
         }
     }
     async addFundsFromParent(accountId, amount) {
-        if (accountId === this.rootAccountId) {
-            await this.addFunds();
-            return;
-        }
         const parent = this.getParentAccount(accountId);
-        if (new types_1.BN((await this.balance(parent)).available).lt(amount)) {
-            if (parent.accountId === this.rootAccountId) { // eslint-disable-line unicorn/prefer-ternary
-                await this.addFunds();
-            }
-            else {
-                await this.addFundsFromParent(parent.accountId, amount);
-            }
+        if (parent.accountId === accountId) {
+            return this.addFundsFromNetwork(accountId);
+        }
+        const parentBalance = new types_1.BN((await this.balance(parent)).available);
+        if (parentBalance.lt(amount)) {
+            await this.addFundsFromParent(parent.accountId, amount);
         }
         await parent.transfer(accountId, amount);
     }
@@ -266,9 +273,7 @@ class TestnetManager extends AccountManager {
         await this.initRootAccount();
         const accountId = this.rootAccountId;
         if (!(await this.exists(accountId))) {
-            const keyPair = await this.getRootKey();
-            await this.setKey(accountId, keyPair);
-            await this.createAccount(accountId, keyPair);
+            await this.createAccount(accountId);
             (0, internal_utils_1.debug)(`Added masterAccount ${accountId}
           https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
@@ -294,7 +299,6 @@ class TestnetManager extends AccountManager {
             const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
             const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
             const accountId = accounts.shift();
-            await this.deleteAccounts(accounts, accountId);
             this.config.rootAccount = accountId;
             return;
         }
@@ -315,11 +319,11 @@ class TestnetManager extends AccountManager {
         if (tx.accountCreated) {
             // Delete new account if it exists
             if (await this.exists(tx.receiverId)) {
-                await this.deleteAccount(tx.receiverId, tx.senderId, (_a = await this.getKey(tx.senderId)) !== null && _a !== void 0 ? _a : undefined);
+                await this.deleteAccount(tx.receiverId, tx.senderId, (_a = await this.getKey(tx.senderId)) !== null && _a !== void 0 ? _a : keyPair);
             }
             // Add funds to root account sender if needed.
             if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-                await this.addFundsFromParent(tx.senderId, new types_1.BN(this.initialBalance));
+                await this.addFundsFromParent(tx.senderId, this.doubleInitialBalance);
             }
             // Add root's key as a full access key to new account so that it can delete account if needed
             tx.addKey((await this.getPublicKey(tx.senderId)));

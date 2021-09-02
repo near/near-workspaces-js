@@ -63,7 +63,12 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   getParentAccount(accountId: string): NearAccount {
-    return this.getAccount(accountId.split('.').slice(1).join('.'));
+    const split = accountId.split('.');
+    if (split.length === 1) {
+      return this.getAccount(accountId);
+    }
+
+    return this.getAccount(split.slice(1).join('.'));
   }
 
   async deleteKey(
@@ -72,7 +77,7 @@ export abstract class AccountManager implements NearAccountManager {
     debug(`About to delete key for ${account_id}`);
     try {
       await this.keyStore.removeKey(this.networkId, account_id);
-      debug('deleted Key');
+      debug(`deleted Key for ${account_id}`);
     } catch {
       debug('failed to delete key');
     }
@@ -92,6 +97,10 @@ export abstract class AccountManager implements NearAccountManager {
 
   get initialBalance(): string {
     return this.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
+  }
+
+  get doubleInitialBalance(): BN {
+    return new BN(this.initialBalance).mul(new BN('2'));
   }
 
   get provider(): JSONRpc {
@@ -127,7 +136,7 @@ export abstract class AccountManager implements NearAccountManager {
       return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
     } catch (error: unknown) {
       if (keyPair) {
-        console.error(`failed to delete ${accountId} with different keyPair`);
+        debug(`failed to delete ${accountId} with different keyPair`);
         return this.deleteAccount(accountId, beneficiaryId);
       }
 
@@ -154,7 +163,7 @@ export abstract class AccountManager implements NearAccountManager {
 
   async canCoverInitBalance(accountId: string): Promise<boolean> {
     const balance = new BN((await this.balance(accountId)).available);
-    return balance.gt(new BN(this.initialBalance));
+    return balance.gt(this.doubleInitialBalance);
   }
 
   async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
@@ -173,7 +182,7 @@ export abstract class AccountManager implements NearAccountManager {
       if (oldKey) {
         await this.setKey(account.accountId, oldKey);
       } else if (keyPair) {
-        // sender account should only have account while execution transaction
+        // Sender account should only have account while execution transaction
         await this.deleteKey(tx.senderId);
       }
 
@@ -185,9 +194,10 @@ export abstract class AccountManager implements NearAccountManager {
       if (oldKey) {
         await this.setKey(account.accountId, oldKey);
       }
+
       if (error instanceof Error) {
         const key = await this.getPublicKey(tx.receiverId);
-        debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 200)}`);
+        debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
         debug(error);
       }
 
@@ -246,55 +256,59 @@ export class TestnetManager extends AccountManager {
     return TestnetManager.defaultKeyStore;
   }
 
+  get urlAccountCreator(): nearAPI.accountCreator.UrlAccountCreator {
+    return new nearAPI.accountCreator.UrlAccountCreator(
+      {} as any, // ignored
+      this.config.helperUrl!,
+    );
+  }
+
   async init(): Promise<AccountManager> {
     await this.createAndFundAccount();
     return this;
   }
 
-  async createAccount(accountId: string, keyPair: KeyPair): Promise<NearAccount> {
+  async createAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void> {
+    await this.urlAccountCreator.createAccount(accountId, keyPair.getPublicKey());
+  }
+
+  async createAccount(accountId: string, keyPair?: KeyPair): Promise<NearAccount> {
     if (accountId.includes('.')) {
       await this.getParentAccount(accountId).createAccount(accountId, {keyPair});
       this.accountsCreated.delete(accountId);
     } else {
-      const accountCreator = new nearAPI.accountCreator.UrlAccountCreator(
-        {} as any, // ignored
-        this.config.helperUrl!,
-      );
-      await accountCreator.createAccount(accountId, keyPair.getPublicKey());
+      await this.createAccountWithHelper(accountId, keyPair ?? await this.getRootKey());
       debug(`Created account ${accountId} with account creator`);
     }
 
     return this.getAccount(accountId);
   }
 
-  async addFunds(accountId: string = this.rootAccountId): Promise<void> {
+  async addFundsFromNetwork(accountId: string = this.rootAccountId): Promise<void> {
     const temporaryId = randomAccountId();
-    debug(`Trying to add funds to ${this.rootAccountId} using ${temporaryId}`);
     try {
-      const keyPair = await this.getRootKey();
-      await this.setKey(temporaryId, keyPair);
-      const account = await this.createAccount(temporaryId, keyPair);
-      await account.delete(accountId);
+      const key = await this.getRootKey();
+      const account = await this.createAccount(temporaryId, key);
+      await account.delete(accountId, key);
     } catch (error: unknown) {
+      console.log(error);
       if (error instanceof Error) {
         await this.removeKey(temporaryId);
       }
+
+      throw error;
     }
   }
 
   async addFundsFromParent(accountId: string, amount: BN): Promise<void> {
-    if (accountId === this.rootAccountId) {
-      await this.addFunds();
-      return;
+    const parent = this.getParentAccount(accountId);
+    if (parent.accountId === accountId) {
+      return this.addFundsFromNetwork(accountId);
     }
 
-    const parent = this.getParentAccount(accountId);
-    if (new BN((await this.balance(parent)).available).lt(amount)) {
-      if (parent.accountId === this.rootAccountId) { // eslint-disable-line unicorn/prefer-ternary
-        await this.addFunds();
-      } else {
-        await this.addFundsFromParent(parent.accountId, amount);
-      }
+    const parentBalance = new BN((await this.balance(parent)).available);
+    if (parentBalance.lt(amount)) {
+      await this.addFundsFromParent(parent.accountId, amount);
     }
 
     await parent.transfer(accountId, amount);
@@ -304,9 +318,7 @@ export class TestnetManager extends AccountManager {
     await this.initRootAccount();
     const accountId: string = this.rootAccountId;
     if (!(await this.exists(accountId))) {
-      const keyPair = await this.getRootKey();
-      await this.setKey(accountId, keyPair);
-      await this.createAccount(accountId, keyPair);
+      await this.createAccount(accountId);
       debug(`Added masterAccount ${
         accountId
       }
@@ -339,7 +351,6 @@ export class TestnetManager extends AccountManager {
 
       const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
       const accountId = accounts.shift()!;
-      await this.deleteAccounts(accounts, accountId);
       this.config.rootAccount = accountId;
       return;
     }
@@ -365,12 +376,12 @@ export class TestnetManager extends AccountManager {
     if (tx.accountCreated) {
       // Delete new account if it exists
       if (await this.exists(tx.receiverId)) {
-        await this.deleteAccount(tx.receiverId, tx.senderId, await this.getKey(tx.senderId) ?? undefined);
+        await this.deleteAccount(tx.receiverId, tx.senderId, await this.getKey(tx.senderId) ?? keyPair);
       }
 
       // Add funds to root account sender if needed.
       if (this.rootAccountId === tx.senderId && !(await this.canCoverInitBalance(tx.senderId))) {
-        await this.addFundsFromParent(tx.senderId, new BN(this.initialBalance));
+        await this.addFundsFromParent(tx.senderId, this.doubleInitialBalance);
       }
 
       // Add root's key as a full access key to new account so that it can delete account if needed

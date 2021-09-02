@@ -16,9 +16,9 @@ import {ContractState} from '../contract-state';
 import {JSONRpc} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
+import {debug} from '../internal-utils';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
-import { debug } from '../internal-utils';
 
 export class Account implements NearAccount {
   constructor(
@@ -204,7 +204,7 @@ export class Account implements NearAccount {
     const result = await this.createTransaction(this)
       .deleteAccount(beneficiaryId)
       .signAndSend(keyPair);
-    if ( await this.getKey() !== null) {
+    if (result.succeeded && await this.getKey() !== null) {
       this.manager.deleteKey(this.accountId);
       debug(`Deleting key for ${this.accountId} after deletion and it still exists`)
     }

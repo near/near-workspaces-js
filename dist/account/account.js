@@ -142,7 +142,7 @@ class Account {
         const result = await this.createTransaction(this)
             .deleteAccount(beneficiaryId)
             .signAndSend(keyPair);
-        if (await this.getKey() !== null) {
+        if (result.succeeded && await this.getKey() !== null) {
             this.manager.deleteKey(this.accountId);
             (0, internal_utils_1.debug)(`Deleting key for ${this.accountId} after deletion and it still exists`);
         }
