@@ -21,7 +21,7 @@ jobs:
           path: '/home/runner/.near-credentials/near-runner'
           key: ${{ matrix.platform }}${{ runner.os }}-${{ hashFiles('$HOME/.near-credentials/near-runner/testnet/*') }}
       - name: Run tests
-        run: yarn && yarn test:testnet:ci 01
+        run: yarn && yarn test:testnet:ci
   testnet-nocache:
     strategy:
       matrix:
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager
+        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager && yarn clean:accounts
   sandbox:
     strategy:
       matrix:
