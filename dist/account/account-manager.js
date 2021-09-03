@@ -145,7 +145,7 @@ class AccountManager {
         return this.provider.account_balance((0, utils_1.asId)(account));
     }
     async availableBalance(account) {
-        return new types_1.BN((await this.balance(account)).available);
+        return (await this.balance(account)).available;
     }
     async exists(accountId) {
         return this.provider.accountExists((0, utils_1.asId)(accountId));
@@ -173,7 +173,7 @@ class AccountManager {
                 // Sender account should only have account while execution transaction
                 await this.deleteKey(tx.senderId);
             }
-            const result = new transaction_result_1.TransactionResult(outcome, start, end);
+            const result = new transaction_result_1.TransactionResult(outcome, start, end, this.config);
             (0, internal_utils_1.txDebug)(result.summary());
             return result;
         }

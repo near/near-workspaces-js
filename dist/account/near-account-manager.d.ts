@@ -1,16 +1,17 @@
 import { KeyPair } from 'near-api-js';
+import { NEAR } from 'near-units';
 import { TransactionResult } from '../transaction-result';
 import { Config } from '../interfaces';
 import { JSONRpc } from '../jsonrpc';
 import { Transaction } from '../transaction';
-import { AccountBalance, AccountView, BN } from '../types';
+import { AccountBalance, AccountView } from '../types';
 import { NearAccount } from './near-account';
 export interface NearAccountManager {
     readonly provider: JSONRpc;
     readonly initialBalance: string;
     readonly root: NearAccount;
     accountView(accountId: string): Promise<AccountView>;
-    availableBalance(account: string | NearAccount): Promise<BN>;
+    availableBalance(account: string | NearAccount): Promise<NEAR>;
     balance(accountId: string | NearAccount): Promise<AccountBalance>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     addAccountCreated(account: string, sender: string): void;

@@ -1,14 +1,5 @@
-import { Connection, KeyStore } from './types';
+import { ClientConfig, Connection, KeyStore } from './types';
 import { NearAccount } from './account/near-account';
-export interface ClientConfig {
-    network: 'sandbox' | 'testnet';
-    rootAccount?: string;
-    rpcAddr: string;
-    helperUrl?: string;
-    explorerUrl?: string;
-    initialBalance?: string;
-    walletUrl?: string;
-}
 export interface Config extends ClientConfig {
     homeDir: string;
     port: number;

@@ -1,5 +1,5 @@
 import {Buffer} from 'buffer';
-import BN from 'bn.js';
+import {NEAR} from 'near-units';
 import {JsonRpcProvider, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
 import {Records} from './contract-state';
 
@@ -50,20 +50,17 @@ export class JSONRpc extends JsonRpcProvider {
   async account_balance(account_id: string): Promise<AccountBalance> {
     const config = await this.protocolConfig();
     const state = await this.viewAccount(account_id);
-
-    const costPerByte = new BN(
-      config.runtime_config.storage_amount_per_byte,
-    );
-    const stateStaked = new BN(state.storage_usage).mul(costPerByte);
-    const staked = new BN(state.locked);
-    const totalBalance = new BN(state.amount).add(staked);
-    const availableBalance = totalBalance.sub(BN.max(staked, stateStaked));
-
+    const cost = config.runtime_config.storage_amount_per_byte;
+    const costPerByte = NEAR.from(cost);
+    const stateStaked = NEAR.from(state.storage_usage).mul(costPerByte);
+    const staked = NEAR.from(state.locked);
+    const total = NEAR.from(state.amount).add(staked);
+    const available = total.sub(staked.max(stateStaked));
     return {
-      total: totalBalance.toString(),
-      stateStaked: stateStaked.toString(),
-      staked: staked.toString(),
-      available: availableBalance.toString(),
+      total,
+      stateStaked,
+      staked,
+      available,
     };
   }
 

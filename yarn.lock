@@ -3634,6 +3634,13 @@ near-sandbox@^0.0.6:
   dependencies:
     binary-install "^0.1.1"
 
+near-units@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/near-units/-/near-units-0.1.9.tgz#4bf07da0b046e08e0b8785ad8e32d4df3a944b93"
+  integrity sha512-xiuBjpNsi+ywiu7P6iWRZdgFm7iCr/cfWlVO6+e5uaAqH4mE1rrurElyrL91llNDSnMwogd9XmlZOw5KbbHNsA==
+  dependencies:
+    bn.js "^5.2.0"
+
 node-fetch@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"

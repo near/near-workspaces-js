@@ -21,6 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
 const fs = __importStar(require("fs/promises"));
+const near_units_1 = require("near-units");
 const types_1 = require("./types");
 const internal_utils_1 = require("./internal-utils");
 const utils_1 = require("./utils");
@@ -56,7 +57,7 @@ class Transaction {
         return this;
     }
     functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
-        this.actions.push((0, types_1.functionCall)(methodName, args, new types_1.BN(gas), new types_1.BN(attachedDeposit)));
+        this.actions.push((0, types_1.functionCall)(methodName, args, new types_1.BN(gas.toString()), new types_1.BN(attachedDeposit.toString())));
         return this;
     }
     stake(amount, publicKey) {
@@ -64,17 +65,16 @@ class Transaction {
         return this;
     }
     transfer(amount) {
-        const bnAmount = new types_1.BN(amount);
-        this._transferAmount = bnAmount;
-        this.actions.push((0, types_1.transfer)(bnAmount));
+        this._transferAmount = near_units_1.NEAR.from(amount);
+        this.actions.push((0, types_1.transfer)(new types_1.BN(amount.toString())));
         return this;
     }
     get accountCreated() {
         return this.accountToBeCreated;
     }
     get transferAmount() {
-        var _a;
-        return (_a = this._transferAmount) !== null && _a !== void 0 ? _a : new types_1.BN('0');
+        var _a, _b;
+        return near_units_1.NEAR.parse((_b = (_a = this._transferAmount) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : '0');
     }
 }
 exports.Transaction = Transaction;

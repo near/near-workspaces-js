@@ -2,6 +2,7 @@
 import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
+import { NEAR } from 'near-units';
 import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
@@ -17,7 +18,7 @@ export declare class Account implements NearAccount {
     exists(): Promise<boolean>;
     protected get provider(): JSONRpc;
     get accountId(): string;
-    availableBalance(): Promise<BN>;
+    availableBalance(): Promise<NEAR>;
     balance(): Promise<AccountBalance>;
     createTransaction(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;

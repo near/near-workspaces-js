@@ -1,4 +1,5 @@
 import * as nearAPI from 'near-api-js';
+import { NEAR } from 'near-units';
 import { KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JSONRpc } from '../jsonrpc';
@@ -30,7 +31,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
-    availableBalance(account: string | NearAccount): Promise<BN>;
+    availableBalance(account: string | NearAccount): Promise<NEAR>;
     exists(accountId: string | NearAccount): Promise<boolean>;
     canCoverBalance(account: string | NearAccount, amount: BN): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;

@@ -1,6 +1,7 @@
 import {URL} from 'url';
 import {Buffer} from 'buffer';
 import BN from 'bn.js';
+import {NEAR} from 'near-units';
 import * as borsh from 'borsh';
 import {
   DEFAULT_FUNCTION_CALL_GAS,
@@ -42,7 +43,7 @@ export class Account implements NearAccount {
     return this._accountId;
   }
 
-  async availableBalance(): Promise<BN> {
+  async availableBalance(): Promise<NEAR> {
     return this.manager.availableBalance(this.accountId);
   }
 
@@ -248,7 +249,7 @@ export class Account implements NearAccount {
   ): Promise<Transaction> {
     const newAccountId = this.makeSubAccount(accountId);
     const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
-    const amount = new BN(initialBalance ?? this.manager.initialBalance);
+    const amount = (initialBalance ?? this.manager.initialBalance).toString();
     return this.createTransaction(newAccountId)
       .createAccount()
       .transfer(amount)

@@ -1,6 +1,8 @@
 import {Buffer} from 'buffer';
+import {Gas} from 'near-units';
 import {
   Action,
+  ClientConfig,
   ExecutionError,
   ExecutionOutcome,
   ExecutionOutcomeWithId,
@@ -95,6 +97,10 @@ export class PromiseOutcome {
   get logs(): string[] {
     return this.outcome.logs;
   }
+
+  get gas_burnt(): Gas {
+    return Gas.from(this.outcome.gas_burnt);
+  }
 }
 
 export class TransactionResult {
@@ -102,6 +108,7 @@ export class TransactionResult {
     public readonly result: FinalExecutionOutcome,
     public readonly startMs: number,
     public readonly endMs: number,
+    private readonly config: ClientConfig,
   ) {}
 
   get durationMs(): number {
@@ -199,6 +206,10 @@ export class TransactionResult {
     return this.promiseErrors.map(error => JSON.stringify(error));
   }
 
+  get gas_burnt(): Gas {
+    return Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
+  }
+
   promiseErrorMessagesContain(pattern: string | RegExp): boolean {
     return this.promiseErrorMessages.some(includes(pattern));
   }
@@ -216,7 +227,7 @@ export class TransactionResult {
   }
 
   summary(): string {
-    return `(${this.durationMs} ms) ${transactionReceiptToString(this.transactionReceipt)}`;
+    return `(${this.durationMs} ms) burned ${this.gas_burnt.toHuman()} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
   }
 }
 
@@ -230,8 +241,8 @@ export interface TransactionReceipt {
   signer_id: string;
 }
 
-function transactionReceiptToString(tx: TransactionReceipt): string {
-  return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
+function transactionReceiptToString(tx: TransactionReceipt, explorerUrl?: string): string {
+  return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Hash: ${explorerUrl ? explorerUrl + '/' : ''}${tx.hash} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
 }
 
 export class TransactionError extends Error {

@@ -1,4 +1,5 @@
-import { Action, ExecutionError, ExecutionOutcome, ExecutionOutcomeWithId, ExecutionStatus, ExecutionStatusBasic, FinalExecutionOutcome, FinalExecutionStatus, FinalExecutionStatusBasic, PublicKey } from './types';
+import { Gas } from 'near-units';
+import { Action, ClientConfig, ExecutionError, ExecutionOutcome, ExecutionOutcomeWithId, ExecutionStatus, ExecutionStatusBasic, FinalExecutionOutcome, FinalExecutionStatus, FinalExecutionStatusBasic, PublicKey } from './types';
 export declare class PromiseOutcome {
     outcome: ExecutionOutcome;
     constructor(outcome: ExecutionOutcome);
@@ -13,12 +14,14 @@ export declare class PromiseOutcome {
     get errorMessage(): string | undefined;
     get errorType(): string | undefined;
     get logs(): string[];
+    get gas_burnt(): Gas;
 }
 export declare class TransactionResult {
     readonly result: FinalExecutionOutcome;
     readonly startMs: number;
     readonly endMs: number;
-    constructor(result: FinalExecutionOutcome, startMs: number, endMs: number);
+    private readonly config;
+    constructor(result: FinalExecutionOutcome, startMs: number, endMs: number, config: ClientConfig);
     get durationMs(): number;
     get outcomesWithId(): ExecutionOutcomeWithId[];
     get receipts_outcomes(): PromiseOutcome[];
@@ -39,6 +42,7 @@ export declare class TransactionResult {
     get promiseErrors(): ExecutionError[];
     get promiseSuccessValues(): string[];
     get promiseErrorMessages(): string[];
+    get gas_burnt(): Gas;
     promiseErrorMessagesContain(pattern: string | RegExp): boolean;
     parseResult<T>(): T;
     parsedPromiseResults(): any[];

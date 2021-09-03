@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
+import {NEAR} from 'near-units';
 import {asId, isTopLevelAccount, randomAccountId, toYocto} from '../utils';
 import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
 import {debug, txDebug} from '../internal-utils';
@@ -157,8 +158,8 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.account_balance(asId(account));
   }
 
-  async availableBalance(account: string | NearAccount): Promise<BN> {
-    return new BN((await this.balance(account)).available);
+  async availableBalance(account: string | NearAccount): Promise<NEAR> {
+    return (await this.balance(account)).available;
   }
 
   async exists(accountId: string | NearAccount): Promise<boolean> {
@@ -189,7 +190,7 @@ export abstract class AccountManager implements NearAccountManager {
         await this.deleteKey(tx.senderId);
       }
 
-      const result = new TransactionResult(outcome, start, end);
+      const result = new TransactionResult(outcome, start, end, this.config);
       txDebug(result.summary());
       return result;
     } catch (error: unknown) {

@@ -18,13 +18,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Account = void 0;
 const buffer_1 = require("buffer");
-const bn_js_1 = __importDefault(require("bn.js"));
 const borsh = __importStar(require("borsh"));
 const types_1 = require("../types");
 const contract_state_1 = require("../contract-state");
@@ -170,7 +166,7 @@ class Account {
     async internalCreateAccount(accountId, { keyPair, initialBalance, } = {}) {
         const newAccountId = this.makeSubAccount(accountId);
         const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
-        const amount = new bn_js_1.default(initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance);
+        const amount = (initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance).toString();
         return this.createTransaction(newAccountId)
             .createAccount()
             .transfer(amount)

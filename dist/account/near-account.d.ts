@@ -2,6 +2,7 @@
 import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
+import { NEAR } from 'near-units';
 import { KeyPair } from 'near-api-js';
 import { AccountBalance, PublicKey, CodeResult, AccountView } from '../types';
 import { ContractState } from '../contract-state';
@@ -15,7 +16,7 @@ export interface NearAccount {
      * @see {@link https://docs.near.org/docs/develop/front-end/rpc#view-account}
      */
     accountView(): Promise<AccountView>;
-    availableBalance(): Promise<BN>;
+    availableBalance(): Promise<NEAR>;
     /** Current balance of account on network. */
     balance(): Promise<AccountBalance>;
     /**

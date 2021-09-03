@@ -1,11 +1,8 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSONRpc = void 0;
 const buffer_1 = require("buffer");
-const bn_js_1 = __importDefault(require("bn.js"));
+const near_units_1 = require("near-units");
 const types_1 = require("./types");
 class JSONRpc extends types_1.JsonRpcProvider {
     static from(config) {
@@ -47,16 +44,17 @@ class JSONRpc extends types_1.JsonRpcProvider {
     async account_balance(account_id) {
         const config = await this.protocolConfig();
         const state = await this.viewAccount(account_id);
-        const costPerByte = new bn_js_1.default(config.runtime_config.storage_amount_per_byte);
-        const stateStaked = new bn_js_1.default(state.storage_usage).mul(costPerByte);
-        const staked = new bn_js_1.default(state.locked);
-        const totalBalance = new bn_js_1.default(state.amount).add(staked);
-        const availableBalance = totalBalance.sub(bn_js_1.default.max(staked, stateStaked));
+        const cost = config.runtime_config.storage_amount_per_byte;
+        const costPerByte = near_units_1.NEAR.from(cost);
+        const stateStaked = near_units_1.NEAR.from(state.storage_usage).mul(costPerByte);
+        const staked = near_units_1.NEAR.from(state.locked);
+        const total = near_units_1.NEAR.from(state.amount).add(staked);
+        const available = total.sub(staked.max(stateStaked));
         return {
-            total: totalBalance.toString(),
-            stateStaked: stateStaked.toString(),
-            staked: staked.toString(),
-            available: availableBalance.toString(),
+            total,
+            stateStaked,
+            staked,
+            available,
         };
     }
     async view_call(account_id, method_name, args) {

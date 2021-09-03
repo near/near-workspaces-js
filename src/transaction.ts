@@ -1,6 +1,7 @@
 import {Buffer} from 'buffer';
 import * as fs from 'fs/promises';
 import {URL} from 'url';
+import {NEAR} from 'near-units';
 import {TransactionResult} from './transaction-result';
 import {
   Action,
@@ -28,7 +29,7 @@ export abstract class Transaction {
   readonly senderId: string;
   readonly actions: Action[] = [];
   private accountToBeCreated = false;
-  private _transferAmount?: BN;
+  private _transferAmount?: NEAR;
 
   constructor(sender: NamedAccount | string, receiver: NamedAccount | string) {
     this.senderId = typeof sender === 'string' ? sender : sender.accountId;
@@ -74,7 +75,7 @@ export abstract class Transaction {
     }: {gas?: BN | string; attachedDeposit?: BN | string} = {},
   ): this {
     this.actions.push(
-      functionCall(methodName, args, new BN(gas), new BN(attachedDeposit)),
+      functionCall(methodName, args, new BN(gas.toString()), new BN(attachedDeposit.toString())),
     );
     return this;
   }
@@ -85,9 +86,8 @@ export abstract class Transaction {
   }
 
   transfer(amount: string | BN): this {
-    const bnAmount = new BN(amount);
-    this._transferAmount = bnAmount;
-    this.actions.push(transfer(bnAmount));
+    this._transferAmount = NEAR.from(amount);
+    this.actions.push(transfer(new BN(amount.toString())));
     return this;
   }
 
@@ -95,8 +95,8 @@ export abstract class Transaction {
     return this.accountToBeCreated;
   }
 
-  get transferAmount(): BN {
-    return this._transferAmount ?? new BN('0');
+  get transferAmount(): NEAR {
+    return NEAR.parse(this._transferAmount?.toString() ?? '0');
   }
 
   abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;

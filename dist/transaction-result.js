@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionError = exports.TransactionResult = exports.PromiseOutcome = void 0;
 const buffer_1 = require("buffer");
+const near_units_1 = require("near-units");
 function includes(pattern) {
     if (typeof pattern === 'string') {
         return s => s.includes(pattern);
@@ -71,13 +72,17 @@ class PromiseOutcome {
     get logs() {
         return this.outcome.logs;
     }
+    get gas_burnt() {
+        return near_units_1.Gas.from(this.outcome.gas_burnt);
+    }
 }
 exports.PromiseOutcome = PromiseOutcome;
 class TransactionResult {
-    constructor(result, startMs, endMs) {
+    constructor(result, startMs, endMs, config) {
         this.result = result;
         this.startMs = startMs;
         this.endMs = endMs;
+        this.config = config;
     }
     get durationMs() {
         return this.endMs - this.startMs;
@@ -149,6 +154,9 @@ class TransactionResult {
     get promiseErrorMessages() {
         return this.promiseErrors.map(error => JSON.stringify(error));
     }
+    get gas_burnt() {
+        return near_units_1.Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
+    }
     promiseErrorMessagesContain(pattern) {
         return this.promiseErrorMessages.some(includes(pattern));
     }
@@ -162,12 +170,12 @@ class TransactionResult {
         return this.promiseSuccessValues.map(parseValue);
     }
     summary() {
-        return `(${this.durationMs} ms) ${transactionReceiptToString(this.transactionReceipt)}`;
+        return `(${this.durationMs} ms) burned ${this.gas_burnt.toHuman()} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
     }
 }
 exports.TransactionResult = TransactionResult;
-function transactionReceiptToString(tx) {
-    return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
+function transactionReceiptToString(tx, explorerUrl) {
+    return `${tx.signer_id} -> ${tx.receiver_id} Nonce: ${tx.nonce} Hash: ${explorerUrl ? explorerUrl + '/' : ''}${tx.hash} Actions:\n${tx.actions.map(a => JSON.stringify(a)).join('\n')}`;
 }
 class TransactionError extends Error {
     constructor(result) {

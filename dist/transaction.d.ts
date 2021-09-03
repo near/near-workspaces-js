@@ -1,6 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import { URL } from 'url';
+import { NEAR } from 'near-units';
 import { TransactionResult } from './transaction-result';
 import { Action, PublicKey, AccessKey, BN, KeyPair, NamedAccount } from './types';
 export declare abstract class Transaction {
@@ -23,6 +24,6 @@ export declare abstract class Transaction {
     stake(amount: BN | string, publicKey: PublicKey | string): this;
     transfer(amount: string | BN): this;
     get accountCreated(): boolean;
-    get transferAmount(): BN;
+    get transferAmount(): NEAR;
     abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
 }
