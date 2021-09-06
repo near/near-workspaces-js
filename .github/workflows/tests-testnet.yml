@@ -1,4 +1,4 @@
-name: Tests
+name: Test Testnet
 on: push
 jobs:
   testnet:
@@ -32,29 +32,3 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run tests
         run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager && yarn clean:accounts
-  sandbox:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, macos-latest]
-        node-version: [14, 16]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Run tests
-        run: yarn && yarn test:sandbox
-  near-sandbox-install:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-        node-version: [16]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Run tests
-        run: yarn && rm node_modules/binary-install/bin/near-sandbox && yarn test:sandbox:ci
