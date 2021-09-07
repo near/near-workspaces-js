@@ -1,20 +1,34 @@
 import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
-import {JsonRpcProvider, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
+import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
 import {Records} from './contract-state';
 
-export class JSONRpc extends JsonRpcProvider {
-  private static readonly providers: Map<string, JSONRpc> = new Map();
+/**
+ * Extends the main provider class in NAJ, adding more methods for
+ * interacting with an endpoint.
+ */
+export class JsonRpcProvider extends JSONRpc {
+  private static readonly providers: Map<string, JsonRpcProvider> = new Map();
 
-  static from(config: string | {rpcAddr: string}): JSONRpc {
+  /**
+   *
+   * @param config rpc endpoint URL or a configuration that includes one.
+   * @returns
+   */
+  static from(config: string | {rpcAddr: string}): JsonRpcProvider {
     const url = typeof config === 'string' ? config : config.rpcAddr;
     if (!this.providers.has(url)) {
-      this.providers.set(url, new JSONRpc(url));
+      this.providers.set(url, new JsonRpcProvider(url));
     }
 
     return this.providers.get(url)!;
   }
 
+  /**
+   * Download the binary of a given contract.
+   * @param account_id contract account
+   * @returns Buffer of Wasm binary
+   */
   async viewCode(account_id: string): Promise<Buffer> {
     const codeResponse: ContractCodeView = await this.query({
       request_type: 'view_code',
@@ -74,6 +88,14 @@ export class JSONRpc extends JsonRpcProvider {
     });
   }
 
+  /**
+   * Download the state of a contract given a prefix of a key.
+   *
+   * @param account_id contract account to lookup
+   * @param prefix string or byte prefix of keys to loodup
+   * @param blockQuery state at what block, defaulty most recent final block
+   * @returns
+   */
   async viewState(account_id: string, prefix: string | Uint8Array, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<Array<{key: Buffer; value: Buffer}>> {
     const {values} = await this.query<ViewStateResult>({
       request_type: 'view_state',
@@ -88,6 +110,12 @@ export class JSONRpc extends JsonRpcProvider {
     }));
   }
 
+  /**
+   * Updates records without using a transaction.
+   * Note: only avaialable on Sandbox endpoints.
+   * @param records 
+   * @returns 
+   */
   async sandbox_patch_state(records: Records): Promise<any> {
     return this.sendJsonRpc('sandbox_patch_state', records);
   }

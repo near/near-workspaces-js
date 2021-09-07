@@ -21,7 +21,7 @@ export {
   AccessKey,
 } from 'near-api-js/lib/transaction';
 
-export {JsonRpcProvider} from 'near-api-js/lib/providers/json-rpc-provider';
+export {JsonRpcProvider as JSONRpc} from 'near-api-js/lib/providers/json-rpc-provider';
 export {KeyStore} from 'near-api-js/lib/key_stores';
 export * from 'near-api-js/lib/providers/provider';
 

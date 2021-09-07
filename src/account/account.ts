@@ -14,7 +14,7 @@ import {
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
-import {JSONRpc} from '../jsonrpc';
+import {JsonRpcProvider} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {debug} from '../internal-utils';
@@ -35,7 +35,7 @@ export class Account implements NearAccount {
     return this.provider.accountExists(this.accountId);
   }
 
-  protected get provider(): JSONRpc {
+  protected get provider(): JsonRpcProvider {
     return this.manager.provider;
   }
 

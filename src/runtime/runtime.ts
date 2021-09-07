@@ -4,7 +4,7 @@ import {toYocto} from '../utils';
 import {ClientConfig, FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
-import {JSONRpc} from '../jsonrpc';
+import {JsonRpcProvider} from '../jsonrpc';
 import {debug} from '../internal-utils';
 import {SandboxServer} from './server';
 
@@ -171,8 +171,8 @@ export class TestnetRuntime extends Runtime {
     };
   }
 
-  static get provider(): JSONRpc {
-    return JSONRpc.from(this.clientConfig);
+  static get provider(): JsonRpcProvider {
+    return JsonRpcProvider.from(this.clientConfig);
   }
 
   static get baseAccountId(): string {
@@ -256,8 +256,8 @@ export class SandboxRuntime extends Runtime {
     };
   }
 
-  get provider(): JSONRpc {
-    return JSONRpc.from(this.rpcAddr);
+  get provider(): JsonRpcProvider {
+    return JsonRpcProvider.from(this.rpcAddr);
   }
 
   get rpcAddr(): string {

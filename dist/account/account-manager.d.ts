@@ -2,7 +2,7 @@ import * as nearAPI from 'near-api-js';
 import { NEAR } from 'near-units';
 import { KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
-import { JSONRpc } from '../jsonrpc';
+import { JsonRpcProvider } from '../jsonrpc';
 import { Config } from '../interfaces';
 import { TransactionResult } from '../transaction-result';
 import { NearAccount } from './near-account';
@@ -21,7 +21,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     get root(): NearAccount;
     get initialBalance(): string;
     get doubleInitialBalance(): BN;
-    get provider(): JSONRpc;
+    get provider(): JsonRpcProvider;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
     getPublicKey(accountId: string): Promise<PublicKey | null>;

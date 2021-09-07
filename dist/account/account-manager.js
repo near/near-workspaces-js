@@ -100,7 +100,7 @@ class AccountManager {
         return new types_1.BN(this.initialBalance).mul(new types_1.BN('2'));
     }
     get provider() {
-        return jsonrpc_1.JSONRpc.from(this.config);
+        return jsonrpc_1.JsonRpcProvider.from(this.config);
     }
     createTransaction(sender, receiver) {
         return new ManagedTransaction(this, sender, receiver);

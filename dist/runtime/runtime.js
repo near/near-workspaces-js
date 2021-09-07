@@ -140,7 +140,7 @@ class TestnetRuntime extends Runtime {
         };
     }
     static get provider() {
-        return jsonrpc_1.JSONRpc.from(this.clientConfig);
+        return jsonrpc_1.JsonRpcProvider.from(this.clientConfig);
     }
     static get baseAccountId() {
         return 'testnet';
@@ -203,7 +203,7 @@ class SandboxRuntime extends Runtime {
         };
     }
     get provider() {
-        return jsonrpc_1.JSONRpc.from(this.rpcAddr);
+        return jsonrpc_1.JsonRpcProvider.from(this.rpcAddr);
     }
     get rpcAddr() {
         return `http://localhost:${this.config.port}`;

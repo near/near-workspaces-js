@@ -7,7 +7,7 @@ import {asId, isTopLevelAccount, randomAccountId, toYocto} from '../utils';
 import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
-import {JSONRpc} from '../jsonrpc';
+import {JsonRpcProvider} from '../jsonrpc';
 import {Config} from '../interfaces';
 import {TransactionResult} from '../transaction-result';
 import {Account} from './account';
@@ -104,8 +104,8 @@ export abstract class AccountManager implements NearAccountManager {
     return new BN(this.initialBalance).mul(new BN('2'));
   }
 
-  get provider(): JSONRpc {
-    return JSONRpc.from(this.config);
+  get provider(): JsonRpcProvider {
+    return JsonRpcProvider.from(this.config);
   }
 
   createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction {

@@ -1,7 +1,7 @@
 import { ClientConfig, FinalExecutionOutcome } from '../types';
 import { NearAccount, NearAccountManager } from '../account';
 import { AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn } from '../interfaces';
-import { JSONRpc } from '../jsonrpc';
+import { JsonRpcProvider } from '../jsonrpc';
 declare type AccountShortName = string;
 declare type AccountId = string;
 export declare abstract class Runtime {
@@ -30,7 +30,7 @@ export declare class TestnetRuntime extends Runtime {
     createFrom(): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
     static get clientConfig(): ClientConfig;
-    static get provider(): JSONRpc;
+    static get provider(): JsonRpcProvider;
     static get baseAccountId(): string;
     beforeRun(): Promise<void>;
     afterRun(): Promise<void>;
@@ -45,7 +45,7 @@ export declare class SandboxRuntime extends Runtime {
     createFrom(): Promise<SandboxRuntime>;
     get baseAccountId(): string;
     static get clientConfig(): ClientConfig;
-    get provider(): JSONRpc;
+    get provider(): JsonRpcProvider;
     get rpcAddr(): string;
     beforeRun(): Promise<void>;
     afterRun(): Promise<void>;

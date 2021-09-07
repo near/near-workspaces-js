@@ -6,7 +6,7 @@ import { NEAR } from 'near-units';
 import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
-import { JSONRpc } from '../jsonrpc';
+import { JsonRpcProvider } from '../jsonrpc';
 import { TransactionResult } from '../transaction-result';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
@@ -16,7 +16,7 @@ export declare class Account implements NearAccount {
     constructor(_accountId: string, manager: NearAccountManager);
     accountView(): Promise<AccountView>;
     exists(): Promise<boolean>;
-    protected get provider(): JSONRpc;
+    protected get provider(): JsonRpcProvider;
     get accountId(): string;
     availableBalance(): Promise<NEAR>;
     balance(): Promise<AccountBalance>;

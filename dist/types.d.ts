@@ -8,7 +8,7 @@ export { ServerError } from 'near-api-js/lib/utils/rpc_errors';
 export { KeyPair, Connection } from 'near-api-js';
 export { PublicKey, KeyPairEd25519 } from 'near-api-js/lib/utils';
 export { Action, createAccount, deployContract, functionCall, transfer, stake, addKey, deleteKey, deleteAccount, fullAccessKey, AccessKey, } from 'near-api-js/lib/transaction';
-export { JsonRpcProvider } from 'near-api-js/lib/providers/json-rpc-provider';
+export { JsonRpcProvider as JSONRpc } from 'near-api-js/lib/providers/json-rpc-provider';
 export { KeyStore } from 'near-api-js/lib/key_stores';
 export * from 'near-api-js/lib/providers/provider';
 export { DEFAULT_FUNCTION_CALL_GAS } from 'near-api-js/lib/constants';

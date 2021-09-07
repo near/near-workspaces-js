@@ -1,17 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JSONRpc = void 0;
+exports.JsonRpcProvider = void 0;
 const buffer_1 = require("buffer");
 const near_units_1 = require("near-units");
 const types_1 = require("./types");
-class JSONRpc extends types_1.JsonRpcProvider {
+/**
+ * Extends the main provider class in NAJ, adding more methods for
+ * interacting with an endpoint.
+ */
+class JsonRpcProvider extends types_1.JSONRpc {
+    /**
+     *
+     * @param config rpc endpoint URL or a configuration that includes one.
+     * @returns
+     */
     static from(config) {
         const url = typeof config === 'string' ? config : config.rpcAddr;
         if (!this.providers.has(url)) {
-            this.providers.set(url, new JSONRpc(url));
+            this.providers.set(url, new JsonRpcProvider(url));
         }
         return this.providers.get(url);
     }
+    /**
+     * Download the binary of a given contract.
+     * @param account_id contract account
+     * @returns Buffer of Wasm binary
+     */
     async viewCode(account_id) {
         const codeResponse = await this.query({
             request_type: 'view_code',
@@ -66,6 +80,14 @@ class JSONRpc extends types_1.JsonRpcProvider {
             finality: 'optimistic',
         });
     }
+    /**
+     * Download the state of a contract given a prefix of a key.
+     *
+     * @param account_id contract account to lookup
+     * @param prefix string or byte prefix of keys to loodup
+     * @param blockQuery state at what block, defaulty most recent final block
+     * @returns
+     */
     async viewState(account_id, prefix, blockQuery) {
         const { values } = await this.query({
             request_type: 'view_state',
@@ -78,10 +100,16 @@ class JSONRpc extends types_1.JsonRpcProvider {
             value: buffer_1.Buffer.from(value, 'base64'),
         }));
     }
+    /**
+     * Updates records without using a transaction.
+     * Note: only avaialable on Sandbox endpoints.
+     * @param records
+     * @returns
+     */
     async sandbox_patch_state(records) {
         return this.sendJsonRpc('sandbox_patch_state', records);
     }
 }
-exports.JSONRpc = JSONRpc;
-JSONRpc.providers = new Map();
+exports.JsonRpcProvider = JsonRpcProvider;
+JsonRpcProvider.providers = new Map();
 //# sourceMappingURL=jsonrpc.js.map

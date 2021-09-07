@@ -2,13 +2,13 @@ import {KeyPair} from 'near-api-js';
 import {NEAR} from 'near-units';
 import {TransactionResult} from '../transaction-result';
 import {Config} from '../interfaces';
-import {JSONRpc} from '../jsonrpc';
+import {JsonRpcProvider} from '../jsonrpc';
 import {Transaction} from '../transaction';
 import {AccountBalance, AccountView} from '../types';
 import {NearAccount} from './near-account';
 
 export interface NearAccountManager {
-  readonly provider: JSONRpc;
+  readonly provider: JsonRpcProvider;
   readonly initialBalance: string;
   readonly root: NearAccount;
   accountView(accountId: string): Promise<AccountView>;

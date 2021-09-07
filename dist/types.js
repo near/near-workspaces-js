@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JsonRpcProvider = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = exports.ServerError = void 0;
+exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JSONRpc = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = exports.ServerError = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 var rpc_errors_1 = require("near-api-js/lib/utils/rpc_errors");
 Object.defineProperty(exports, "ServerError", { enumerable: true, get: function () { return rpc_errors_1.ServerError; } });
@@ -36,7 +36,7 @@ Object.defineProperty(exports, "deleteAccount", { enumerable: true, get: functio
 Object.defineProperty(exports, "fullAccessKey", { enumerable: true, get: function () { return transaction_1.fullAccessKey; } });
 Object.defineProperty(exports, "AccessKey", { enumerable: true, get: function () { return transaction_1.AccessKey; } });
 var json_rpc_provider_1 = require("near-api-js/lib/providers/json-rpc-provider");
-Object.defineProperty(exports, "JsonRpcProvider", { enumerable: true, get: function () { return json_rpc_provider_1.JsonRpcProvider; } });
+Object.defineProperty(exports, "JSONRpc", { enumerable: true, get: function () { return json_rpc_provider_1.JsonRpcProvider; } });
 var key_stores_1 = require("near-api-js/lib/key_stores");
 Object.defineProperty(exports, "KeyStore", { enumerable: true, get: function () { return key_stores_1.KeyStore; } });
 __exportStar(require("near-api-js/lib/providers/provider"), exports);
