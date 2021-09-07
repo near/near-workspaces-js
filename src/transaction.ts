@@ -96,7 +96,7 @@ export abstract class Transaction {
   }
 
   get transferAmount(): NEAR {
-    return NEAR.parse(this._transferAmount?.toString() ?? '0');
+    return this._transferAmount ?? NEAR.from('0');
   }
 
   abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;

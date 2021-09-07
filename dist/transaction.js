@@ -73,8 +73,8 @@ class Transaction {
         return this.accountToBeCreated;
     }
     get transferAmount() {
-        var _a, _b;
-        return near_units_1.NEAR.parse((_b = (_a = this._transferAmount) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : '0');
+        var _a;
+        return (_a = this._transferAmount) !== null && _a !== void 0 ? _a : near_units_1.NEAR.from('0');
     }
 }
 exports.Transaction = Transaction;
