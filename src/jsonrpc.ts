@@ -113,8 +113,8 @@ export class JsonRpcProvider extends JSONRpc {
   /**
    * Updates records without using a transaction.
    * Note: only avaialable on Sandbox endpoints.
-   * @param records 
-   * @returns 
+   * @param records
+   * @returns
    */
   async sandbox_patch_state(records: Records): Promise<any> {
     return this.sendJsonRpc('sandbox_patch_state', records);

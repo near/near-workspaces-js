@@ -245,7 +245,7 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {attachedDeposit: '1', gas: '150000000000000'},
       );
-      expect(result.promiseErrorMessages).toContain('ParseIntError');
+      expect(result.promiseErrorMessages.join('\n')).toMatch('ParseIntError');
 
       const rootBalance: string = await ft.view('ft_balance_of', {
         account_id: root,
