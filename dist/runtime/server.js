@@ -31,7 +31,7 @@ const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
-const utils_1 = require("./utils");
+const internal_utils_1 = require("../internal-utils");
 const pollData = JSON.stringify({
     jsonrpc: '2.0',
     id: 'dontcare',
@@ -54,17 +54,17 @@ async function pingServer(port) {
                 resolve(true);
             }
             else {
-                utils_1.debug(`Sandbox running but got non-200 response: ${JSON.stringify(result)}`);
+                (0, internal_utils_1.debug)(`Sandbox running but got non-200 response: ${JSON.stringify(result)}`);
                 resolve(false);
             }
         });
         request.on('error', error => {
-            utils_1.debug(JSON.stringify(error));
+            (0, internal_utils_1.debug)(JSON.stringify(error));
             resolve(false);
         });
         // Write data to request body
         request.write(pollData);
-        utils_1.debug(`polling server at port ${options.port}`);
+        (0, internal_utils_1.debug)(`polling server at port ${options.port}`);
         request.end();
     });
 }
@@ -93,32 +93,32 @@ class SandboxServer {
         return this.lastPort;
     }
     static randomHomeDir() {
-        return path_1.join(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
+        return (0, path_1.join)(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
     }
     static async init(config) {
-        await utils_1.ensureBinary();
+        await (0, internal_utils_1.ensureBinary)();
         const server = new SandboxServer(config);
         if (server.config.refDir) {
-            await utils_1.rm(server.homeDir);
-            await utils_1.copyDir(server.config.refDir, server.config.homeDir);
+            await (0, internal_utils_1.rm)(server.homeDir);
+            await (0, internal_utils_1.copyDir)(server.config.refDir, server.config.homeDir);
         }
-        if ((await utils_1.exists(server.homeDir)) && server.config.init) {
-            await utils_1.rm(server.homeDir);
+        if ((await (0, internal_utils_1.exists)(server.homeDir)) && server.config.init) {
+            await (0, internal_utils_1.rm)(server.homeDir);
         }
         if (server.config.init) {
             try {
                 const { stderr, code } = await server.spawn('init');
-                utils_1.debug(stderr);
+                (0, internal_utils_1.debug)(stderr);
                 if (code && code < 0) {
                     throw new Error('Failed to spawn sandbox server');
                 }
             }
             catch (error) {
-                utils_1.debug(JSON.stringify(error));
+                (0, internal_utils_1.debug)(JSON.stringify(error));
                 throw error;
             }
         }
-        utils_1.debug('created ' + server.homeDir);
+        (0, internal_utils_1.debug)('created ' + server.homeDir);
         return server;
     }
     get homeDir() {
@@ -138,26 +138,26 @@ class SandboxServer {
             '--rpc-addr',
             this.internalRpcAddr,
         ];
-        utils_1.debug(`sending args, ${args.join(' ')}`);
+        (0, internal_utils_1.debug)(`sending args, ${args.join(' ')}`);
         if (process_1.default.env.NEAR_RUNNER_DEBUG) {
-            const filePath = path_1.join(this.homeDir, 'sandboxServer.log');
-            utils_1.debug(`near-sandbox logs writing to file: ${filePath}`);
-            this.subprocess = utils_1.spawn(utils_1.sandboxBinary(), args, {
+            const filePath = (0, path_1.join)(this.homeDir, 'sandboxServer.log');
+            (0, internal_utils_1.debug)(`near-sandbox logs writing to file: ${filePath}`);
+            this.subprocess = (0, internal_utils_1.spawn)((0, internal_utils_1.sandboxBinary)(), args, {
                 env: { RUST_BACKTRACE: 'full' },
                 // @ts-expect-error FileHandle not assignable to Stream | IOType
-                stdio: ['ignore', 'ignore', await promises_1.open(filePath, 'a')],
+                stdio: ['ignore', 'ignore', await (0, promises_1.open)(filePath, 'a')],
             });
         }
         else {
-            this.subprocess = utils_1.spawn(utils_1.sandboxBinary(), args, {
+            this.subprocess = (0, internal_utils_1.spawn)((0, internal_utils_1.sandboxBinary)(), args, {
                 stdio: ['ignore', 'ignore', 'ignore'],
             });
         }
         this.subprocess.on('exit', () => {
-            utils_1.debug(`Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'}`);
+            (0, internal_utils_1.debug)(`Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'}`);
         });
         await sandboxStarted(this.port);
-        utils_1.debug(`Connected to server at ${this.internalRpcAddr}`);
+        (0, internal_utils_1.debug)(`Connected to server at ${this.internalRpcAddr}`);
         return this;
     }
     async close() {
@@ -167,14 +167,14 @@ class SandboxServer {
             console.error(`Failed to kill child process with PID: ${(_a = this.subprocess.pid) !== null && _a !== void 0 ? _a : 'undefined'}`);
         }
         if (this.config.rm) {
-            await utils_1.rm(this.homeDir);
+            await (0, internal_utils_1.rm)(this.homeDir);
         }
     }
     get internalRpcAddr() {
         return `0.0.0.0:${this.port}`;
     }
     async spawn(command) {
-        return utils_1.asyncSpawn('--home', this.homeDir, command);
+        return (0, internal_utils_1.asyncSpawn)('--home', this.homeDir, command);
     }
 }
 exports.SandboxServer = SandboxServer;

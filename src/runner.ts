@@ -1,22 +1,25 @@
 import process from 'process';
-import {Runtime, RunnerFn, CreateRunnerFn, Config} from './runtime';
+import {Runtime} from './runtime';
+import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 
 export class Runner {
-  private constructor(
-    private readonly runtime: Runtime,
-  ) { /* auto-assigns to this.config & this.args */ }
+  private runtime?: Runtime;
+  private readonly ready: Promise<void>;
+  private constructor(runtimePromise: Promise<Runtime>,
+  ) {
+    this.ready = this.startWaiting(runtimePromise);
+  }
 
   /** Create the initial enviorment for the test to run in.
    * For example create accounts and deploy contracts that future tests will use.
    */
-  static async create(
+  static create(
     configOrFunction: CreateRunnerFn | Partial<Config>,
     f?: CreateRunnerFn,
-  ): Promise<Runner> {
+  ): Runner {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     config.network = config.network ?? this.getNetworkFromEnv();
-    const runtime = await Runtime.create(config, fn);
-    return new Runner(runtime);
+    return new Runner(Runtime.create(config, fn));
   }
 
   static networkIsTestnet(): boolean {
@@ -43,13 +46,18 @@ export class Runner {
     }
   }
 
+  async startWaiting(runtime: Promise<Runtime>): Promise<void> {
+    this.runtime = await runtime;
+  }
+
   /**
    * Sets up the context, runs the function, and tears it down.
    * @param fn function to pass runtime to.
    * @returns the runtime used
    */
   async run(fn: RunnerFn): Promise<Runtime> {
-    const runtime = await this.runtime.createFrom();
+    await this.ready;
+    const runtime = await this.runtime!.createFrom();
     await runtime.run(fn);
     return runtime;
   }
@@ -60,7 +68,8 @@ export class Runner {
    * @returns
    */
   async runSandbox(fn: RunnerFn): Promise<Runtime | null> {
-    if (this.runtime.config.network === 'sandbox') {
+    await this.ready;
+    if (this.runtime!.config.network === 'sandbox') {
       return this.run(fn);
     }
 
@@ -79,7 +88,7 @@ function getConfigAndFn(
     return {config: {}, fn: configOrFunction};
   }
 
-  if (type1 === 'object' && type2 === 'function') {
+  if (type1 === 'object' && (type2 === 'function' || type2 === 'undefined')) {
     // @ts-expect-error Type this|that not assignable to that
     return {config: configOrFunction, fn: f};
   }

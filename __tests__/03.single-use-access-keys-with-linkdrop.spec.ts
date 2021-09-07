@@ -12,7 +12,8 @@
  * You can see this functionality in action below using `signWithKey`.
  */
 import path from 'path';
-import {Runner, toYocto, createKeyPair, BN, tGas} from '..';
+import {Gas, NEAR} from 'near-units';
+import {Runner, createKeyPair} from '../src';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -28,34 +29,23 @@ impl Linkdrop {
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   jest.setTimeout(60_000);
-  let runner: Runner;
+  const runner = Runner.create(async ({root}) => ({
+    linkdrop: await root.createAndDeploy(
+      'linkdrop',
+      path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
+    ),
+  }));
 
-  beforeAll(async () => {
-    runner = await Runner.create(async ({root}) => ({
-      linkdrop: await root.createAndDeploy(
-        'linkdrop',
-        path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
-      ),
-    }));
-  });
-
-  test('Use `create_account_and_claim` to create a new account', async () => {
+  test.concurrent('Use `create_account_and_claim` to create a new account', async () => {
     await runner.run(async ({root, linkdrop}) => {
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
+      const attachedDeposit = NEAR.parse('2');
 
       // This adds the key as a function access key on `create_account_and_claim`
-      await root.call(
-        linkdrop,
-        'send',
-        {
-          public_key,
-        },
-        {
-          attachedDeposit: toYocto('2'),
-        },
-      );
+      await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
+
       const new_account_id = `bob.${linkdrop.accountId}`;
       const actualKey = createKeyPair();
       const new_public_key = actualKey.getPublicKey().toString();
@@ -69,61 +59,51 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
         },
         {
           signWithKey: senderKey,
-          gas: tGas('50'),
+          gas: Gas.parse('50 TGas'),
         },
       );
       const bob = root.getAccount(new_account_id);
-      const balance = await bob.balance();
-      expect(balance.available).toBe('998180000000000000000000');
+      const balance = await bob.availableBalance();
+      console.log(balance.toHuman());
+      expect(balance).toStrictEqual(NEAR.parse('0.99818'));
 
       console.log(
-        `Account ${new_account_id} claim and has ${balance.available} yoctoNear`,
+        `Account ${new_account_id} claim and has ${balance.toHuman()} available`,
       );
     });
   });
 
-  test('Use `claim` to transfer to an existing account', async () => {
+  test.concurrent('Use `claim` to transfer to an existing account', async () => {
     await runner.run(async ({root, linkdrop}) => {
       const bob = await root.createAccount('bob');
-      const originalBalance = await bob.balance();
+      const originalBalance = await bob.availableBalance();
       // Create temporary keys for access key on linkdrop
       const senderKey = createKeyPair();
       const public_key = senderKey.getPublicKey().toString();
+      const attachedDeposit = NEAR.parse('2');
 
       // This adds the key as a function access key on `create_account_and_claim`
-      await root.call(
-        linkdrop,
-        'send',
-        {
-          public_key,
-        },
-        {
-          attachedDeposit: toYocto('2'),
-        },
-      );
+      await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
       // Can only create subaccounts
 
       await linkdrop.call_raw(
         linkdrop,
         'claim',
         {
-          account_id: bob.accountId,
+          account_id: bob,
         },
         {
           signWithKey: senderKey,
-          gas: tGas('50'),
+          gas: Gas.parse('50 TGas'),
         },
       );
 
-      const newBalance = await bob.balance();
-      const originalAvaiable = new BN(originalBalance.available);
-      const newAvaiable = new BN(newBalance.available);
-      expect(originalAvaiable.lt(newAvaiable)).toBeTruthy();
+      const newBalance = await bob.availableBalance();
+      expect(originalBalance.toBigInt()).toBeLessThan(newBalance.toBigInt());
 
       console.log(
-        `${bob.accountId} claimed ${newAvaiable
-          .sub(originalAvaiable)
-          .toString()} yoctoNear`,
+        `${bob.accountId} claimed ${newBalance
+          .sub(originalBalance).toHuman()}`,
       );
     });
   });

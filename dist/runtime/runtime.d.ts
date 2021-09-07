@@ -1,89 +1,39 @@
-/// <reference types="node" />
-import { Buffer } from 'buffer';
-import * as nearAPI from 'near-api-js';
-import { KeyPair } from '../types';
-import { FinalExecutionOutcome } from '../provider';
-import { Account } from './account';
-interface RuntimeArg {
-    runtime: Runtime;
-    root: Account;
-}
-export declare type ReturnedAccounts = Record<string, Account>;
-export interface AccountArgs extends ReturnedAccounts {
-    root: Account;
-}
-export declare type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
-export declare type RunnerFn = (args: AccountArgs, runtime: Runtime) => Promise<void>;
+import { ClientConfig, FinalExecutionOutcome } from '../types';
+import { NearAccount, NearAccountManager } from '../account';
+import { AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn } from '../interfaces';
+import { JsonRpcProvider } from '../jsonrpc';
 declare type AccountShortName = string;
 declare type AccountId = string;
-declare type UserPropName = string;
-declare type SerializedReturnedAccounts = Map<UserPropName, AccountShortName>;
-export interface Config {
-    homeDir: string;
-    port: number;
-    init: boolean;
-    rm: boolean;
-    refDir: string | null;
-    network: 'sandbox' | 'testnet';
-    masterAccount?: string;
-    rpcAddr: string;
-    helperUrl?: string;
-    explorerUrl?: string;
-    initialBalance?: string;
-    walletUrl?: string;
-    initFn?: CreateRunnerFn;
-}
 export declare abstract class Runtime {
-    near: nearAPI.Near;
     config: Config;
-    accountsCreated: Map<AccountId, AccountShortName>;
-    resultArgs?: SerializedReturnedAccounts;
-    protected root: Account;
-    protected masterKey: KeyPair;
-    protected keyStore: nearAPI.keyStores.KeyStore;
+    returnedAccounts: Map<AccountId, AccountShortName>;
+    protected manager: NearAccountManager;
     protected createdAccounts: ReturnedAccounts;
     constructor(config: Config, accounts?: ReturnedAccounts);
     static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<Runtime>;
-    get accounts(): AccountArgs;
-    get homeDir(): string;
-    get init(): boolean;
-    get rpcAddr(): string;
-    get network(): string;
-    get masterAccount(): string;
-    getMasterKey(): Promise<KeyPair>;
-    connect(): Promise<void>;
-    run(fn: RunnerFn, args?: SerializedReturnedAccounts): Promise<void>;
-    createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
-    getRoot(): Account;
+    static createAndRun(fn: RunnerFn, config?: Partial<Config>): Promise<void>;
+    protected get accounts(): AccountArgs;
+    protected get homeDir(): string;
+    protected get init(): boolean;
+    protected get root(): NearAccount;
     isSandbox(): boolean;
     isTestnet(): boolean;
+    run(fn: RunnerFn): Promise<void>;
+    createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
     executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
-    addAccountCreated(accountId: string, sender: Account): void;
-    protected addMasterAccountKey(): Promise<void>;
-    abstract beforeConnect(): Promise<void>;
-    abstract afterConnect(): Promise<void>;
-    abstract afterRun(): Promise<void>;
-    abstract get baseAccountId(): string;
     abstract createFrom(): Promise<Runtime>;
-    abstract getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-    abstract get keyFilePath(): string;
+    protected abstract beforeRun(): Promise<void>;
+    protected abstract afterRun(): Promise<void>;
 }
 export declare class TestnetRuntime extends Runtime {
-    static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<TestnetRuntime>;
-    static get defaultConfig(): Config;
-    static get provider(): nearAPI.providers.JsonRpcProvider;
-    /**
-     * Get most recent Wasm Binary of given account.
-     * */
-    static viewCode(account_id: string): Promise<Buffer>;
+    static create(config: Partial<Config>, initFn?: CreateRunnerFn): Promise<TestnetRuntime>;
     createFrom(): Promise<TestnetRuntime>;
-    get baseAccountId(): string;
-    get keyFilePath(): string;
-    getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
-    beforeConnect(): Promise<void>;
-    afterConnect(): Promise<void>;
+    static get defaultConfig(): Config;
+    static get clientConfig(): ClientConfig;
+    static get provider(): JsonRpcProvider;
+    static get baseAccountId(): string;
+    beforeRun(): Promise<void>;
     afterRun(): Promise<void>;
-    private ensureKeyFileFolder;
 }
 export declare class SandboxRuntime extends Runtime {
     private static readonly LINKDROP_PATH;
@@ -91,13 +41,13 @@ export declare class SandboxRuntime extends Runtime {
     private server;
     static defaultConfig(): Promise<Config>;
     static create(config: Partial<Config>, fn?: CreateRunnerFn): Promise<SandboxRuntime>;
+    createAndRun(fn: RunnerFn, config?: Partial<Config>): Promise<void>;
     createFrom(): Promise<SandboxRuntime>;
     get baseAccountId(): string;
-    get keyFilePath(): string;
-    getKeyStore(): Promise<nearAPI.keyStores.KeyStore>;
+    static get clientConfig(): ClientConfig;
+    get provider(): JsonRpcProvider;
     get rpcAddr(): string;
-    afterConnect(): Promise<void>;
-    beforeConnect(): Promise<void>;
+    beforeRun(): Promise<void>;
     afterRun(): Promise<void>;
 }
 export {};

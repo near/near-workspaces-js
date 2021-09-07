@@ -1,0 +1,34 @@
+name: Test Testnet
+on: push
+jobs:
+  testnet:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: '/home/runner/.near-credentials/near-runner'
+          key: ${{ matrix.platform }}${{ runner.os }}-${{ hashFiles('$HOME/.near-credentials/near-runner/testnet/*') }}
+      - name: Run tests
+        run: yarn && (yarn test:testnet:ci || yarn test:testnet:ci)
+  testnet-nocache:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager && yarn clean:accounts

@@ -7,18 +7,18 @@ import * as http from 'http';
 import tmpDir from 'temp-dir';
 import * as portCheck from 'node-port-check';
 import UUID from 'pure-uuid';
-import {Config} from './runtime'; // eslint-disable-line import/no-cycle
+import {Config} from '../interfaces';
 import {
   debug,
   asyncSpawn,
-  ChildProcessPromise,
   exists,
   rm,
   spawn,
   copyDir,
   sandboxBinary,
   ensureBinary,
-} from './utils';
+} from '../internal-utils';
+import {ChildProcessPromise} from '../types';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',

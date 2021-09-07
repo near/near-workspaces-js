@@ -8,11 +8,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
+    "callsites": "^4.0.0",
     "fs-extra": "^10.0.0",
+    "js-sha256": "^0.9.0",
     "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
-    "near-sandbox": "^0.0.5",
+    "near-sandbox": "^0.0.6",
+    "near-units": "^0.1.9",
     "node-port-check": "^2.0.1",
     "promisify-child-process": "^4.1.1",
     "pure-uuid": "^1.6.2",
@@ -30,7 +34,8 @@
     "test:sandbox": "yarn build && jest --verbose",
     "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true jest --verbose",
     "test": "jest --verbose && yarn test:testnet",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "clean:accounts": "ts-node ./scripts/delete-accounts.ts"
   },
   "files": [
     "dist/",
@@ -58,7 +63,7 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "testMatch": [
-      "**/__tests__/*.spec.ts"
+      "**/__tests__/**/*.spec.ts"
     ],
     "testPathIgnorePatterns": [
       "/assembly/",
@@ -68,14 +73,19 @@
   "xo": {
     "space": true,
     "rules": {
-      "unicorn/prefer-node-protocol": 0
+      "unicorn/prefer-node-protocol": 0,
+      "unicorn/prefer-module": 0,
+      "unicorn/no-array-callback-reference": 0,
+      "node/prefer-global/url": 0
     },
     "overrides": [
       {
-        "files": "__tests__/*.spec.ts",
+        "files": "__tests__/**/*.spec.ts",
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
-          "unicorn/prefer-module": 0
+          "unicorn/prefer-module": 0,
+          "@typescript-eslint/no-unsafe-call": 0,
+          "@typescript-eslint/no-empty-function": 0
         }
       }
     ]

@@ -1,2 +1,2 @@
-export * from './account';
+export * from '../account/account';
 export * from './runtime';

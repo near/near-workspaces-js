@@ -11,25 +11,22 @@
  * testnet. That's why they're wrapped with `if (Runner.networkIsSandbox())`.
  */
 
-/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import path from 'path';
 import * as borsh from 'borsh';
-import {Runner} from '..';
+import {Runner} from '../src';
 
 describe('view state & patch state', () => {
-  if (Runner.networkIsSandbox()) {
-    let runner: Runner;
-    jest.setTimeout(60_000);
+  jest.setTimeout(60_000);
 
-    beforeAll(async () => {
-      runner = await Runner.create(async ({root}) => {
-        const contract = await root.createAndDeploy(
-          'status-message',
-          path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
-        );
-        const ali = await root.createAccount('ali');
-        return {contract, ali};
-      });
+  if (Runner.networkIsSandbox()) {
+    const runner = Runner.create(async ({root}) => {
+      const contract = await root.createAndDeploy(
+        'status-message',
+        path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
+      );
+      const ali = await root.createAccount('ali');
+      return {contract, ali};
     });
 
     class Assignable {
@@ -59,7 +56,7 @@ describe('view state & patch state', () => {
       ],
     ]);
 
-    test('View state', async () => {
+    test.concurrent('View state', async () => {
       await runner.runSandbox(async ({contract, ali}) => {
         await ali.call(contract, 'set_status', {message: 'hello'});
 
@@ -81,7 +78,7 @@ describe('view state & patch state', () => {
       });
     });
 
-    test('Patch state', async () => {
+    test.concurrent('Patch state', async () => {
       await runner.runSandbox(async ({contract, ali}) => {
         // Contract must have some state for viewState & patchState to work
         await ali.call(contract, 'set_status', {message: 'hello'});

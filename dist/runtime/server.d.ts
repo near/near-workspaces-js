@@ -1,4 +1,4 @@
-import { Config } from './runtime';
+import { Config } from '../interfaces';
 export declare class SandboxServer {
     private static lastPort;
     private subprocess;
