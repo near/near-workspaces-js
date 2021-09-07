@@ -32,8 +32,8 @@ export declare class JsonRpcProvider extends JSONRpc {
      *
      * @param account_id contract account to lookup
      * @param prefix string or byte prefix of keys to loodup
-     * @param blockQuery state at what block, defaulty most recent final block
-     * @returns
+     * @param blockQuery state at what block, defaults to most recent final block
+     * @returns raw RPC response
      */
     viewState(account_id: string, prefix: string | Uint8Array, blockQuery?: {
         blockId: BlockId;
