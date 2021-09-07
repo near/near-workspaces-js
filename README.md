@@ -1,150 +1,163 @@
-# near-runner for TypeScript/JavaScript
+near-runner for TypeScript/JavaScript
+=====================================
 
 Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/concepts/networks) and a controlled [NEAR Sandbox](https://github.com/near/sandbox) local environment
 
-This software is in early beta and feedback is appreciated.
+This software is in early beta.
 
-# Quick Start with Jest
+
+Quick Start with Jest
+=====================
 
 near-runner works with any JS testing library/framework. Feel free to bring your own, or follow the instructions below to get started quickly with [Jest].
 
+
 1. Install.
 
-        npm install --save-dev near-runner jest
+       npm install --save-dev near-runner jest
 
-    or if using [Yarn]
+   or if using [Yarn]
 
-        yarn add --dev near-runner jest
+       yarn add --dev near-runner jest
 
 2. Configure.
 
-    near-runner doesn't require any configuration, but Jest does.
+   near-runner doesn't require any configuration, but Jest does.
 
-    Add a new section to your `package.json`:
+   Add a new section to your `package.json`:
 
-    ```js
-    "jest": {
-      "testEnvironment": "node",
-      "testMatch": [
-        "**/__tests__/*.spec.js"
-      ],
-      "testPathIgnorePatterns": [
-        "/assembly/",
-        "/node_modules/"
-      ]
+   ```js
+   "jest": {
+     "testEnvironment": "node",
+     "testMatch": [
+       "**/__tests__/*.spec.js"
+     ],
+     "testPathIgnorePatterns": [
+       "/assembly/",
+       "/node_modules/"
+     ]
+   }
+   ```
+
+   This tells Jest to look in a folder called `__tests__` in the root of your project for files with names that end with `spec.js`.
+
+   You can also add a new line to the `scripts` section of your `package.json`:
+
+   ```diff
+    "scripts": {
+   +  "test": "jest --verbose",
     }
-    ```
+   ```
 
-    This tells Jest to look in a folder called `__tests__` in the root of your project for files with names that end with `spec.js`.
+   If your project has a `build` script, you might also want to add a `pretest` script:
 
-    You can also add a new line to the `scripts` section of your `package.json`:
+   ```diff
+    "scripts": {
+   +  "pretest": "npm run build",
+    }
+   ```
 
-    ```diff
-     "scripts": {
-    +  "test": "jest --verbose",
-     }
-    ```
+   or if using [Yarn]:
 
-    If your project has a `build` script, you might also want to add a `pretest` script:
+   ```diff
+    "scripts": {
+   +  "pretest": "yarn build",
+    }
+   ```
 
-    ```diff
-     "scripts": {
-    +  "pretest": "npm run build",
-     }
-    ```
+   If you want to see an example, with the addition of TypeScript and Jest's TypeScript variant [ts-jest](https://www.npmjs.com/package/ts-jest), see [the `package.json` in this project](./package.json).
 
-    or if using [Yarn]:
+3. Bootstrap.
 
-    ```diff
-     "scripts": {
-    +  "pretest": "yarn build",
-     }
-    ```
+   Make a `__tests__` folder, make your first test file. Call it `main.spec.js` for now if you're not sure what else to call it.
 
-    If you want to see an example, with the addition of TypeScript and Jest's TypeScript variant [ts-jest](https://www.npmjs.com/package/ts-jest), see [the `package.json` in this project](./package.json).
+   Set up a `runner` with NEAR accounts, contracts, and state that will be used in all of your tests.
 
-3.  Bootstrap.
+   ```js
+   import path from 'path';
+   import {Runner} from 'near-runner';
 
-    Make a `__tests__` folder, make your first test file. Call it `main.spec.js` for now if you're not sure what else to call it.
+   describe('my contract', () => {
+     let runner;
+     jest.setTimeout(60_000);
 
-    Set up a `runner` with NEAR accounts, contracts, and state that will be used in all of your tests.
+     beforeAll(async () => {
+       runner = await Runner.create(async ({root}) => {
+         const alice = await root.createAccount('alice');
+         const contract = await root.createAndDeploy(
+           'contract-account-name',
+           path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+         );
 
-    ```js
-    import path from "path";
-    import { Runner } from "near-runner";
+         // make other contract calls that you want as a starting point for all tests
 
-    describe("my contract", () => {
-      jest.setTimeout(60_000);
+         return {alice, contract};
+       });
+     });
+   });
+   ```
 
-      const runner = Runner.create(async ({ root }) => {
-        const alice = await root.createAccount("alice");
-        const contract = await root.createAndDeploy(
-          "contract-account-name",
-          path.join(__dirname, "..", "path", "to", "compiled.wasm")
-        );
+4. Write tests.
 
-        // make other contract calls that you want as a starting point for all tests
+   Jest will run each `test` in parallel; the `runner` you bootstrapped optimizes for parallelism. Add some `test` calls:
 
-        return { alice, contract };
-      });
-    });
-    ```
+   ```js
+   describe('my contract', () => {
+     let runner;
+     jest.setTimeout(60_000);
 
-4.  Write tests.
+     beforeAll(async () => {
+       // …omitted for brevity…
+     });
 
-    Jest will run each `test` in parallel; the `runner` you bootstrapped optimizes for parallelism. Add some `test` calls:
+     test('does something', async () => {
+       await runner.run(async ({alice, contract}) => {
+         await alice.call(
+           contract,
+           'some_update_function',
+           {some_string_argument: 'cool', some_number_argument: 42}
+         );
+         const result = await contract.view(
+           'some_view_function',
+           {account_id: alice}
+         );
+         expect(result).toBe('whatever');
+       });
+     });
 
-    ```js
-    describe("my contract", () => {
- 
-      jest.setTimeout(60_000);
+     test('does something else', async () => {
+       await runner.run(async ({alice, contract}) => {
+         const result = await contract.view(
+           'some_view_function',
+           {account_id: alice}
+         );
+         expect(result).toBe('some default');
+       });
+     });
+   });
+   ```
 
-      const runner =  // …omitted for brevity…
- 
-      // Runs test concurrently
-      test.concurrent("does something", async () => {
-        await runner.run(async ({ alice, contract }) => {
-          await alice.call(contract, "some_update_function", {
-            some_string_argument: "cool",
-            some_number_argument: 42,
-          });
-          const result = await contract.view("some_view_function", {
-            account_id: alice,
-          });
-          expect(result).toBe("whatever");
-        });
-      });
+  [Jest]: https://jestjs.io/
+  [Yarn]: https://yarnpkg.com/
 
-      test.concurrent("does something else", async () => {
-        await runner.run(async ({ alice, contract }) => {
-          const result = await contract.view("some_view_function", {
-            account_id: alice,
-          });
-          expect(result).toBe("some default");
-        });
-      });
-    });
-    ```
+See the [\_\_tests__](./__tests__) directory in this project for more examples.
 
-[jest]: https://jestjs.io/
-[yarn]: https://yarnpkg.com/
 
-See the [\_\_tests\_\_](./__tests__) directory in this project for more examples.
-
-# How It Works
+How It Works
+============
 
 Let's look at a modified version of the above that uses vanilla/plain JS without any Jest.
 
 3. Bootstrapping a `Runner`.
 
    ```ts
-   const runner = Runner.create(async ({ root }) => {
-     const alice = await root.createAccount("alice");
+   const runner = await Runner.create(async ({root}) => {
+     const alice = await root.createAccount('alice');
      const contract = await root.createAndDeploy(
-       "contract-account-name",
-       path.join(__dirname, "..", "path", "to", "compiled.wasm")
+       'contract-account-name',
+       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
      );
-     return { alice, contract };
+     return {alice, contract};
    });
    ```
 
@@ -153,14 +166,14 @@ Let's look at a modified version of the above that uses vanilla/plain JS without
    1. `Runner.create` initializes a new [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox) node/instance. This is essentially a mini-NEAR blockchain created just for this test. Each of these Sandbox instances gets its own data directory and port, so that tests can run in parallel.
    2. `root.createAccount` creates a new account with the given name.
    3. `root.createAndDeploy` creates a new account with the given name, then deploys the specified Wasm file to it.
-   4. `path.join` is a safe cross-platform way to [specify file paths](https://nodejs.org/api/path.html#path_path_join_paths)
+   4. `path.join` is a safe cross-platform way to [specify filepaths](https://nodejs.org/api/path.html#path_path_join_paths)
    5. After `Runner.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
    6. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
-   7. The object returned, `{alice, contract}`, will be passed along to subsequent tests.
+   7. The object returned, `{alice, contract} `, will be passed along to subsequent tests.
 
 4. Writing tests.
 
-   As mentioned, Jest will run all `test` functions concurrently. Here's a simple way that could work in plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
+   As mentioned, Jest will run all `test` functions in parallel. Here's a simple way that could work in plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
 
    ```ts
    await Promise.all([
@@ -193,14 +206,16 @@ Let's look at a modified version of the above that uses vanilla/plain JS without
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
    4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
-# Running on Testnet
+
+Running on Testnet
+==================
 
 near-runner is set up so that you can write tests once and run them against a local Sandbox node (the default behavior) or against [NEAR TestNet](https://docs.near.org/docs/concepts/networks). Some reasons this might be helpful:
 
-- Gives higher confidence that your contracts work as expected
-- You can test against deployed testnet contracts
-- If something seems off in Sandbox mode, you can compare it to testnet
-- Until we have a full-featured dev environment that includes Explorer, Wallet, etc, you can write full end-to-end tests using a tool like [Cypress](https://www.cypress.io/)
+* Gives higher confidence that your contracts work as expected
+* You can test against deployed testnet contracts
+* If something seems off in Sandbox mode, you can compare it to testnet
+* Until we have a full-featured dev environment that includes Explorer, Wallet, etc, you can write full end-to-end tests using a tool like [Cypress](https://www.cypress.io/)
 
 You can run in testnet mode in two ways.
 
@@ -221,25 +236,27 @@ You can run in testnet mode in two ways.
 
 If you set both, the config object takes precedence.
 
-## Stepping through a testnet example
+
+Stepping through a testnet example
+----------------------------------
 
 Let's revisit a shortened version of the example from How It Works above, describing what will happen in Testnet.
 
 3. Create a `Runner`.
 
    ```ts
-   const runner = Runner.create(async ({ root }) => {
-     await root.createAccount("alice");
+   const runner = await Runner.create(async ({root}) => {
+     await root.createAccount('alice');
      await root.createAndDeploy(
-       "contract-account-name",
-       path.join(__dirname, "..", "path", "to", "compiled.wasm")
+       'contract-account-name',
+       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
      );
    });
    ```
 
    Let's step through this.
 
-   1. `Runner.create` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `runner.run`. This matches the semantics of the sandbox that all subsequent calls to `run` have the same starting point, however, testnet requires that each call have its own account. In fact `Runner.create` creates a unique testnet account and each test is a unique sub-account.
+   1. `Runner.create` does not interact with Testnet at all yet. Instead, it stores the passed-in function to an internal `initFn` variable, which it then runs at the beginning of each subsequent call to `runner.run`. This is to match sandbox-mode's behavior of allowing the same starting point for many tests, but testnet's requirement of having separate test accounts for each test.
 
 4. Write tests.
 
@@ -269,15 +286,14 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
    Each call to `runner.run` will:
 
-   - Get or create its own sub-account on testnet account, e.g. `t.rdsq0289478`. If creating the account the keys will be stored at `$PWD/.near-credentials/runner/testnet/t.rdsq0289478.json`.
-   - Run the `initFn` passed to `Runner.create`
-   - Create sub-accounts for each `createAccount` and `createAndDeploy`, such as `alice.t.rdsq0289478`
-   - If the test account runs out of funds to create accounts it will request a transfer from the root account.
-   - After the test is finished each account created is deleted and the funds sent back to the test account.
+   * Get its own testnet account with a name similar to the ones created by the `dev-deploy` command from `near-cli`, like `dev-1628609955486-8075070`
+   * Run the `initFn` passed to `Runner.create`
+   * Create sub-accounts of this `dev-*` account on calls to `createAccount` and `createAndDeploy`, such as `alice.dev-1628609955486-8075070`
+   * Store keys for these accounts in the `.near-credentials` folder inside your home folder, to match the behavior of near-cli
 
-Note: Since the testnet accounts are cached, if account creation rate limits are reached simply wait a little while and try again.
 
-## Skipping Sandbox-specific tests
+Skipping Sandbox-specific tests
+-------------------------------
 
 If some of your tests take advantage of Sandbox-specific features, you can skip these on testnet runs in a couple ways:
 
@@ -298,27 +314,28 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
 
    ```ts
    describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-     const runner = Runner.create(async ({ root }) => ({
-        // note the implicit return
-        contract: await root.createAndDeploy(
-          "contract-account-name",
-          path.join(__dirname, "..", "path", "to", "compiled.wasm")
-        ),
-     }));
-
-     test.concurrent("thing that makes sense on any network", async () => {
+     let runner: Runner; // leave off `Runner` typing in plain JS
+     beforeAll(() => {
+       runner = await Runner.create(async ({root}) => ({ // note the implicit return
+         contract: await root.createAndDeploy(
+           'contract-account-name',
+           path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+         )
+       }));
+     });
+     test('thing that makes sense on any network', async () => {
        // test basic contract & account interactions
      });
-
-     if ("sandbox" === Runner.getNetworkFromEnv()) {
-       test("thing that only makes sense with sandbox", async () => {
+     if ('sandbox' === Runner.getNetworkFromEnv()) {
+       test('thing that only makes sense with sandbox', async () => {
          // test with patch-state, fast-forwarding, etc
        });
      }
    });
    ```
 
-# Patch State on the Fly
+Patch State on the Fly
+======================
 
 In Sandbox-mode tests, you can add or modify any contract state, contract code, account or access key with `patchState`.
 
@@ -330,17 +347,19 @@ To see an example of how to do this, see the [patch-state test](__tests__/02.pat
 
 near-runner will support expanded patchState-based functionality in the future:
 
-- [Allow bootstrapping sandbox environment from testnet/mainnet contracts & state](#39)
-- [Allow replaying all transactions from testnet/mainnet](#40)
-- [Support time-travel / fast-forwarding](#1)
+* [Allow bootstrapping sandbox environment from testnet/mainnet contracts & state](#39)
+* [Allow replaying all transactions from testnet/mainnet](#40)
+* [Support time-travel / fast-forwarding](#1)
 
-# Pro Tips
 
-- `NEAR_RUNNER_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
+Pro Tips
+========
 
-- `Runner.create` [config](https://github.com/near/runner/blob/9ab25a74ba47740a1064aebea02b642b51bb50d4/src/runtime/runtime.ts#L11-L20) – you can pass a config object as the first argument to `Runner.create`. This lets you do things like:
+* `NEAR_RUNNER_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
 
-  - skip initialization if specified data directory already exists
+* `Runner.create` [config](https://github.com/near/runner/blob/9ab25a74ba47740a1064aebea02b642b51bb50d4/src/runtime/runtime.ts#L11-L20) – you can pass a config object as the first argument to `Runner.create`. This lets you do things like:
+
+  * skip initialization if specified data directory already exists
 
     ```ts
     Runner.create(
@@ -349,10 +368,10 @@ near-runner will support expanded patchState-based functionality in the future:
     )
     ```
 
-  - always recreate such data directory instead (the default behavior)
+  * always recreate such data directory instead (the default behavior)
 
-  - specify which port to run on
+  * specify which port to run on
 
-  - and more!
+  * and more!
 
-- escape hatch to `near-api-js` – the `Account` & `ContractAccount` types returned by `getAccount` and `getContractAccount` contain a **`najAccount`** property. This returns an [`Account` type from `near-api-js`](https://near.github.io/near-api-js/classes/account.account-1.html). If you need functionality that `near-runner` doesn't yet provide, this may give you a way to do it. (But please do send a Pull Request adding the functionality directly to `near-runner`!)
+* escape hatch to `near-api-js` – the `Account` & `ContractAccount` types returned by `getAccount` and `getContractAccount` contain a **`najAccount`** property. This returns an [`Account` type from `near-api-js`](https://near.github.io/near-api-js/classes/account.account-1.html). If you need functionality that `near-runner` doesn't yet provide, this may give you a way to do it. (But please do send a Pull Request adding the functionality directly to `near-runner`!)
