@@ -4,6 +4,7 @@ exports.JsonRpcProvider = void 0;
 const buffer_1 = require("buffer");
 const near_units_1 = require("near-units");
 const types_1 = require("./types");
+const utils_1 = require("./utils");
 /**
  * Extends the main provider class in NAJ, adding more methods for
  * interacting with an endpoint.
@@ -16,6 +17,17 @@ class JsonRpcProvider extends types_1.JSONRpc {
      */
     static from(config) {
         const url = typeof config === 'string' ? config : config.rpcAddr;
+        return this.getOrSet(url);
+    }
+    static fromNetwork(network) {
+        const config = (0, utils_1.urlConfigFromNetwork)(network);
+        return this.getOrSet(config.rpcAddr);
+    }
+    static archival(network) {
+        const config = (0, utils_1.urlConfigFromNetwork)(network);
+        return this.getOrSet(config.archivalUrl);
+    }
+    static getOrSet(url) {
         if (!this.providers.has(url)) {
             this.providers.set(url, new JsonRpcProvider(url));
         }

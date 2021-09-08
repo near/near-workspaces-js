@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 exports.ONE_NEAR = new bn_js_1.default('1' + '0'.repeat(24));
@@ -67,4 +67,39 @@ function isTopLevelAccount(accountId) {
     return accountId.includes('.');
 }
 exports.isTopLevelAccount = isTopLevelAccount;
+function urlConfigFromNetwork(network) {
+    const networkName = typeof network === 'string' ? network : network.network;
+    switch (networkName) {
+        case 'sandbox':
+            if (typeof network === 'string') {
+                throw new TypeError('Sandbox\'s network argument can\'t be a string');
+            }
+            if (network.port === undefined) {
+                throw new TypeError('Sandbox\'s network.port is not defined');
+            }
+            return {
+                network: 'sandbox',
+                rpcAddr: `http://localhost:${network.port}`,
+            };
+        case 'testnet': return {
+            network: 'testnet',
+            rpcAddr: 'https://rpc.testnet.near.org',
+            walletUrl: 'https://wallet.testnet.near.org',
+            helperUrl: 'https://helper.testnet.near.org',
+            explorerUrl: 'https://explorer.testnet.near.org',
+            archivalUrl: 'https://archival-rpc.testnet.near.org',
+        };
+        case 'mainnet': return {
+            network: 'mainnet',
+            rpcAddr: 'https://rpc.mainnet.near.org',
+            walletUrl: 'https://wallet.mainnet.near.org',
+            helperUrl: 'https://helper.mainnet.near.org',
+            explorerUrl: 'https://explorer.mainnet.near.org',
+            archivalUrl: 'https://archival-rpc.mainnet.near.org',
+        };
+        default:
+            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+    }
+}
+exports.urlConfigFromNetwork = urlConfigFromNetwork;
 //# sourceMappingURL=utils.js.map

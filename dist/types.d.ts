@@ -32,11 +32,12 @@ export interface AccountBalance {
     available: NEAR;
 }
 export interface ClientConfig {
-    network: 'sandbox' | 'testnet';
+    network: 'sandbox' | 'testnet' | 'mainnet';
     rootAccount?: string;
     rpcAddr: string;
     helperUrl?: string;
     explorerUrl?: string;
     initialBalance?: string;
     walletUrl?: string;
+    archivalUrl?: string;
 }

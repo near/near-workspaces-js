@@ -1,6 +1,6 @@
 import BN from 'bn.js';
 import * as nearAPI from 'near-api-js';
-import {NamedAccount, KeyPair} from './types';
+import {NamedAccount, KeyPair, ClientConfig} from './types';
 
 export const ONE_NEAR = new BN('1' + '0'.repeat(24));
 
@@ -47,4 +47,41 @@ export async function captureError(fn: () => Promise<any>): Promise<string> {
 
 export function isTopLevelAccount(accountId: string): boolean {
   return accountId.includes('.');
+}
+
+export function urlConfigFromNetwork(network: string | {network: string; port?: number}): ClientConfig {
+  const networkName = typeof network === 'string' ? network : network.network;
+  switch (networkName) {
+    case 'sandbox':
+      if (typeof network === 'string') {
+        throw new TypeError('Sandbox\'s network argument can\'t be a string');
+      }
+
+      if (network.port === undefined) {
+        throw new TypeError('Sandbox\'s network.port is not defined');
+      }
+        return {
+          network: 'sandbox',
+          rpcAddr: `http://localhost:${network.port!}`,
+        };
+
+    case 'testnet': return {
+      network: 'testnet',
+      rpcAddr: 'https://rpc.testnet.near.org',
+      walletUrl: 'https://wallet.testnet.near.org',
+      helperUrl: 'https://helper.testnet.near.org',
+      explorerUrl: 'https://explorer.testnet.near.org',
+      archivalUrl: 'https://archival-rpc.testnet.near.org',
+    };
+    case 'mainnet': return {
+      network: 'mainnet',
+      rpcAddr: 'https://rpc.mainnet.near.org',
+      walletUrl: 'https://wallet.mainnet.near.org',
+      helperUrl: 'https://helper.mainnet.near.org',
+      explorerUrl: 'https://explorer.mainnet.near.org',
+      archivalUrl: 'https://archival-rpc.mainnet.near.org',
+    };
+    default:
+      throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+  }
 }

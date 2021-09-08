@@ -1,5 +1,5 @@
 import BN from 'bn.js';
-import { NamedAccount, KeyPair } from './types';
+import { NamedAccount, KeyPair, ClientConfig } from './types';
 export declare const ONE_NEAR: BN;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
@@ -9,3 +9,7 @@ export declare function asId(id: string | NamedAccount): string;
 export declare const NO_DEPOSIT: BN;
 export declare function captureError(fn: () => Promise<any>): Promise<string>;
 export declare function isTopLevelAccount(accountId: string): boolean;
+export declare function urlConfigFromNetwork(network: string | {
+    network: string;
+    port?: number;
+}): ClientConfig;

@@ -16,6 +16,9 @@ export declare class JsonRpcProvider extends JSONRpc {
     static from(config: string | {
         rpcAddr: string;
     }): JsonRpcProvider;
+    static fromNetwork(network: 'testnet' | 'mainnet'): JsonRpcProvider;
+    static archival(network: 'testnet' | 'mainnet'): JsonRpcProvider;
+    private static getOrSet;
     /**
      * Download the binary of a given contract.
      * @param account_id contract account

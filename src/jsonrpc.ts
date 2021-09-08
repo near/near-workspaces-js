@@ -2,6 +2,7 @@ import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
 import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
 import {Records} from './contract-state';
+import { urlConfigFromNetwork } from './utils';
 
 /**
  * Extends the main provider class in NAJ, adding more methods for
@@ -17,6 +18,20 @@ export class JsonRpcProvider extends JSONRpc {
    */
   static from(config: string | {rpcAddr: string}): JsonRpcProvider {
     const url = typeof config === 'string' ? config : config.rpcAddr;
+    return this.getOrSet(url);
+  }
+
+  static fromNetwork(network: 'testnet' | 'mainnet'): JsonRpcProvider {
+    const config = urlConfigFromNetwork(network);
+    return this.getOrSet(config.rpcAddr);
+  }
+
+  static archival(network: 'testnet' | 'mainnet'): JsonRpcProvider {
+    const config = urlConfigFromNetwork(network);
+    return this.getOrSet(config.archivalUrl!);
+  }
+
+  private static getOrSet(url: string): JsonRpcProvider {
     if (!this.providers.has(url)) {
       this.providers.set(url, new JsonRpcProvider(url));
     }
