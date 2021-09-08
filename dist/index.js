@@ -16,4 +16,5 @@ __exportStar(require("./utils"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./account"), exports);
 __exportStar(require("./transaction-result"), exports);
+__exportStar(require("./jsonrpc"), exports);
 //# sourceMappingURL=index.js.map
