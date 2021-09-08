@@ -45,7 +45,6 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
   );
 }
 
-jest.setTimeout(500_000);
 const runner = Runner.create(async ({root}) => ({
   ft: await root.createAndDeploy(
     'fungible-token',
