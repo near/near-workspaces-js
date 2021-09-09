@@ -1,3 +1,4 @@
 near-vm-*.tar.gz
 node_modules/
 .near-credentials/
+coverage
