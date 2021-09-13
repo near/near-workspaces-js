@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
+import { Records } from './record';
 import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality } from './types';
-import { Records } from './contract-state';
 /**
  * Extends the main provider class in NAJ, adding more methods for
  * interacting with an endpoint.

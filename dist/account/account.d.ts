@@ -8,6 +8,7 @@ import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JsonRpcProvider } from '../jsonrpc';
 import { TransactionResult } from '../transaction-result';
+import { Records } from '../record';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
@@ -49,8 +50,10 @@ export declare class Account implements NearAccount {
     }): Promise<T | string>;
     view_raw(method: string, args?: Args): Promise<CodeResult>;
     view<T>(method: string, args?: Args): Promise<T | string>;
+    viewCode(): Promise<Buffer>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
+    sandbox_patch_state(records: Records): Promise<any>;
     delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;

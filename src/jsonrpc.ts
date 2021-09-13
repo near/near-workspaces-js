@@ -1,7 +1,7 @@
 import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
-import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
-import {Records} from './contract-state';
+import {Records} from './record';
+import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality} from './types';
 
 /**
  * Extends the main provider class in NAJ, adding more methods for

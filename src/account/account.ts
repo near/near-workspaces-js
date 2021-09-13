@@ -18,6 +18,7 @@ import {JsonRpcProvider} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {debug} from '../internal-utils';
+import {Records} from '../record';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
 
@@ -182,6 +183,10 @@ export class Account implements NearAccount {
     return result.result;
   }
 
+  async viewCode(): Promise<Buffer> {
+    return this.provider.viewCode(this.accountId);
+  }
+
   async viewState(prefix: string | Uint8Array = ''): Promise<ContractState> {
     return new ContractState(
       await this.provider.viewState(this.accountId, prefix),
@@ -203,6 +208,10 @@ export class Account implements NearAccount {
         },
       ],
     });
+  }
+
+  async sandbox_patch_state(records: Records): Promise<any> {
+    return this.provider.sandbox_patch_state(records);
   }
 
   async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {

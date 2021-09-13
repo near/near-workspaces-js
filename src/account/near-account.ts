@@ -7,6 +7,7 @@ import {AccountBalance, PublicKey, CodeResult, AccountView} from '../types';
 import {ContractState} from '../contract-state';
 import {Transaction} from '../transaction';
 import {TransactionResult} from '../transaction-result';
+import {Records} from '../record';
 
 export interface NearAccount {
   /** Full account id for given account. */
@@ -40,10 +41,11 @@ export interface NearAccount {
    */
   getKey(): Promise<KeyPair | null>;
   /**
-   *
+   * Adds a key pair to key store and creates a random pair if not provided
    * @param keyPair to add keystore
    */
-  setKey(keyPair: KeyPair): Promise<PublicKey>;
+  setKey(keyPair?: KeyPair): Promise<PublicKey>;
+
   /**
    * Create a subaccount from this account
    * @param accountId either prefix for new account or full accountId with current contract as suffix.
@@ -131,10 +133,18 @@ export interface NearAccount {
   view<T>(method: string, args?: Record<string, unknown>): Promise<T | string>;
 
   /**
+   * Download contract code from provider
+   */
+  viewCode(): Promise<Buffer>;
+
+  /**
    * Get the data of a contract as a map of raw key/values
    * @param prefix optional prefix used in storage. Default is ''.
    */
-  viewState(prefix?: string | Uint8Array): Promise<ContractState> ;
+  viewState(prefix?: string | Uint8Array): Promise<ContractState>;
+
+  /** Update record to sandbox */
+  sandbox_patch_state(records: Records): Promise<any>;
 
   /**
    *

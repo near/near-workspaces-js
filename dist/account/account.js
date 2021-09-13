@@ -118,6 +118,9 @@ class Account {
         }
         return result.result;
     }
+    async viewCode() {
+        return this.provider.viewCode(this.accountId);
+    }
     async viewState(prefix = '') {
         return new contract_state_1.ContractState(await this.provider.viewState(this.accountId, prefix));
     }
@@ -136,6 +139,9 @@ class Account {
                 },
             ],
         });
+    }
+    async sandbox_patch_state(records) {
+        return this.provider.sandbox_patch_state(records);
     }
     async delete(beneficiaryId, keyPair) {
         const result = await this.createTransaction(this)
