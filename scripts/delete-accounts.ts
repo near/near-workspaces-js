@@ -41,7 +41,7 @@ async function pMap<I, O=I>(array: I[], fn: (i: I) => Promise<O>): Promise<O[]> 
 }
 
 runtime.run(async ({root}) => {
-  const accounts = (await fs.readdir(join(__dirname, '..', '.near-credentials', 'runner', 'testnet')))
+  const accounts = (await fs.readdir(join(process.cwd(), '.near-credentials', 'runner', 'testnet')))
     .map(s => parse(s).name);
   const originalMap: Map<string, string[]> = new Map();
   originalMap.set(root.accountId, []);
