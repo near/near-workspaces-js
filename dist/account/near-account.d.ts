@@ -168,6 +168,9 @@ export interface NearAccount {
      * Update contract data of account.
      *
      * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     *
+     * @param data Base64 encoded string or Buffer to be encoded as Base64
+     * @param value Base64 encoded string or Buffer to be encoded as Base64
      */
     updateData(data: string | Buffer, value: string | Buffer): Promise<Empty>;
 }

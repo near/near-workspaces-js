@@ -14,8 +14,8 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import path from 'path';
 import * as borsh from 'borsh';
+import {NEAR} from 'near-units';
 import {Runner} from '../src';
-import { NEAR } from 'near-units';
 
 describe('view state & patch state', () => {
   if (Runner.networkIsSandbox()) {

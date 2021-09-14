@@ -126,9 +126,7 @@ class Account {
         return new contract_state_1.ContractState(await this.provider.viewState(this.accountId, prefix));
     }
     async patchState(key, value_, borshSchema) {
-        const data_key = buffer_1.Buffer.from(key).toString('base64');
-        const value = buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_).toString('base64');
-        return this.updateData(data_key, value);
+        return this.updateData(buffer_1.Buffer.from(key), buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
     }
     async sandbox_patch_state(records) {
         // FIX THIS: Shouldn't need two calls to update before next RPC view call.
