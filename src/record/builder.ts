@@ -1,6 +1,6 @@
 import {Buffer} from 'buffer';
-import {NamedAccount} from '../types';
-import {Account, AccountData, KeyData, StateRecord} from './types';
+import {KeyPair, NamedAccount, PublicKey} from '../types';
+import {AccessKeyData, Account, AccountData, StateRecord} from './types';
 
 export class RecordBuilder {
   readonly records: StateRecord[] = [];
@@ -29,6 +29,9 @@ const DEFAULT_ACCOUNT_DATA: AccountData = {
   version: 'V1',
 };
 
+const DEFAULT_ACCESS_KEY_PERMISSION: AccessKeyData
+  = {nonce: 0, permission: 'FullAccess'};
+
 export class AccountBuilder extends RecordBuilder {
   readonly account_id: string;
   constructor(accountOrId: string | Account | NamedAccount) {
@@ -53,11 +56,16 @@ export class AccountBuilder extends RecordBuilder {
     }
   }
 
-  accessKey(keyData: KeyData): this {
+  accessKey(key: string | PublicKey | KeyPair, access_key = DEFAULT_ACCESS_KEY_PERMISSION): this {
+    const public_key
+      = typeof key === 'string' ? key
+        : (key instanceof PublicKey ? key.toString()
+          : key.getPublicKey().toString());
     return this.push({
       AccessKey: {
         account_id: this.account_id,
-        ...keyData,
+        public_key,
+        access_key,
       },
     });
   }

@@ -1,10 +1,11 @@
 import { FunctionCallPermissionView } from '../types';
 export interface KeyData {
     public_key: string;
-    access_key: {
-        nonce: number;
-        permission: 'FullAccess' | FunctionCallPermissionView;
-    };
+    access_key: AccessKeyData;
+}
+export interface AccessKeyData {
+    nonce: number;
+    permission: 'FullAccess' | FunctionCallPermissionView;
 }
 export interface AccessKey {
     AccessKey: {

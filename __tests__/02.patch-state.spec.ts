@@ -118,20 +118,20 @@ describe('view state & patch state', () => {
       await runner.run(async ({root, ali, contract}) => {
         // Return;
         const bob = root.getFullAccount('bob');
-        const public_key = (await bob.setKey()).toString();
+        const public_key = await bob.setKey();
         const {code_hash} = await contract.accountView();
         const BOB_BALANCE = NEAR.parse('100 N');
         const rb = RecordBuilder.fromAccount(bob.accountId)
           .account({
             amount: BOB_BALANCE.toString(),
             code_hash,
-          }).accessKey({
+          }).accessKey(
             public_key,
-            access_key: {
+            {
               nonce: 0,
               permission: 'FullAccess',
             },
-          })
+          )
           .contract(await contract.viewCode());
         await bob.sandbox_patch_state(rb);
         await sleep(1000);

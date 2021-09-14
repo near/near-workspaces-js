@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccountBuilder = exports.RecordBuilder = void 0;
+const types_1 = require("../types");
 class RecordBuilder {
     constructor() {
         this.records = [];
@@ -26,6 +27,7 @@ const DEFAULT_ACCOUNT_DATA = {
     storage_usage: 0,
     version: 'V1',
 };
+const DEFAULT_ACCESS_KEY_PERMISSION = { nonce: 0, permission: 'FullAccess' };
 class AccountBuilder extends RecordBuilder {
     constructor(accountOrId) {
         super();
@@ -45,11 +47,15 @@ class AccountBuilder extends RecordBuilder {
             throw new TypeError('Only `strings` or `Record.Accounts` are not allowed.');
         }
     }
-    accessKey(keyData) {
+    accessKey(key, access_key = DEFAULT_ACCESS_KEY_PERMISSION) {
+        const public_key = typeof key === 'string' ? key
+            : (key instanceof types_1.PublicKey ? key.toString()
+                : key.getPublicKey().toString());
         return this.push({
             AccessKey: {
                 account_id: this.account_id,
-                ...keyData,
+                public_key,
+                access_key,
             },
         });
     }
