@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import BN from 'bn.js';
 import { NEAR } from 'near-units';
 import { KeyPair } from 'near-api-js';
-import { AccountBalance, PublicKey, CodeResult, AccountView } from '../types';
+import { AccountBalance, PublicKey, CodeResult, AccountView, Empty } from '../types';
 import { ContractState } from '../contract-state';
 import { Transaction } from '../transaction';
 import { TransactionResult } from '../transaction-result';
@@ -118,7 +118,7 @@ export interface NearAccount {
      */
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     /** Update record to sandbox */
-    sandbox_patch_state(records: Records): Promise<any>;
+    sandbox_patch_state(records: Records): Promise<Empty>;
     /**
      *
      * @param key key to update in storage

@@ -4,7 +4,7 @@ import { KeyPair, NamedAccount, PublicKey } from '../types';
 import { AccessKeyData, Account, AccountData, StateRecord } from './types';
 export declare class RecordBuilder {
     readonly records: StateRecord[];
-    static fromAccount(accountId: string | Account): AccountBuilder;
+    static fromAccount(accountId: string | Account | NamedAccount): AccountBuilder;
     push(record: StateRecord): this;
 }
 export declare class AccountBuilder extends RecordBuilder {

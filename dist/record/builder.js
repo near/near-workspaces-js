@@ -5,9 +5,6 @@ const types_1 = require("../types");
 class RecordBuilder {
     constructor() {
         this.records = [];
-        // ToJSON(): string {
-        //   return JSON.stringify({records: this.records});
-        // }
     }
     static fromAccount(accountId) {
         return new AccountBuilder(accountId);
@@ -28,23 +25,29 @@ const DEFAULT_ACCOUNT_DATA = {
     version: 'V1',
 };
 const DEFAULT_ACCESS_KEY_PERMISSION = { nonce: 0, permission: 'FullAccess' };
+function isAccount(something) {
+    return 'Account' in something
+        && typeof something.Account.account_id === 'string';
+}
+function isNamedAccount(something) {
+    return 'accountId' in something
+        && typeof something.accountId === 'string';
+}
 class AccountBuilder extends RecordBuilder {
     constructor(accountOrId) {
         super();
         if (typeof accountOrId === 'string') {
             this.account_id = accountOrId;
         }
-        else if ('Account' in accountOrId
-            && typeof accountOrId.Account.account_id === 'string') {
+        else if (isAccount(accountOrId)) {
             this.account_id = accountOrId.Account.account_id;
             this.push(accountOrId);
         }
-        else if ('accountId' in accountOrId
-            && typeof accountOrId.accountId === 'string') {
+        else if (isNamedAccount(accountOrId)) {
             this.account_id = accountOrId.accountId;
         }
         else {
-            throw new TypeError('Only `strings` or `Record.Accounts` are not allowed.');
+            throw new TypeError('Only `string` or `Record.Accounts` or `NamedAccount` are allowed.');
         }
     }
     accessKey(key, access_key = DEFAULT_ACCESS_KEY_PERMISSION) {

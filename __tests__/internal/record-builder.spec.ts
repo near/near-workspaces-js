@@ -20,7 +20,7 @@ describe('view state & patch state', () => {
         const public_key = await bob.setKey();
         const {code_hash} = await contract.accountView();
         const BOB_BALANCE = NEAR.parse('100 N');
-        const rb = RecordBuilder.fromAccount(bob.accountId)
+        const rb = RecordBuilder.fromAccount(bob)
           .account({
             amount: BOB_BALANCE.toString(),
             code_hash,

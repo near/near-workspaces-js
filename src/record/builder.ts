@@ -5,7 +5,7 @@ import {AccessKeyData, Account, AccountData, StateRecord} from './types';
 export class RecordBuilder {
   readonly records: StateRecord[] = [];
 
-  static fromAccount(accountId: string | Account): AccountBuilder {
+  static fromAccount(accountId: string | Account | NamedAccount): AccountBuilder {
     return new AccountBuilder(accountId);
   }
 
@@ -13,10 +13,6 @@ export class RecordBuilder {
     this.records.push(record);
     return this;
   }
-
-  // ToJSON(): string {
-  //   return JSON.stringify({records: this.records});
-  // }
 }
 
 const DEFAULT_ACCOUNT_DATA: AccountData = {
@@ -32,26 +28,30 @@ const DEFAULT_ACCOUNT_DATA: AccountData = {
 const DEFAULT_ACCESS_KEY_PERMISSION: AccessKeyData
   = {nonce: 0, permission: 'FullAccess'};
 
+function isAccount(something: Account | NamedAccount): something is Account {
+  return 'Account' in something
+  && typeof something.Account.account_id === 'string';
+}
+
+function isNamedAccount(something: Account | NamedAccount): something is NamedAccount {
+  return 'accountId' in something
+      && typeof something.accountId === 'string';
+}
+
 export class AccountBuilder extends RecordBuilder {
   readonly account_id: string;
   constructor(accountOrId: string | Account | NamedAccount) {
     super();
     if (typeof accountOrId === 'string') {
       this.account_id = accountOrId;
-    } else if (
-      'Account' in accountOrId
-      && typeof accountOrId.Account.account_id === 'string'
-    ) {
+    } else if (isAccount(accountOrId)) {
       this.account_id = accountOrId.Account.account_id;
       this.push(accountOrId);
-    } else if (
-      'accountId' in accountOrId
-      && typeof accountOrId.accountId === 'string'
-    ) {
+    } else if (isNamedAccount(accountOrId)) {
       this.account_id = accountOrId.accountId;
     } else {
       throw new TypeError(
-        'Only `strings` or `Record.Accounts` are not allowed.',
+        'Only `string` or `Record.Accounts` or `NamedAccount` are allowed.',
       );
     }
   }

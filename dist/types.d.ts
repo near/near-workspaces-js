@@ -40,12 +40,4 @@ export interface ClientConfig {
     initialBalance?: string;
     walletUrl?: string;
 }
-<<<<<<< Updated upstream
-=======
-export declare const TESTNET_RPC_ADDR = "https://archival-rpc.testnet.near.org";
-export interface StateItem {
-    key: string;
-    value: string;
-    proof: string[];
-}
->>>>>>> Stashed changes
+export declare type Empty = {};

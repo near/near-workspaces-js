@@ -141,6 +141,8 @@ class Account {
         });
     }
     async sandbox_patch_state(records) {
+        // FIX THIS: Shouldn't need two calls to update before next RPC view call.
+        await this.provider.sandbox_patch_state(records);
         return this.provider.sandbox_patch_state(records);
     }
     async delete(beneficiaryId, keyPair) {
