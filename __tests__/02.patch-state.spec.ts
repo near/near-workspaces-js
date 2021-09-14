@@ -111,16 +111,20 @@ describe('view state & patch state', () => {
         const public_key = await bob.setKey();
         const {code_hash} = await contract.accountView();
         const BOB_BALANCE = NEAR.parse('100 N');
-        await bob.updateAccount({amount: BOB_BALANCE.toString(),
+
+        await bob.updateAccount({
+          amount: BOB_BALANCE.toString(),
           code_hash,
         });
-
-        await bob.updateAccessKey(public_key,
+        await bob.updateAccessKey(
+          public_key,
           {
             nonce: 0,
             permission: 'FullAccess',
-          });
+          },
+        );
         await bob.updateContract(await contract.viewCode());
+
         const balance = await bob.availableBalance();
         expect(balance).toStrictEqual(BOB_BALANCE);
         await ali.call(bob, 'set_status', {message: 'hello'});
