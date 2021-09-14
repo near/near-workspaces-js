@@ -42,5 +42,9 @@ describe('view state & patch state', () => {
         expect(result).toBe('hello');
       });
     });
+  } else {
+    test('skipping; not using sandbox', () => {
+      // Jest requires a test in each file
+    });
   }
 });
