@@ -24,12 +24,3 @@ export class ContractState {
   }
 }
 
-// Need to fill out all record types
-export interface Data {
-  Data: {account_id: string; data_key: string; value: string};
-}
-
-export type RecordType = Data;
-export interface Records {
-  records: RecordType[];
-}

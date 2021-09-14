@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
-import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality } from './types';
-import { Records } from './contract-state';
+import { Records } from './record';
+import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, Empty } from './types';
 /**
  * Extends the main provider class in NAJ, adding more methods for
  * interacting with an endpoint.
@@ -49,5 +49,5 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @param records
      * @returns
      */
-    sandbox_patch_state(records: Records): Promise<any>;
+    sandbox_patch_state(records: Records): Promise<Empty>;
 }

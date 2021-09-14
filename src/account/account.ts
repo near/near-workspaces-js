@@ -11,6 +11,7 @@ import {
   AccountBalance,
   Args,
   AccountView,
+  Empty,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
@@ -18,6 +19,7 @@ import {JsonRpcProvider} from '../jsonrpc';
 import {NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {debug} from '../internal-utils';
+import {AccessKeyData, AccountBuilder, AccountData, RecordBuilder, Records} from '../record';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
 
@@ -182,27 +184,24 @@ export class Account implements NearAccount {
     return result.result;
   }
 
+  async viewCode(): Promise<Buffer> {
+    return this.provider.viewCode(this.accountId);
+  }
+
   async viewState(prefix: string | Uint8Array = ''): Promise<ContractState> {
     return new ContractState(
       await this.provider.viewState(this.accountId, prefix),
     );
   }
 
-  async patchState(key: string, value_: any, borshSchema?: any): Promise<any> {
-    const data_key = Buffer.from(key).toString('base64');
-    const value = Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_).toString('base64');
-    const account_id = this.accountId;
-    return this.provider.sandbox_patch_state({
-      records: [
-        {
-          Data: {
-            account_id,
-            data_key,
-            value,
-          },
-        },
-      ],
-    });
+  async patchState(key: string, value_: any, borshSchema?: any): Promise<Empty> {
+    return this.updateData(Buffer.from(key), Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
+  }
+
+  async sandbox_patch_state(records: Records): Promise<Empty> {
+    // FIX THIS: Shouldn't need two calls to update before next RPC view call.
+    await this.provider.sandbox_patch_state(records);
+    return this.provider.sandbox_patch_state(records);
   }
 
   async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
@@ -236,6 +235,24 @@ export class Account implements NearAccount {
     return this.accountId;
   }
 
+  async updateAccount(accountData?: Partial<AccountData>): Promise<Empty> {
+    return this.sandbox_patch_state(this.rb.account(accountData));
+  }
+
+  async updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty> {
+    return this.sandbox_patch_state(this.rb.accessKey(key, access_key_data));
+  }
+
+  async updateContract(binary: Buffer | string): Promise<Empty> {
+    return this.sandbox_patch_state(this.rb.contract(binary));
+  }
+
+  async updateData(key: string | Buffer, value: string | Buffer): Promise<Empty> {
+    const key_string = key instanceof Buffer ? key.toString('base64') : key;
+    const value_string = value instanceof Buffer ? value.toString('base64') : value;
+    return this.sandbox_patch_state(this.rb.data(key_string, value_string));
+  }
+
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
     return this.createTransaction(accountId).transfer(amount).signAndSend();
   }
@@ -258,5 +275,9 @@ export class Account implements NearAccount {
 
   private async getOrCreateKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair> {
     return (await this.manager.getKey(accountId)) ?? this.manager.setKey(accountId, keyPair);
+  }
+
+  private get rb(): AccountBuilder {
+    return RecordBuilder.fromAccount(this);
   }
 }

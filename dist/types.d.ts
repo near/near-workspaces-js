@@ -40,3 +40,4 @@ export interface ClientConfig {
     initialBalance?: string;
     walletUrl?: string;
 }
+export declare type Empty = {};

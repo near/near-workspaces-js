@@ -1,7 +1,7 @@
 import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
-import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, ViewStateResult} from './types';
-import {Records} from './contract-state';
+import {Records} from './record';
+import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, Empty} from './types';
 
 /**
  * Extends the main provider class in NAJ, adding more methods for
@@ -116,7 +116,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param records
    * @returns
    */
-  async sandbox_patch_state(records: Records): Promise<any> {
+  async sandbox_patch_state(records: Records): Promise<Empty> {
     return this.sendJsonRpc('sandbox_patch_state', records);
   }
 }

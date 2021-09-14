@@ -3,10 +3,11 @@ import {Buffer} from 'buffer';
 import BN from 'bn.js';
 import {NEAR} from 'near-units';
 import {KeyPair} from 'near-api-js';
-import {AccountBalance, PublicKey, CodeResult, AccountView} from '../types';
+import {AccountBalance, PublicKey, CodeResult, AccountView, Empty} from '../types';
 import {ContractState} from '../contract-state';
 import {Transaction} from '../transaction';
 import {TransactionResult} from '../transaction-result';
+import {AccessKeyData, AccountData, Records} from '../record';
 
 export interface NearAccount {
   /** Full account id for given account. */
@@ -40,10 +41,11 @@ export interface NearAccount {
    */
   getKey(): Promise<KeyPair | null>;
   /**
-   *
+   * Adds a key pair to key store and creates a random pair if not provided
    * @param keyPair to add keystore
    */
-  setKey(keyPair: KeyPair): Promise<PublicKey>;
+  setKey(keyPair?: KeyPair): Promise<PublicKey>;
+
   /**
    * Create a subaccount from this account
    * @param accountId either prefix for new account or full accountId with current contract as suffix.
@@ -131,10 +133,18 @@ export interface NearAccount {
   view<T>(method: string, args?: Record<string, unknown>): Promise<T | string>;
 
   /**
+   * Download contract code from provider
+   */
+  viewCode(): Promise<Buffer>;
+
+  /**
    * Get the data of a contract as a map of raw key/values
    * @param prefix optional prefix used in storage. Default is ''.
    */
-  viewState(prefix?: string | Uint8Array): Promise<ContractState> ;
+  viewState(prefix?: string | Uint8Array): Promise<ContractState>;
+
+  /** Update record to sandbox */
+  sandbox_patch_state(records: Records): Promise<Empty>;
 
   /**
    *
@@ -166,5 +176,36 @@ export interface NearAccount {
   * Transfer yoctoNear to another account
   */
   transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
+
+  /**
+   * Update the account balance, storage usage, locked_amount.
+   *
+   * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+   */
+  updateAccount(accountData?: Partial<AccountData>): Promise<Empty>;
+
+  /**
+   * Add AccessKey to account.
+   *
+   * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+   */
+  updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty>;
+
+  /**
+   * Deploy contract to account.
+   *
+   * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+   */
+  updateContract(binary: Buffer | string): Promise<Empty>;
+
+  /**
+   * Update contract data of account.
+   *
+   * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+   *
+   * @param data Base64 encoded string or Buffer to be encoded as Base64
+   * @param value Base64 encoded string or Buffer to be encoded as Base64
+   */
+  updateData(data: string | Buffer, value: string | Buffer): Promise<Empty>;
 }
 

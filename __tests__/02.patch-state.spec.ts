@@ -14,6 +14,7 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import path from 'path';
 import * as borsh from 'borsh';
+import {NEAR} from 'near-units';
 import {Runner} from '../src';
 
 describe('view state & patch state', () => {
@@ -101,13 +102,36 @@ describe('view state & patch state', () => {
           account_id: 'alice.near',
         });
         expect(result).toBe('hello world');
+      });
+    });
 
-        // Can also get value by passing the schema
-        const data = (await contract.viewState()).get('STATE', {
-          schema,
-          type: StatusMessage,
+    test.concurrent('Patch Account', async () => {
+      await runner.run(async ({root, ali, contract}) => {
+        const bob = root.getFullAccount('bob');
+        const public_key = await bob.setKey();
+        const {code_hash} = await contract.accountView();
+        const BOB_BALANCE = NEAR.parse('100 N');
+
+        await bob.updateAccount({
+          amount: BOB_BALANCE.toString(),
+          code_hash,
         });
-        expect(data).toStrictEqual(statusMessage);
+        await bob.updateAccessKey(
+          public_key,
+          {
+            nonce: 0,
+            permission: 'FullAccess',
+          },
+        );
+        await bob.updateContract(await contract.viewCode());
+
+        const balance = await bob.availableBalance();
+        expect(balance).toStrictEqual(BOB_BALANCE);
+        await ali.call(bob, 'set_status', {message: 'hello'});
+        const result = await bob.view('get_status', {
+          account_id: ali.accountId,
+        });
+        expect(result).toBe('hello');
       });
     });
   } else {
