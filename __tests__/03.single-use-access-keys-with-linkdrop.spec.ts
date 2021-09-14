@@ -28,7 +28,6 @@ impl Linkdrop {
 */
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-  jest.setTimeout(60_000);
   const runner = Runner.create(async ({root}) => ({
     linkdrop: await root.createAndDeploy(
       'linkdrop',
