@@ -3,18 +3,12 @@ import {NEAR} from 'near-units';
 import {Runner} from '../../src';
 import {RecordBuilder} from '../../src/record';
 
-async function sleep(ms: number): Promise<boolean> {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(true), ms); // eslint-disable-line @typescript-eslint/no-confusing-void-expression
-  });
-}
-
 describe('view state & patch state', () => {
   if (Runner.networkIsSandbox()) {
     const runner = Runner.create(async ({root}) => {
       const contract = await root.createAndDeploy(
         'status-message',
-        path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
+        path.join(__dirname, '..', 'build', 'debug', 'status_message.wasm'),
       );
       const ali = await root.createAccount('ali');
       return {contract, ali};
@@ -38,8 +32,6 @@ describe('view state & patch state', () => {
             },
           )
           .contract(await contract.viewCode());
-        await bob.sandbox_patch_state(rb);
-        await sleep(1000);
         await bob.sandbox_patch_state(rb);
         const balance = await bob.availableBalance();
         expect(balance).toStrictEqual(BOB_BALANCE);

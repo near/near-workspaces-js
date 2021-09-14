@@ -11,6 +11,7 @@ import {
   AccountBalance,
   Args,
   AccountView,
+  Empty,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
@@ -210,7 +211,9 @@ export class Account implements NearAccount {
     });
   }
 
-  async sandbox_patch_state(records: Records): Promise<any> {
+  async sandbox_patch_state(records: Records): Promise<Empty> {
+    // FIX THIS: Shouldn't need two calls to update before next RPC view call.
+    await this.provider.sandbox_patch_state(records);
     return this.provider.sandbox_patch_state(records);
   }
 

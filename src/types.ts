@@ -63,3 +63,5 @@ export interface ClientConfig {
   initialBalance?: string;
   walletUrl?: string;
 }
+
+export type Empty = {}; // eslint-disable-line @typescript-eslint/ban-types
