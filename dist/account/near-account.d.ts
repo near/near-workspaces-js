@@ -8,7 +8,7 @@ import { AccountBalance, PublicKey, CodeResult, AccountView, Empty } from '../ty
 import { ContractState } from '../contract-state';
 import { Transaction } from '../transaction';
 import { TransactionResult } from '../transaction-result';
-import { Records } from '../record';
+import { AccessKeyData, AccountData, Records } from '../record';
 export interface NearAccount {
     /** Full account id for given account. */
     readonly accountId: string;
@@ -146,4 +146,28 @@ export interface NearAccount {
     * Transfer yoctoNear to another account
     */
     transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
+    /**
+     * Update the account balance, storage usage, locked_amount.
+     *
+     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     */
+    updateAccount(accountData?: Partial<AccountData>): Promise<Empty>;
+    /**
+     * Add AccessKey to account.
+     *
+     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     */
+    updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty>;
+    /**
+     * Deploy contract to account.
+     *
+     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     */
+    updateContract(binary: Buffer | string): Promise<Empty>;
+    /**
+     * Update contract data of account.
+     *
+     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     */
+    updateData(data: string | Buffer, value: string | Buffer): Promise<Empty>;
 }

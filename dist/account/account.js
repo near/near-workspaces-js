@@ -27,6 +27,7 @@ const contract_state_1 = require("../contract-state");
 const utils_1 = require("../utils");
 const transaction_result_1 = require("../transaction-result");
 const internal_utils_1 = require("../internal-utils");
+const record_1 = require("../record");
 class Account {
     constructor(_accountId, manager) {
         this._accountId = _accountId;
@@ -127,18 +128,7 @@ class Account {
     async patchState(key, value_, borshSchema) {
         const data_key = buffer_1.Buffer.from(key).toString('base64');
         const value = buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_).toString('base64');
-        const account_id = this.accountId;
-        return this.provider.sandbox_patch_state({
-            records: [
-                {
-                    Data: {
-                        account_id,
-                        data_key,
-                        value,
-                    },
-                },
-            ],
-        });
+        return this.updateData(data_key, value);
     }
     async sandbox_patch_state(records) {
         // FIX THIS: Shouldn't need two calls to update before next RPC view call.
@@ -168,6 +158,20 @@ class Account {
     toJSON() {
         return this.accountId;
     }
+    async updateAccount(accountData) {
+        return this.sandbox_patch_state(this.rb.account(accountData));
+    }
+    async updateAccessKey(key, access_key_data) {
+        return this.sandbox_patch_state(this.rb.accessKey(key, access_key_data));
+    }
+    async updateContract(binary) {
+        return this.sandbox_patch_state(this.rb.contract(binary));
+    }
+    async updateData(key, value) {
+        const key_string = key instanceof buffer_1.Buffer ? key.toString('base64') : key;
+        const value_string = value instanceof buffer_1.Buffer ? value.toString('base64') : value;
+        return this.sandbox_patch_state(this.rb.data(key_string, value_string));
+    }
     async transfer(accountId, amount) {
         return this.createTransaction(accountId).transfer(amount).signAndSend();
     }
@@ -183,6 +187,9 @@ class Account {
     async getOrCreateKey(accountId, keyPair) {
         var _a;
         return (_a = (await this.manager.getKey(accountId))) !== null && _a !== void 0 ? _a : this.manager.setKey(accountId, keyPair);
+    }
+    get rb() {
+        return record_1.RecordBuilder.fromAccount(this);
     }
 }
 exports.Account = Account;

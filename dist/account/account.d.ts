@@ -8,7 +8,7 @@ import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JsonRpcProvider } from '../jsonrpc';
 import { TransactionResult } from '../transaction-result';
-import { Records } from '../record';
+import { AccessKeyData, AccountData, Records } from '../record';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
@@ -52,16 +52,21 @@ export declare class Account implements NearAccount {
     view<T>(method: string, args?: Args): Promise<T | string>;
     viewCode(): Promise<Buffer>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
-    patchState(key: string, value_: any, borshSchema?: any): Promise<any>;
+    patchState(key: string, value_: any, borshSchema?: any): Promise<Empty>;
     sandbox_patch_state(records: Records): Promise<Empty>;
     delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;
     toJSON(): string;
+    updateAccount(accountData?: Partial<AccountData>): Promise<Empty>;
+    updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty>;
+    updateContract(binary: Buffer | string): Promise<Empty>;
+    updateData(key: string | Buffer, value: string | Buffer): Promise<Empty>;
     transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
     protected internalCreateAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string | BN;
     }): Promise<Transaction>;
     private getOrCreateKey;
+    private get rb();
 }
