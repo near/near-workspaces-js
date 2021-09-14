@@ -65,6 +65,9 @@
     "testMatch": [
       "**/__tests__/**/*.spec.ts"
     ],
+    "setupFilesAfterEnv": [
+      "./__tests__/internal/setup.js"
+    ],
     "testPathIgnorePatterns": [
       "/assembly/",
       "/node_modules/"

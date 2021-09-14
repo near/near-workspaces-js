@@ -25,8 +25,6 @@ async function sleep(ms: number): Promise<boolean> {
 }
 
 describe('view state & patch state', () => {
-  jest.setTimeout(60_000);
-
   if (Runner.networkIsSandbox()) {
     const runner = Runner.create(async ({root}) => {
       const contract = await root.createAndDeploy(

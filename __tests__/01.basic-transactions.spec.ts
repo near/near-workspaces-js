@@ -11,7 +11,6 @@ import path from 'path';
 import {Runner} from '../src';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-  jest.setTimeout(60_000);
   const runner = Runner.create(async ({root}) => ({
     contract: await root.createAndDeploy(
       'status-message',
