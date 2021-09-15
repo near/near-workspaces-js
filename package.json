@@ -27,7 +27,6 @@
     "build": "tsc",
     "lint": "xo",
     "lint:fix": "xo --fix",
-    "pretest": "yarn build",
     "prepublishOnly": "yarn build",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest --verbose",
     "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet jest --verbose",
