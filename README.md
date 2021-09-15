@@ -77,36 +77,33 @@ near-runner works with any JS testing library/framework. Feel free to bring your
    import path from 'path';
    import {Runner} from 'near-runner';
 
+   jest.setTimeout(60_000);
+
+   const runner = Runner.create(async ({root}) => {
+      const alice = await root.createAccount('alice');
+      const contract = await root.createAndDeploy(
+        'contract-account-name',
+        path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+      );
+
+      // make other contract calls that you want as a starting point for all tests
+
+      return {alice, contract};
+   });
+
    describe('my contract', () => {
-     jest.setTimeout(60_000);
-     const runner = Runner.create(async ({root}) => {
-        const alice = await root.createAccount('alice');
-        const contract = await root.createAndDeploy(
-          'contract-account-name',
-          path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
-        );
-
-        // make other contract calls that you want as a starting point for all tests
-
-        return {alice, contract};
-     });
+     // tests go here
    });
    ```
 
+   `describe` is [from Jest](https://jestjs.io/docs/setup-teardown) and is optional.
+
 4. Write tests.
 
-   Jest will run each `test` in parallel; the `runner` you bootstrapped optimizes for parallelism. Add some `test` calls:
+   The `runner` you bootstrapped optimizes for parallelism. To speed up tests, we recommend using [Jest's `test.concurrent`](https://jestjs.io/docs/api#testconcurrentname-fn-timeout), or an equivalent from your test runner of choice.
 
    ```js
    describe('my contract', () => {
-     let runner;
-     jest.setTimeout(60_000);
-
-     const runner = Runner.create(async ({root}) => {
-       // …omitted for brevity…
-     });
-     
-
      test.concurrent('does something', async () => {
        await runner.run(async ({alice, contract}) => {
          await alice.call(
