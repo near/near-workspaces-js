@@ -3,7 +3,7 @@ import { Config, RunnerFn, CreateRunnerFn } from './interfaces';
 export declare class Runner {
     private runtime?;
     private readonly ready;
-    private constructor();
+    protected constructor(runtimePromise: Promise<Runtime>);
     /** Create the initial enviorment for the test to run in.
      * For example create accounts and deploy contracts that future tests will use.
      */

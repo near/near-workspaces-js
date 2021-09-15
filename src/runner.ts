@@ -5,7 +5,7 @@ import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 export class Runner {
   private runtime?: Runtime;
   private readonly ready: Promise<void>;
-  private constructor(runtimePromise: Promise<Runtime>,
+  protected constructor(runtimePromise: Promise<Runtime>,
   ) {
     this.ready = this.startWaiting(runtimePromise);
   }

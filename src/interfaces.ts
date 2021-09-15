@@ -1,4 +1,4 @@
-import {ClientConfig, Connection, KeyStore} from './types';
+import {ClientConfig, KeyStore} from './types';
 import {NearAccount} from './account/near-account';
 
 export interface Config extends ClientConfig {
@@ -9,11 +9,6 @@ export interface Config extends ClientConfig {
   refDir: string | null;
   initFn?: CreateRunnerFn;
   keyStore?: KeyStore;
-}
-
-export interface Provider {
-  connection: Connection;
-  initialBalance: string;
 }
 
 export interface NearRuntime {
