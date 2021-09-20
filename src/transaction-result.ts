@@ -142,8 +142,14 @@ export class TransactionResult {
     return this.result.transaction as TransactionReceipt;
   }
 
-  get errors(): Array<Record<string, unknown>> {
-    return [];
+  get errors(): ExecutionError[] {
+    const errors = [...this.promiseErrors];
+
+    if (this.Failure) {
+      errors.unshift(this.Failure);
+    }
+
+    return errors;
   }
 
   get status(): FinalExecutionStatus | FinalExecutionStatusBasic {
@@ -158,12 +164,28 @@ export class TransactionResult {
     return this.result.status.SuccessValue !== undefined;
   }
 
+  get SuccessValue(): string | null {
+    if (this.succeeded) {
+      return this.finalExecutionStatus.SuccessValue!;
+    }
+
+    return null;
+  }
+
   get failed(): boolean {
     if (typeof this.result.status === 'string') {
       return false;
     }
 
     return this.result.status.Failure !== undefined;
+  }
+
+  get Failure(): ExecutionError | null {
+    if (this.failed) {
+      return this.finalExecutionStatus.Failure!;
+    }
+
+    return null;
   }
 
   logsContain(pattern: string | RegExp): boolean {
@@ -184,14 +206,6 @@ export class TransactionResult {
 
   get finalExecutionStatus(): FinalExecutionStatus {
     return this.status as FinalExecutionStatus;
-  }
-
-  get SuccessValue(): string | null {
-    if (this.succeeded) {
-      return this.finalExecutionStatus.SuccessValue!;
-    }
-
-    return null;
   }
 
   get promiseErrors(): ExecutionError[] {
