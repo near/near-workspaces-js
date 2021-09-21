@@ -13,7 +13,7 @@
  */
 import path from 'path';
 import {Gas, NEAR} from 'near-units';
-import {Runner, createKeyPair} from '../src';
+import {Runner, createKeyPair} from 'near-runner-jest';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -35,75 +35,71 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     ),
   }));
 
-  test.concurrent('Use `create_account_and_claim` to create a new account', async () => {
-    await runner.run(async ({root, linkdrop}) => {
-      // Create temporary keys for access key on linkdrop
-      const senderKey = createKeyPair();
-      const public_key = senderKey.getPublicKey().toString();
-      const attachedDeposit = NEAR.parse('2');
+  runner.test('Use `create_account_and_claim` to create a new account', async ({root, linkdrop}) => {
+    // Create temporary keys for access key on linkdrop
+    const senderKey = createKeyPair();
+    const public_key = senderKey.getPublicKey().toString();
+    const attachedDeposit = NEAR.parse('2');
 
-      // This adds the key as a function access key on `create_account_and_claim`
-      await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
+    // This adds the key as a function access key on `create_account_and_claim`
+    await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
 
-      const new_account_id = `bob.${linkdrop.accountId}`;
-      const actualKey = createKeyPair();
-      const new_public_key = actualKey.getPublicKey().toString();
+    const new_account_id = `bob.${linkdrop.accountId}`;
+    const actualKey = createKeyPair();
+    const new_public_key = actualKey.getPublicKey().toString();
 
-      await linkdrop.call_raw(
-        linkdrop,
-        'create_account_and_claim',
-        {
-          new_account_id,
-          new_public_key,
-        },
-        {
-          signWithKey: senderKey,
-          gas: Gas.parse('50 TGas'),
-        },
-      );
-      const bob = root.getAccount(new_account_id);
-      const balance = await bob.availableBalance();
-      console.log(balance.toHuman());
-      expect(balance).toStrictEqual(NEAR.parse('0.99818'));
+    await linkdrop.call_raw(
+      linkdrop,
+      'create_account_and_claim',
+      {
+        new_account_id,
+        new_public_key,
+      },
+      {
+        signWithKey: senderKey,
+        gas: Gas.parse('50 TGas'),
+      },
+    );
+    const bob = root.getAccount(new_account_id);
+    const balance = await bob.availableBalance();
+    console.log(balance.toHuman());
+    expect(balance).toStrictEqual(NEAR.parse('0.99818'));
 
-      console.log(
-        `Account ${new_account_id} claim and has ${balance.toHuman()} available`,
-      );
-    });
+    console.log(
+      `Account ${new_account_id} claim and has ${balance.toHuman()} available`,
+    );
   });
 
-  test.concurrent('Use `claim` to transfer to an existing account', async () => {
-    await runner.run(async ({root, linkdrop}) => {
-      const bob = await root.createAccount('bob');
-      const originalBalance = await bob.availableBalance();
-      // Create temporary keys for access key on linkdrop
-      const senderKey = createKeyPair();
-      const public_key = senderKey.getPublicKey().toString();
-      const attachedDeposit = NEAR.parse('2');
+  runner.test('Use `claim` to transfer to an existing account', async ({root, linkdrop}) => {
+    const bob = await root.createAccount('bob');
+    const originalBalance = await bob.availableBalance();
+    // Create temporary keys for access key on linkdrop
+    const senderKey = createKeyPair();
+    const public_key = senderKey.getPublicKey().toString();
+    const attachedDeposit = NEAR.parse('2');
 
-      // This adds the key as a function access key on `create_account_and_claim`
-      await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
-      // Can only create subaccounts
+    // This adds the key as a function access key on `create_account_and_claim`
+    await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
+    // Can only create subaccounts
 
-      await linkdrop.call_raw(
-        linkdrop,
-        'claim',
-        {
-          account_id: bob,
-        },
-        {
-          signWithKey: senderKey,
-          gas: Gas.parse('50 TGas'),
-        },
-      );
+    await linkdrop.call_raw(
+      linkdrop,
+      'claim',
+      {
+        account_id: bob,
+      },
+      {
+        signWithKey: senderKey,
+        gas: Gas.parse('50 TGas'),
+      },
+    );
 
-      const newBalance = await bob.availableBalance();
-      expect(originalBalance.toBigInt()).toBeLessThan(newBalance.toBigInt());
+    const newBalance = await bob.availableBalance();
+    expect(originalBalance.toBigInt()).toBeLessThan(newBalance.toBigInt());
 
-      console.log(
-        `${bob.accountId} claimed ${newBalance
-          .sub(originalBalance).toHuman()}`,
-      );
-    });
+    console.log(
+      `${bob.accountId} claimed ${newBalance
+        .sub(originalBalance).toHuman()}`,
+    );
   });
 });

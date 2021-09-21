@@ -180,8 +180,7 @@ export class Account implements NearAccount {
         return value;
       }
     }
-
-    return result.result;
+    return '';
   }
 
   async viewCode(): Promise<Buffer> {

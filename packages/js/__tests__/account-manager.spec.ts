@@ -1,5 +1,4 @@
-import {AccountManager, TestnetManager} from '../../src/account/account-manager';
-import {TestnetRuntime, Runner} from '../../src';
+import {AccountManager, TestnetManager, TestnetRuntime, Runner} from '..';
 
 jest.setTimeout(300_000);
 
