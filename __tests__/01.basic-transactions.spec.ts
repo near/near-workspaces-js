@@ -8,7 +8,7 @@
  * package.json.
  */
 import path from 'path';
-import {Runner} from '../src';
+import {Runner} from 'near-runner-jest';
 
 describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
   const runner = Runner.create(async ({root}) => ({
@@ -19,37 +19,31 @@ describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
     ali: await root.createAccount('ali'),
   }));
 
-  test.concurrent('Root gets null status', async () => {
-    await runner.run(async ({contract, root}) => {
-      const result = await contract.view('get_status', {
-        account_id: root,
-      });
-      expect(result).toBeNull();
+  runner.test('Root gets null status', async ({contract, root}) => {
+    const result = await contract.view('get_status', {
+      account_id: root,
     });
+    expect(result).toBeNull();
   });
 
-  test.concurrent('Ali sets then gets status', async () => {
-    await runner.run(async ({contract, ali}) => {
-      await ali.call(contract, 'set_status', {message: 'hello'});
-      const result: string = await contract.view('get_status', {
-        account_id: ali,
-      });
-      expect(result).toBe('hello');
+  runner.test('Ali sets then gets status', async ({contract, ali}) => {
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    const result: string = await contract.view('get_status', {
+      account_id: ali,
     });
+    expect(result).toBe('hello');
   });
 
-  test.concurrent('Root and Ali have different statuses', async () => {
-    await runner.run(async ({contract, root, ali}) => {
-      await root.call(contract, 'set_status', {message: 'world'});
-      const rootStatus: string = await contract.view('get_status', {
-        account_id: root,
-      });
-      expect(rootStatus).toBe('world');
-
-      const aliStatus = await contract.view('get_status', {
-        account_id: ali,
-      });
-      expect(aliStatus).toBeNull();
+  runner.test('Root and Ali have different statuses', async ({contract, root, ali}) => {
+    await root.call(contract, 'set_status', {message: 'world'});
+    const rootStatus: string = await contract.view('get_status', {
+      account_id: root,
     });
+    expect(rootStatus).toBe('world');
+
+    const aliStatus = await contract.view('get_status', {
+      account_id: ali,
+    });
+    expect(aliStatus).toBeNull();
   });
 });

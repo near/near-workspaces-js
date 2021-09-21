@@ -1,14 +1,14 @@
 import path from 'path';
 import {NEAR} from 'near-units';
-import {Runner} from '../../src';
-import {RecordBuilder} from '../../src/record';
+import {Runner} from '..';
+import {RecordBuilder} from '../dist/record'; // eslint-disable-line import/extensions
 
 describe('view state & patch state', () => {
   if (Runner.networkIsSandbox()) {
     const runner = Runner.create(async ({root}) => {
       const contract = await root.createAndDeploy(
         'status-message',
-        path.join(__dirname, '..', 'build', 'debug', 'status_message.wasm'),
+        path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
       );
       const ali = await root.createAccount('ali');
       return {contract, ali};

@@ -1,76 +1,31 @@
 {
-  "name": "near-runner",
-  "version": "0.6.1",
+  "name": "runner-js",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": "https://github.com/near/runner-js",
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "dependencies": {
-    "base64url": "^3.0.1",
-    "bn.js": "^5.2.0",
-    "borsh": "^0.5.0",
-    "callsites": "^4.0.0",
-    "fs-extra": "^10.0.0",
-    "js-sha256": "^0.9.0",
-    "near-api-js": "near/near-api-js#spike/sandbox-runner-tweaks",
-    "near-sandbox": "^0.0.6",
-    "near-units": "^0.1.9",
-    "node-port-check": "^2.0.1",
-    "promisify-child-process": "^4.1.1",
-    "pure-uuid": "^1.6.2",
-    "rimraf": "^3.0.2",
-    "temp-dir": "^2.0.0"
-  },
   "scripts": {
-    "build": "tsc",
+    "build": "yarn workspaces run build",
+    "clean:accounts": "ts-node packages/js/scripts/delete-accounts.ts",
     "lint": "xo",
     "lint:fix": "xo --fix",
-    "prepublishOnly": "yarn build",
     "test:testnet": "yarn test:testnet:ci --verbose",
-    "test:testnet:ci": "NEAR_RUNNER_NETWORK=testnet jest",
+    "test:testnet:ci": "yarn build && NEAR_RUNNER_NETWORK=testnet jest",
     "test:sandbox": "yarn test:sandbox:ci --verbose",
     "test:sandbox:ci": "yarn build && jest",
-    "test": "jest --verbose && yarn test:testnet",
-    "prepare": "husky install",
-    "clean:accounts": "ts-node ./scripts/delete-accounts.ts"
+    "test": "yarn test:sandbox && yarn test:testnet",
+    "prepare": "husky install"
   },
-  "files": [
-    "dist/",
-    "tsconfig.json",
-    "core_contracts"
-  ],
   "devDependencies": {
-    "@types/bn.js": "^5.1.0",
     "@types/fs-extra": "^9.0.12",
-    "@types/jest": "^26.0.24",
-    "@types/node": "^16.4.10",
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
-    "jest": "^27.0.6",
-    "ts-jest": "^27.0.4",
-    "ts-node": "^10.1.0",
-    "typescript": "^4.3.5",
+    "near-runner-jest": "0.1.11",
     "xo": "^0.44.0"
   },
   "engines": {
     "node": "^14.17.0 || >=16.0.0",
     "npm": ">= 6.0.0"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/__tests__/**/*.spec.ts"
-    ],
-    "setupFilesAfterEnv": [
-      "./__tests__/internal/setup.js"
-    ],
-    "testPathIgnorePatterns": [
-      "/assembly/",
-      "/node_modules/"
-    ]
   },
   "xo": {
     "space": true,
@@ -82,14 +37,20 @@
     },
     "overrides": [
       {
-        "files": "__tests__/**/*.spec.ts",
+        "files": "**/__tests__/**/*.spec.ts",
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
           "unicorn/prefer-module": 0,
           "@typescript-eslint/no-unsafe-call": 0,
-          "@typescript-eslint/no-empty-function": 0
+          "@typescript-eslint/no-empty-function": 0,
+          "import/no-extraneous-dependencies": 0
         }
       }
     ]
-  }
+  },
+  "private": true,
+  "workspaces": [
+    "packages/jest",
+    "packages/js"
+  ]
 }

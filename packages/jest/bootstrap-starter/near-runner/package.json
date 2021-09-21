@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "near-runner-jest"
+  }
+}

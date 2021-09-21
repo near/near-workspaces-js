@@ -181,7 +181,7 @@ export class Account implements NearAccount {
       }
     }
 
-    return result.result;
+    return '';
   }
 
   async viewCode(): Promise<Buffer> {
