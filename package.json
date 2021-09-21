@@ -6,6 +6,7 @@
   "license": "(MIT AND Apache-2.0)",
   "scripts": {
     "build": "yarn workspaces run build",
+    "clean:accounts": "ts-node packages/js/scripts/delete-accounts.ts",
     "lint": "xo",
     "lint:fix": "xo --fix",
     "test:testnet": "yarn test:testnet:ci --verbose",
