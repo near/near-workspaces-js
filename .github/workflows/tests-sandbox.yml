@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: yarn && yarn test:sandbox
+        run: (yarn && yarn test:sandbox:ci) || NEAR_RUNNER_DEBUG=true yarn test:sandbox:ci --verbose --noStackTrace
   near-sandbox-install:
     strategy:
       matrix:
