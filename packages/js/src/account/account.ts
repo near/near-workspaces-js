@@ -180,6 +180,7 @@ export class Account implements NearAccount {
         return value;
       }
     }
+
     return '';
   }
 

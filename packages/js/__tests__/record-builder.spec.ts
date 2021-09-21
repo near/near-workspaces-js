@@ -1,7 +1,7 @@
 import path from 'path';
 import {NEAR} from 'near-units';
 import {Runner} from '..';
-import {RecordBuilder} from '../dist/record';
+import {RecordBuilder} from '../dist/record'; // eslint-disable-line import/extensions
 
 describe('view state & patch state', () => {
   if (Runner.networkIsSandbox()) {
