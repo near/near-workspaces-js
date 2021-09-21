@@ -1,2 +1,2 @@
 yarn.lock linguist-generated=true -diff
-dist/**/* linguist-generated=true -diff
+**/dist/**/* linguist-generated=true -diff
