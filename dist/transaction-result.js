@@ -107,7 +107,11 @@ class TransactionResult {
         return this.result.transaction;
     }
     get errors() {
-        return [];
+        const errors = [...this.promiseErrors];
+        if (this.Failure) {
+            errors.unshift(this.Failure);
+        }
+        return errors;
     }
     get status() {
         return this.result.status;
@@ -118,11 +122,23 @@ class TransactionResult {
         }
         return this.result.status.SuccessValue !== undefined;
     }
+    get SuccessValue() {
+        if (this.succeeded) {
+            return this.finalExecutionStatus.SuccessValue;
+        }
+        return null;
+    }
     get failed() {
         if (typeof this.result.status === 'string') {
             return false;
         }
         return this.result.status.Failure !== undefined;
+    }
+    get Failure() {
+        if (this.failed) {
+            return this.finalExecutionStatus.Failure;
+        }
+        return null;
     }
     logsContain(pattern) {
         return this.logs.some(includes(pattern));
@@ -138,12 +154,6 @@ class TransactionResult {
     }
     get finalExecutionStatus() {
         return this.status;
-    }
-    get SuccessValue() {
-        if (this.succeeded) {
-            return this.finalExecutionStatus.SuccessValue;
-        }
-        return null;
     }
     get promiseErrors() {
         return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionError) !== null && _a !== void 0 ? _a : []; });

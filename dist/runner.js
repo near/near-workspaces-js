@@ -17,7 +17,7 @@ class Runner {
         var _a;
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         config.network = (_a = config.network) !== null && _a !== void 0 ? _a : this.getNetworkFromEnv();
-        return new this(runtime_1.Runtime.create(config, fn));
+        return new Runner(runtime_1.Runtime.create(config, fn));
     }
     static networkIsTestnet() {
         return this.getNetworkFromEnv() === 'testnet';
