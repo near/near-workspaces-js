@@ -9,140 +9,24 @@ This software is in early beta and feedback is appreciated.
 Quick Start with Jest
 =====================
 
-near-runner works with any JS testing library/framework. Feel free to bring your own, or follow the instructions below to get started quickly with [Jest].
+[near-runner-jest](../jest) is a thin wrapper around near-runner-js designed to get you up and running as quickly as possible, with minimal configuration and power-boosts like [TypeScript](https://www.typescriptlang.org/). You can install it with one command. You will need [NodeJS](https://nodejs.dev/) installed. Then:
 
+    npx near-runner-jest --bootstrap
 
-1. Install.
+This command will:
 
-       npm install --save-dev near-runner jest
+* Add a `near-runner` directory to the folder where you ran the command. This directory contains all the configuration needed to get you started with near-runner-jest, and a `__tests__` subfolder with a well-commented example test file.
+* Create `test.sh` and `test.bat` scripts in the folder where you ran the command. These can be used to quickly run the tests in `near-runner`. Feel free to integrate test-running into your project in a way that makes more sense for you, and then remove these scripts.
+* Install `near-runner-jest` as a dependency using `npm install --save-dev` (most of the output you see when running the command comes from this step).
 
-   or if using [Yarn]
-
-       yarn add --dev near-runner jest
-
-2. Configure.
-
-   near-runner doesn't require any configuration, but Jest does.
-
-   Add a new section to your `package.json`:
-
-   ```js
-   "jest": {
-     "testEnvironment": "node",
-     "testMatch": [
-       "**/__tests__/*.spec.js"
-     ],
-     "testPathIgnorePatterns": [
-       "/assembly/",
-       "/node_modules/"
-     ]
-   }
-   ```
-
-   This tells Jest to look in a folder called `__tests__` in the root of your project for files with names that end with `spec.js`.
-
-   You can also add a new line to the `scripts` section of your `package.json`:
-
-   ```diff
-    "scripts": {
-   +  "test": "jest --verbose",
-    }
-   ```
-
-   If your project has a `build` script, you might also want to add a `pretest` script:
-
-   ```diff
-    "scripts": {
-   +  "pretest": "npm run build",
-    }
-   ```
-
-   or if using [Yarn]:
-
-   ```diff
-    "scripts": {
-   +  "pretest": "yarn build",
-    }
-   ```
-
-   If you want to see an example, with the addition of TypeScript and Jest's TypeScript variant [ts-jest](https://www.npmjs.com/package/ts-jest), see [the `package.json` in this project](./package.json).
-
-3. Bootstrap.
-
-   Make a `__tests__` folder, make your first test file. Call it `main.spec.js` for now if you're not sure what else to call it.
-
-   Set up a `runner` with NEAR accounts, contracts, and state that will be used in all of your tests.
-
-   ```js
-   import path from 'path';
-   import {Runner} from 'near-runner';
-
-   jest.setTimeout(60_000);
-
-   const runner = Runner.create(async ({root}) => {
-      const alice = await root.createAccount('alice');
-      const contract = await root.createAndDeploy(
-        'contract-account-name',
-        path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
-      );
-
-      // make other contract calls that you want as a starting point for all tests
-
-      return {alice, contract};
-   });
-
-   describe('my contract', () => {
-     // tests go here
-   });
-   ```
-
-   `describe` is [from Jest](https://jestjs.io/docs/setup-teardown) and is optional.
-
-4. Write tests.
-
-   The `runner` you bootstrapped optimizes for parallelism. To speed up tests, we recommend using [Jest's `test.concurrent`](https://jestjs.io/docs/api#testconcurrentname-fn-timeout), or an equivalent from your test runner of choice.
-
-   ```js
-   describe('my contract', () => {
-     test.concurrent('does something', async () => {
-       await runner.run(async ({alice, contract}) => {
-         await alice.call(
-           contract,
-           'some_update_function',
-           {some_string_argument: 'cool', some_number_argument: 42}
-         );
-         const result = await contract.view(
-           'some_view_function',
-           {account_id: alice}
-         );
-         expect(result).toBe('whatever');
-       });
-     });
-
-     test.concurrent('does something else', async () => {
-       await runner.run(async ({alice, contract}) => {
-         const result = await contract.view(
-           'some_view_function',
-           {account_id: alice}
-         );
-         expect(result).toBe('some default');
-       });
-     });
-   });
-   ```
-
-  [Jest]: https://jestjs.io/
-  [Yarn]: https://yarnpkg.com/
-
-See the [\_\_tests__](./__tests__) directory in this project for more examples.
-
+If you want to install near-runner-jest manually, see [its README](../jest).
 
 How It Works
 ============
 
-Let's look at a modified version of the above that uses vanilla/plain JS without any Jest.
+Let's look at some code that focuses on near-runner itself, without any Jest or other testing logic.
 
-3. Bootstrapping a `Runner`.
+1. Creating a `Runner`.
 
    ```ts
    const runner = Runner.create(async ({root}) => {
@@ -165,9 +49,9 @@ Let's look at a modified version of the above that uses vanilla/plain JS without
    6. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
    7. The object returned, `{alice, contract}`, will be passed along to subsequent tests.
 
-4. Writing tests.
+2. Writing tests.
 
-   As mentioned, Jest will run all `test.concurrent` functions concurrently. Here's a simple way that could work in plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
+   near-runner is designed for parallelism. (near-runner-jest exploits this by using Jest's `test.concurrent` under the hood for every `runner.test`). Here's a simple way to get parallel test runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
 
    ```ts
    await Promise.all([
@@ -200,6 +84,8 @@ Let's look at a modified version of the above that uses vanilla/plain JS without
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
    4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
+
+See the [\_\_tests__](./__tests__) directory in this project for more examples.
 
 Running on Testnet
 ==================
@@ -236,7 +122,7 @@ Stepping through a testnet example
 
 Let's revisit a shortened version of the example from How It Works above, describing what will happen in Testnet.
 
-3. Create a `Runner`.
+1. Create a `Runner`.
 
    ```ts
    const runner = Runner.create(async ({root}) => {
@@ -252,7 +138,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
    1. `Runner.create` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `runner.run`. This matches the semantics of the sandbox that all subsequent calls to `run` have the same starting point, however, testnet requires that each call have its own account. In fact `Runner.create` creates a unique testnet account and each test is a unique sub-account.
 
-4. Write tests.
+2. Write tests.
 
    ```ts
    await Promise.all([
