@@ -20,6 +20,7 @@
     "@types/fs-extra": "^9.0.12",
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
+    "lerna": "^4.0.0",
     "near-runner-jest": "0.1.11",
     "xo": "^0.44.0"
   },

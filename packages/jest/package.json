@@ -1,5 +1,5 @@
 {
-  "name": "near-runner-jest",
+  "name": "near-runner-jest-test",
   "version": "0.1.11",
   "description": "Thin wrapper around near-runner to make it easier to use with Jest and TypeScript",
   "repository": {
