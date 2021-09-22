@@ -5575,6 +5575,41 @@ near-api-js@near/near-api-js#spike/sandbox-runner-tweaks:
     text-encoding-utf-8 "^1.0.2"
     tweetnacl "^1.0.1"
 
+near-runner-jest@0.1.11:
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/near-runner-jest/-/near-runner-jest-0.1.11.tgz#dafab9f0b1794bca097367bc915603f77148581d"
+  integrity sha512-uGme6tXKT0eT7W1nVRkcTsYo9s+DKHguDqRbe5abUC/43kIym8CZX0fpe4q03j4IvM8Gw0CxvRQk5CzC4eBghg==
+  dependencies:
+    "@types/bn.js" "^5.1.0"
+    "@types/jest" "^27.0.1"
+    "@types/node" "^16.4.10"
+    fs-extra "^10.0.0"
+    jest "^27.0.6"
+    near-runner "0.6.1"
+    ts-jest "^27.0.4"
+    ts-node "^10.1.0"
+    typescript "^4.3.5"
+
+near-runner@0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/near-runner/-/near-runner-0.6.1.tgz#e098664543a385f84ce5bea71c1d7146011703ab"
+  integrity sha512-ddcmO5qkVRiLQp9b4eK9UtkMysaQWDfWGqM73hbCPoK8Xjyi11TNsotPkesrjd5/NYPcgFjggGnO2buPJPGhig==
+  dependencies:
+    base64url "^3.0.1"
+    bn.js "^5.2.0"
+    borsh "^0.5.0"
+    callsites "^4.0.0"
+    fs-extra "^10.0.0"
+    js-sha256 "^0.9.0"
+    near-api-js near/near-api-js#spike/sandbox-runner-tweaks
+    near-sandbox "^0.0.6"
+    near-units "^0.1.9"
+    node-port-check "^2.0.1"
+    promisify-child-process "^4.1.1"
+    pure-uuid "^1.6.2"
+    rimraf "^3.0.2"
+    temp-dir "^2.0.0"
+
 near-sandbox@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.6.tgz#d09bdf4bf30cecab1ab4281381903bd6aaabae98"

@@ -120,3 +120,29 @@ Manual Install
    Where `test.concurrent` comes [from Jest](https://jestjs.io/docs/api#testconcurrentname-fn-timeout) and `runner.run` comes [from near-runner](https://github.com/near/runner-js#how-it-works).
 
 See the [`__tests__`](https://github.com/near/runner-js/tree/main/__tests__) directory in near-runner-js for more examples. Remember that you can replace the nested `test.concurrent`…`await runner.run` sequences with `runner.test`.
+
+Configuring Jest
+================
+
+By default, near-runner-jest includes a minimal [jest.config.js](./jest.config.js). To override or extend these settings, add your own `jest.config.js` to the root of your project and import near-runner-jest's as a starting point. For example, to set `testMatch` back to [Jest's default](https://jestjs.io/docs/configuration#testmatch-arraystring):
+
+```js
+const config = require('near-runner-jest/jest.config');
+
+module.exports = {
+  ...config,
+  testMatch: [
+    "**/__tests__/**/*.[jt]s?(x)",
+    "**/?(*.)+(spec|test).[jt]s?(x)"
+  ]
+}
+```
+
+If you want to put this `jest.config.js` somewhere other than your project root, you may need to update your `test` script in `package.json`:
+
+```diff
+- "test": "near-runner-jest"
++ "test": "near-runner-jest --config ./jest.config.js"
+```
+
+Note that command-line flags other than `--bootstrap` get passed along to the `jest` command; see [Jest's CLI options](https://jestjs.io/docs/cli) for possibilities.
