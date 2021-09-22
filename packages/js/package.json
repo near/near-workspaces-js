@@ -1,6 +1,6 @@
 {
   "name": "near-runner",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": {
     "type": "git",
