@@ -15,8 +15,8 @@
     "test:sandbox:ci": "yarn build && jest",
     "test": "yarn test:sandbox && yarn test:testnet",
     "prepare": "husky install",
-    "publish": "yarn lerna publish",
-    "prerelease": "yarn publish --dist-tag next"
+    "release": "yarn lerna publish",
+    "release:prerelease": "yarn publish --dist-tag next"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
