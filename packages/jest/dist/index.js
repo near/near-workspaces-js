@@ -17,7 +17,7 @@ class Runner extends near_runner_1.Runner {
     static create(configOrFunction, f) {
         const runner = near_runner_1.Runner.create(configOrFunction, f);
         runner.test = (description, fn) => {
-            test.concurrent(description, async () => {
+            test(description, async () => {
                 await runner.run(fn);
             });
         };

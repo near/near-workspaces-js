@@ -14,7 +14,7 @@ export class Runner extends RawRunner {
     const runner = RawRunner.create(configOrFunction, f);
 
     (runner as Runner).test = (description: string, fn: RunnerFn): void => {
-      test.concurrent(description, async () => {
+      test(description, async () => {
         await runner.run(fn);
       });
     };
