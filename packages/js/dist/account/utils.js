@@ -24,7 +24,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sanitize = exports.hashPathBase64 = exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
 const fs = __importStar(require("fs/promises"));
-const path_1 = require("path");
 const buffer_1 = require("buffer");
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const base64url_1 = __importDefault(require("base64url"));
@@ -32,8 +31,8 @@ const types_1 = require("../types");
 function findCallerFile() {
     const sites = callsites();
     const files = sites.filter(s => s.getFileName());
-    const parentDir = (0, path_1.dirname)(__dirname);
-    const i = files.findIndex(file => !file.getFileName().startsWith(parentDir));
+    // Need better way to find file
+    const i = files.length - 1;
     return [files[i].getFileName(), files[i].getLineNumber()];
 }
 exports.findCallerFile = findCallerFile;

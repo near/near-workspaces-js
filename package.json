@@ -10,9 +10,9 @@
     "lint": "xo",
     "lint:fix": "xo --fix",
     "test:testnet": "yarn test:testnet:ci --verbose",
-    "test:testnet:ci": "yarn build && NEAR_RUNNER_NETWORK=testnet jest",
+    "test:testnet:ci": "yarn build && NEAR_RUNNER_NETWORK=testnet ava",
     "test:sandbox": "yarn test:sandbox:ci --verbose",
-    "test:sandbox:ci": "yarn build && jest",
+    "test:sandbox:ci": "yarn build && ava",
     "test": "yarn test:sandbox && yarn test:testnet",
     "prepare": "husky install",
     "release": "yarn lerna publish",
@@ -23,7 +23,7 @@
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
     "lerna": "^4.0.0",
-    "near-runner-jest": "0.1.11",
+    "near-runner-ava": "0.0.0",
     "xo": "^0.44.0"
   },
   "engines": {
@@ -40,7 +40,7 @@
     },
     "overrides": [
       {
-        "files": "**/__tests__/**/*.spec.ts",
+        "files": ["**/__tests__/**/*.spec.ts", "**/__tests__/**/*.ava.ts"],
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
           "unicorn/prefer-module": 0,
@@ -53,6 +53,7 @@
   },
   "private": true,
   "workspaces": [
+    "packages/ava",
     "packages/jest",
     "packages/js"
   ]
