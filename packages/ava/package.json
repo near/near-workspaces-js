@@ -20,7 +20,8 @@
     "ava.config.cjs",
     "scripts/cli.js",
     "scripts/bootstrap.js",
-    "bootstrap-starter"
+    "bootstrap-starter",
+    "scripts/ava.js"
   ],
   "scripts": {
     "build": "tsc",
