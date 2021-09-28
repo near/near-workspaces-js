@@ -1,4 +1,4 @@
-These tests use [near-runner-jest](https://github.com/near/runner-jest): delightful, deterministic local testing for NEAR smart contracts.
+These tests use [near-runner-ava](https://github.com/near/runner-js/tree/main/packages/ava): delightful, deterministic local testing for NEAR smart contracts.
 
 You will need to install [NodeJS](https://nodejs.dev/). Then you can use the `scripts` defined in [package.json](./package.json):
 

@@ -1,4 +1,4 @@
-near-runner + Jest
+near-runner + AVA
 ==================
 
 A thin wrapper around [near-runner] to make it easier to use with [Jest] and [TypeScript]. If you don't want Jest, use near-runner directly.

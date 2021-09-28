@@ -1,13 +1,13 @@
 {
   "name": "near-runner-ava",
   "version": "0.0.0",
-  "description": "Thin wrapper around near-runner to make it easier to use with Ava and TypeScript",
+  "description": "Thin wrapper around near-runner to make it easier to use with AVA and TypeScript",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/near/runner-js.git",
     "directory": "packages/ava"
   },
-  "author": "Near Inc (team@near.org)",
+  "author": "Near Inc <team@near.org>",
   "license": "(MIT AND Apache-2.0)",
   "main": "dist/index.js",
   "bin": {
