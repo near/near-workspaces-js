@@ -4,7 +4,7 @@ You will need to install [NodeJS](https://nodejs.dev/). Then you can use the `sc
 
     npm run test
 
-If you want to run `near-runner-jest` or `jest` directly, you can use [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner):
+If you want to run `near-runner-ava` or `ava` directly, you can use [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner):
 
-    npx near-runner-jest --help
-    npx jest --help
+    npx near-runner-ava --help
+    npx ava --help
