@@ -20,7 +20,6 @@
     "ava.config.cjs",
     "scripts/cli.js",
     "scripts/bootstrap.js",
-    "scripts/jest.js",
     "bootstrap-starter"
   ],
   "scripts": {

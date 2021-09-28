@@ -12,5 +12,5 @@ if (process.argv.includes('-h') || process.argv.includes('--help')) {
 } else if (process.argv.includes('--bootstrap')) {
   require('./bootstrap');
 } else {
-  require('./ava');
+  require('ava/lib/cli.js').run(); // eslint-disable-line import/extensions;
 }
