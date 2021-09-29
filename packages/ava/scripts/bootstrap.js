@@ -3,7 +3,7 @@
 const {join} =  require('path');
 const {existsSync} = require('fs');
 const {spawnSync} = require('child_process');
-const {copySync} = require('fs-extra');
+const {copySync, writeJsonSync} = require('fs-extra');
 
 if (existsSync(join(process.cwd(), 'near-runner'))) {
   console.log(
@@ -34,20 +34,24 @@ try {
   process.exit(1);
 }
 
-const install = spawnSync('npm', [
-  'install',
-  '--save-dev',
-  'near-runner-ava'
-], {
-  cwd: join(process.cwd(), 'near-runner'),
-  stdio: 'inherit',
-});
+const packageJsonFile = join(process.cwd(), 'near-runner/package.json');
+const version = require(join(__dirname, '../package.json')).version;
+const packageJson = require(packageJsonFile);
+packageJson.devDependencies['near-runner-ava'] = version;
+writeJsonSync(packageJsonFile, packageJson);
 
-if (install.error) {
-  if (install.error instanceof Error) {
-    console.error(install.error.message);
-  } else {
-    console.error(install.error);
+if (!process.argv.includes('--no-install')) {
+  const install = spawnSync('npm', ['install'], {
+    cwd: join(process.cwd(), 'near-runner'),
+    stdio: 'inherit',
+  });
+
+  if (install.error) {
+    if (install.error instanceof Error) {
+      console.error(install.error.message);
+    } else {
+      console.error(install.error);
+    }
+    process.exit(1);
   }
-  process.exit(1);
 }

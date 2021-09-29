@@ -1,39 +1,52 @@
-import process from 'node:process';
-import {join} from 'node:path';
-import {spawnSync} from 'node:child_process';
-import {existsSync} from 'node:fs';
-import {removeSync} from 'fs-extra';
+import process from 'process';
+import {join} from 'path';
+import {spawnSync} from 'child_process';
+import {pathExists, removeSync, mkdirSync} from 'fs-extra';
 import test from 'ava';
 
 const TEST_PROJECT = join(process.cwd(), '../test-near-runner-ava-bootstrap');
 
-test.before(() => {
-  if (existsSync(TEST_PROJECT)) {
+test.before(async () => {
+  if (await pathExists(TEST_PROJECT)) {
     throw new Error(`${TEST_PROJECT} already exists! Aborting.`);
   }
 
-  spawnSync('mkdir', [TEST_PROJECT]);
-});
+  mkdirSync(TEST_PROJECT);
 
-test.after(() => {
-  removeSync(TEST_PROJECT);
-});
-
-test('can bootstrap a project with `npx near-runner-ava --bootstrap`', t => {
   spawnSync('node', [
     join(__dirname, '../scripts/cli.js'),
     '--bootstrap',
+    '--no-install',
   ], {
     cwd: TEST_PROJECT,
   });
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/package.json`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/node_modules`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/__tests__/main.ava.ts`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/.gitignore`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/ava.config.cjs`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/README.md`));
-  t.assert(existsSync(`${TEST_PROJECT}/near-runner/tsconfig.json`));
-  t.assert(existsSync(`${TEST_PROJECT}/test.bat`));
-  t.assert(existsSync(`${TEST_PROJECT}/test.sh`));
+});
+
+test.after.always(() => {
+  removeSync(TEST_PROJECT);
+});
+
+for (const file of [
+  'near-runner/.gitignore',
+  'near-runner/README.md',
+  'near-runner/__tests__/main.ava.ts',
+  'near-runner/ava.config.cjs',
+  'near-runner/package.json',
+  'near-runner/tsconfig.json',
+  'test.bat',
+  'test.sh',
+]) {
+  test(`bootstrapped project includes '${file}'`, async t => {
+    t.assert(await pathExists(`${TEST_PROJECT}/${file}`));
+  });
+}
+
+test('using --no-install skips installing node_modules', async t => {
+  t.assert(!await pathExists(`${TEST_PROJECT}/near-runner/node_modules`));
+});
+
+test('package.json includes correct version of near-runner-ava', t => {
+  const {version} = require(join(__dirname, '../package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+  const packageJson = require(join(TEST_PROJECT, 'near-runner/package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+  t.is(packageJson.devDependencies!['near-runner-ava'], version); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
 });
