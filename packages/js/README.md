@@ -6,25 +6,25 @@ Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/con
 This software is in early beta and feedback is appreciated.
 
 
-Quick Start with Jest
-=====================
+Quick Start with AVA
+====================
 
-[near-runner-jest](../jest) is a thin wrapper around near-runner-js designed to get you up and running as quickly as possible, with minimal configuration and power-boosts like [TypeScript](https://www.typescriptlang.org/). You can install it with one command. You will need [NodeJS](https://nodejs.dev/) installed. Then:
+[near-runner-ava](../ava) is a thin wrapper around near-runner-js designed to get you up and running as quickly as possible, with minimal configuration and power-boosts like [TypeScript](https://www.typescriptlang.org/). You can install it with one command. You will need [NodeJS](https://nodejs.dev/) installed. Then:
 
-    npx near-runner-jest --bootstrap
+    npx near-runner-ava --bootstrap
 
 This command will:
 
-* Add a `near-runner` directory to the folder where you ran the command. This directory contains all the configuration needed to get you started with near-runner-jest, and a `__tests__` subfolder with a well-commented example test file.
+* Add a `near-runner` directory to the folder where you ran the command. This directory contains all the configuration needed to get you started with near-runner-ava, and a `__tests__` subfolder with a well-commented example test file.
 * Create `test.sh` and `test.bat` scripts in the folder where you ran the command. These can be used to quickly run the tests in `near-runner`. Feel free to integrate test-running into your project in a way that makes more sense for you, and then remove these scripts.
-* Install `near-runner-jest` as a dependency using `npm install --save-dev` (most of the output you see when running the command comes from this step).
+* Install `near-runner-ava` as a dependency using `npm install --save-dev` (most of the output you see when running the command comes from this step).
 
-If you want to install near-runner-jest manually, see [its README](../jest).
+If you want to install near-runner-ava manually, see [its README](../ava).
 
 How It Works
 ============
 
-Let's look at some code that focuses on near-runner itself, without any Jest or other testing logic.
+Let's look at some code that focuses on near-runner itself, without any AVA or other testing logic.
 
 1. Creating a `Runner`.
 
@@ -51,7 +51,7 @@ Let's look at some code that focuses on near-runner itself, without any Jest or 
 
 2. Writing tests.
 
-   near-runner is designed for parallelism. (near-runner-jest exploits this by using Jest's `test.concurrent` under the hood for every `runner.test`). Here's a simple way to get parallel test runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)).
+   near-runner is designed for concurrency (which is why it's a great fit for AVA, which runs tests concurrently by default). Here's a simple way to get concurrent runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)):
 
    ```ts
    await Promise.all([
@@ -177,7 +177,7 @@ Note: Since the testnet accounts are cached, if account creation rate limits are
 Skipping Sandbox-specific tests
 -------------------------------
 
-If some of your tests take advantage of Sandbox-specific features, you can skip these on testnet runs in a couple ways:
+If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in a couple ways:
 
 1. `runSandbox`: Instead of `runner.run`, you can use `runner.runSandbox`:
 
@@ -192,25 +192,23 @@ If some of your tests take advantage of Sandbox-specific features, you can skip 
    ]);
    ```
 
-2. `Runner.getNetworkFromEnv`: Given that the above approach can result in empty test definitions, you can instead skip entire sections of your test files by checking the `Runner.getNetworkFromConfig`. Using Jest syntax:
+2. `Runner.networkIsSandbox`: You can also skip entire sections of your files by checking `Runner.networkIsSandbox` (`Runner.networkIsTestnet` and `Runner.getNetworkFromEnv` are also available).
 
    ```ts
-   describe(`Running on ${Runner.getNetworkFromEnv()}`, () => {
-     let runner = Runner.create(async ({root}) => ({ // note the implicit return
-        contract: await root.createAndDeploy(
-          'contract-account-name',
-          path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
-        )
-     }));
-     test.concurrent('thing that makes sense on any network', async () => {
-       // test basic contract & account interactions
-     });
-     if ('sandbox' === Runner.getNetworkFromEnv()) {
-       test.concurrent('thing that only makes sense with sandbox', async () => {
-         // test with patch-state, fast-forwarding, etc
-       });
-     }
+   let runner = Runner.create(async ({root}) => ({ // note the implicit return
+     contract: await root.createAndDeploy(
+       'contract-account-name',
+       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+     )
+   }));
+   runner.run('thing that makes sense on any network', async ({…}) => {
+     // logic using basic contract & account interactions
    });
+   if (Runner.networkIsSandbox) {
+     runner.run('thing that only makes sense with sandbox', async ({…}) => {
+       // logic using patch-state, fast-forwarding, etc
+     });
+   }
    ```
 
 Patch State on the Fly
