@@ -7,13 +7,12 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import path from 'path';
 import {Runner} from 'near-runner-ava';
 
 const runner = Runner.create(async ({root}) => ({
   contract: await root.createAndDeploy(
     'status-message',
-    path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
+    '__tests__/build/debug/status_message.wasm',
   ),
   ali: await root.createAccount('ali'),
 }));

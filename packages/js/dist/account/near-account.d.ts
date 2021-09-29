@@ -61,7 +61,7 @@ export interface NearAccount {
      * the contract can be initialized in the same step.
      *
      * @param accountId Name of contract to deploy
-     * @param wasm path or data of contract binary
+     * @param wasm path or data of contract binary. If given an absolute path (such as one created with 'path.join(__dirname, …)') will use it directly. If given a relative path such as `res/contract.wasm`, will resolve it from the project root (meaning the location of the package.json file).
      * @param options If any method is passed it will be added to the transaction so that contract will be initialized
      */
     createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, options?: {

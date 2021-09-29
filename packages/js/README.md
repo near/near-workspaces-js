@@ -33,7 +33,7 @@ Let's look at some code that focuses on near-runner itself, without any AVA or o
      const alice = await root.createAccount('alice');
      const contract = await root.createAndDeploy(
        'contract-account-name',
-       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+       'path/to/compiled.wasm'
      );
      return {alice, contract};
    });
@@ -44,7 +44,7 @@ Let's look at some code that focuses on near-runner itself, without any AVA or o
    1. `Runner.create` initializes a new [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox) node/instance. This is essentially a mini-NEAR blockchain created just for this test. Each of these Sandbox instances gets its own data directory and port, so that tests can run in parallel.
    2. `root.createAccount` creates a new account with the given name.
    3. `root.createAndDeploy` creates a new account with the given name, then deploys the specified Wasm file to it.
-   4. `path.join` is a safe cross-platform way to [specify file paths](https://nodejs.org/api/path.html#path_path_join_paths)
+   4. `path/to/compiled.wasm` will resolve relative to your project root. That is, the nearest directory with a `package.json` file, or your current working directory if no `package.json` is found. To construct a path relative to your test file, you can use `path.join(__dirname, '../etc/etc.wasm')` ([more info](https://nodejs.org/api/path.html#path_path_join_paths)).
    5. After `Runner.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
    6. `runner` contains a reference to this data directory, so that multiple tests can use it as a starting point.
    7. The object returned, `{alice, contract}`, will be passed along to subsequent tests.
@@ -129,7 +129,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
      await root.createAccount('alice');
      await root.createAndDeploy(
        'contract-account-name',
-       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+       'path/to/compiled.wasm'
      );
    });
    ```
@@ -198,7 +198,7 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
    let runner = Runner.create(async ({root}) => ({ // note the implicit return
      contract: await root.createAndDeploy(
        'contract-account-name',
-       path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+       'path/to/compiled.wasm'
      )
    }));
    runner.run('thing that makes sense on any network', async ({…}) => {

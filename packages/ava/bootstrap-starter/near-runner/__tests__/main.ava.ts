@@ -1,4 +1,3 @@
-import path from 'path';
 import {Runner} from 'near-runner-ava';
 
 // Set up a `runner` with accounts, contracts, and state that will be used in all tests
@@ -6,7 +5,7 @@ const runner = Runner.create(async ({root}) => {
   const alice = await root.createAccount('alice');
   const contract = await root.createAndDeploy(
     'contract-account-name',
-    path.join(__dirname, '..', '..', 'res', 'compiled.wasm'),
+    'out/main.wasm', // Resolves relative to project root
     {
       method: 'init_method',
       args: {owner_id: root},

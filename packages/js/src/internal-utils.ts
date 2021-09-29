@@ -1,6 +1,8 @@
 import process from 'process';
+import {dirname, join} from 'path';
+import {constants, PathLike} from 'fs';
+import {access} from 'fs/promises';
 import * as fs from 'fs/promises';
-import {PathLike} from 'fs';
 import {promisify} from 'util';
 import {spawn as _spawn} from 'child_process';
 import {URL} from 'url';
@@ -71,3 +73,29 @@ export function isPathLike(something: any): something is URL | string {
   return typeof something === 'string' || something instanceof URL;
 }
 
+/**
+ * Attempts to construct an absolute path to a file given a path relative to a
+ * package.json. Searches through `module.paths` (Node's resolution search
+ * paths) as described in https://stackoverflow.com/a/18721515/249801, then
+ * falls back to using process.cwd() if still not found. Throws an acceptable
+ * user-facing error if no file found.
+ */
+export async function findFile(relativePath: string): Promise<string> {
+  for (const modulePath of module.paths) {
+    try {
+      await access(modulePath, constants.F_OK); // eslint-disable-line no-await-in-loop
+      const absolutePath = join(dirname(modulePath), relativePath);
+      await access(absolutePath, constants.F_OK); // eslint-disable-line no-await-in-loop
+      return absolutePath;
+    } catch {}
+  }
+
+  const cwd = process.cwd();
+  const absolutePath = join(cwd, relativePath);
+  try {
+    await access(absolutePath, constants.F_OK);
+    return absolutePath;
+  } catch {}
+
+  throw new Error(`Could not find '${relativePath}' relative to any package.json file or your current working directory (${cwd})`);
+}

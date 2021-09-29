@@ -11,7 +11,6 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import path from 'path';
 import {Gas, NEAR} from 'near-units';
 import {Runner, createKeyPair} from 'near-runner-ava';
 
@@ -30,7 +29,7 @@ impl Linkdrop {
 const runner = Runner.create(async ({root}) => ({
   linkdrop: await root.createAndDeploy(
     'linkdrop',
-    path.join(__dirname, 'build', 'debug', 'linkdrop.wasm'),
+    '__tests__/build/debug/linkdrop.wasm',
   ),
 }));
 

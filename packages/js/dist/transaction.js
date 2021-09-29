@@ -49,8 +49,15 @@ class Transaction {
         this.actions.push((0, types_1.deleteKey)(types_1.PublicKey.from(publicKey)));
         return this;
     }
+    /**
+     * Deploy given Wasm file to the account.
+     *
+     * @param code path or data of contract binary. If given an absolute path (such as one created with 'path.join(__dirname, …)') will use it directly. If given a relative path such as `res/contract.wasm`, will resolve it from the project root (meaning the location of the package.json file).
+     */
     async deployContractFile(code) {
-        return this.deployContract((0, internal_utils_1.isPathLike)(code) ? await fs.readFile(code) : code);
+        return this.deployContract((0, internal_utils_1.isPathLike)(code)
+            ? await fs.readFile(code.toString().startsWith('/') ? code : await (0, internal_utils_1.findFile)(code.toString()))
+            : code);
     }
     deployContract(code) {
         this.actions.push((0, types_1.deployContract)(code));

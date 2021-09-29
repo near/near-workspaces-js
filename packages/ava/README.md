@@ -62,14 +62,13 @@ Manual Install
    In `main.ava.ts`, set up a `runner` with NEAR accounts, contracts, and state that will be used in all of your tests.
 
    ```ts
-   import path from 'path';
    import {Runner} from 'near-runner-ava';
 
    const runner = Runner.create(async ({root}) => {
       const alice = await root.createAccount('alice');
       const contract = await root.createAndDeploy(
         'contract-account-name',
-        path.join(__dirname, '..', 'path', 'to', 'compiled.wasm'),
+        'path/to/compiled.wasm'
       );
 
       // make other contract calls that you want as a starting point for all tests
