@@ -1,5 +1,6 @@
 {
   "name": "runner-js",
+  "version": "0.0.0",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": "https://github.com/near/runner-js",
   "author": "Near Inc (team@near.org)",
@@ -23,7 +24,7 @@
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
     "lerna": "^4.0.0",
-    "near-runner-ava": "0.0.0",
+    "near-runner-ava": "0.0.1-pre.0",
     "xo": "^0.44.0"
   },
   "engines": {
