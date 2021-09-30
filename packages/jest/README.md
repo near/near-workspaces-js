@@ -1,5 +1,13 @@
+DEPRECATED
+==========
+
+This package has been deprecated in favor of [near-runner-ava](https://www.npmjs.com/package/near-runner-ava), since [Jest's concurrency is unreliable](https://github.com/near/runner-js/pull/63).
+
+If you are interested in resurrecting and maintaining this package, please get in touch with the maintainers of [near-runner](https://github.com/near/runner-js).
+
+
 near-runner + Jest
-==================
+------------------
 
 A thin wrapper around [near-runner] to make it easier to use with [Jest] and [TypeScript]. If you don't want Jest, use near-runner directly.
 
@@ -11,7 +19,7 @@ Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/con
   [TypeScript]: https://www.typescriptlang.org/
 
 Quick Start
-===========
+-----------
 
 `near-runner-jest --bootstrap` is a one-time command to quickly initialize a project with near-runner-jest. You will need [NodeJS] installed. Then:
 
@@ -26,7 +34,7 @@ It will:
   [NodeJS]: https://nodejs.dev/
 
 Manual Install
-==============
+--------------
 
 1. Install.
 
@@ -122,7 +130,7 @@ Manual Install
 See the [`__tests__`](https://github.com/near/runner-js/tree/main/__tests__) directory in near-runner-js for more examples. Remember that you can replace the nested `test.concurrent`…`await runner.run` sequences with `runner.test`.
 
 Configuring Jest
-================
+----------------
 
 By default, near-runner-jest includes a minimal [jest.config.js](./jest.config.js). To override or extend these settings, add your own `jest.config.js` to the root of your project and import near-runner-jest's as a starting point. For example, to set `testMatch` back to [Jest's default](https://jestjs.io/docs/configuration#testmatch-arraystring):
 
