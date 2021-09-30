@@ -31,4 +31,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run tests
-        run: yarn && yarn test:testnet:ci --testNamePattern "Ali sets" 01 && yarn test:testnet:ci account-manager && yarn clean:accounts
+        run: yarn && yarn test:testnet:ci --match 'Ali sets*' '*/01*' && yarn test:testnet:ci '**/account*' && yarn clean:accounts
