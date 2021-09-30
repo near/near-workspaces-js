@@ -1,3 +1,9 @@
+import * as process from 'process';
+
+if (!process.env.NEAR_PRINT_LOGS) {
+  process.env.NEAR_NO_LOGS = 'true';
+}
+
 export * from './runner';
 export * from './runtime';
 export * from './utils';
