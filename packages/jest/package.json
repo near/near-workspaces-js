@@ -2,11 +2,7 @@
   "name": "near-runner-jest",
   "version": "0.2.3",
   "description": "Thin wrapper around near-runner to make it easier to use with Jest and TypeScript",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/near/runner-js.git",
-    "directory": "packages/jest"
-  },
+  "repository": "https://github.com/near/runner-js/tree/353dc213dacab84228b8fe9c0850e6e27481de1e/packages/jest",
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
   "main": "dist/index.js",
