@@ -13,9 +13,9 @@ Write tests once, run them both on [NEAR TestNet](https://docs.near.org/docs/con
 Quick Start
 ===========
 
-`near-runner-ava --bootstrap` is a one-time command to quickly initialize a project with `near-runner-ava`. You will need [NodeJS] installed. Then:
+`near-runner-init` is a one-time command to quickly initialize a project with `near-runner-ava`. You will need [NodeJS] installed. Then:
 
-    npx near-runner-ava --bootstrap
+    npx near-runner-init
 
 It will:
 

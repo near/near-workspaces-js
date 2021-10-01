@@ -5,6 +5,16 @@ const {existsSync} = require('fs');
 const {spawnSync} = require('child_process');
 const {copySync, writeJsonSync} = require('fs-extra');
 
+const HELP = `Bootstrap a project with near-runner-ava. Examples:
+
+    near-runner-init             # Bootstrap a project with near-runner-ava
+    near-runner-init -h, --help  # Print this (for AVA's help, use 'ava --help')`;
+
+if (process.argv.includes('-h') || process.argv.includes('--help')) {
+  console.log(HELP);
+  process.exit(0);
+}
+
 if (existsSync(join(process.cwd(), 'near-runner'))) {
   console.log(
     'near-runner directory exists; perhaps you already bootstrapped?'

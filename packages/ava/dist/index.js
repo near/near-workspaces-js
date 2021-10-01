@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Runner = exports.ava = void 0;
-/* eslint-disable ava/no-ignored-test-files */
 const near_runner_1 = require("near-runner");
 const ava_1 = __importDefault(require("ava")); // eslint-disable-line @typescript-eslint/no-duplicate-imports
 exports.ava = ava_1.default;
