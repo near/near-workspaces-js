@@ -25,7 +25,6 @@
     "husky": "^7.0.1",
     "lerna": "^4.0.0",
     "near-runner-ava": "0.1.0",
-    "near-runner-jest": "0.2.3",
     "xo": "^0.44.0"
   },
   "engines": {
@@ -59,7 +58,6 @@
   "private": true,
   "workspaces": [
     "packages/ava",
-    "packages/jest",
     "packages/js"
   ]
 }

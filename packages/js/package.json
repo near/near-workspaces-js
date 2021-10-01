@@ -30,11 +30,11 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
-    "test:testnet": "NEAR_RUNNER_NETWORK=testnet jest --verbose",
-    "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet jest --verbose",
-    "test:sandbox": "yarn build && jest --verbose",
-    "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true jest --verbose",
-    "test": "jest --verbose && yarn test:testnet",
+    "test:testnet": "NEAR_RUNNER_NETWORK=testnet ava --verbose",
+    "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet ava --verbose",
+    "test:sandbox": "yarn build && ava --verbose",
+    "test:sandbox:ci": "yarn build && NEAR_RUNNER_DEBUG=true ava --verbose",
+    "test": "ava --verbose && yarn test:testnet",
     "clean:accounts": "ts-node ./scripts/delete-accounts.ts"
   },
   "files": [
