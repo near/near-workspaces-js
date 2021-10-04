@@ -1,3 +1,0 @@
-{
-  "extends": "near-runner-jest/tsconfig.jest.json"
-}
