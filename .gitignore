@@ -3,3 +3,4 @@ node_modules/
 .near-credentials/
 coverage
 **/dist/tsconfig.tsbuildinfo
+lerna-debug.log

@@ -24,7 +24,8 @@
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
     "lerna": "^4.0.0",
-    "near-runner-ava": "0.0.1-pre.0",
+    "near-runner-ava": "0.1.0",
+    "near-runner-jest": "0.2.3",
     "xo": "^0.44.0"
   },
   "engines": {
@@ -41,7 +42,10 @@
     },
     "overrides": [
       {
-        "files": ["**/__tests__/**/*.spec.ts", "**/__tests__/**/*.ava.ts"],
+        "files": [
+          "**/__tests__/**/*.spec.ts",
+          "**/__tests__/**/*.ava.ts"
+        ],
         "rules": {
           "@typescript-eslint/no-unsafe-assignment": 0,
           "unicorn/prefer-module": 0,
