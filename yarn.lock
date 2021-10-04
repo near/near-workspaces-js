@@ -6098,6 +6098,21 @@ near-api-js@^0.43.0:
     text-encoding-utf-8 "^1.0.2"
     tweetnacl "^1.0.1"
 
+near-runner-jest@0.2.4:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/near-runner-jest/-/near-runner-jest-0.2.3.tgz#5dad62eb139b51b0d9f5a7d088282d2bcec2e919"
+  integrity sha512-MgS3oUnxlCIRB7u/GJz/+GNVzVZmwAonCFNSA2JoUo5+Roq8BLZxz99sODc/sChwW3J1xg/8A6prtSDgPwDKHQ==
+  dependencies:
+    "@types/bn.js" "^5.1.0"
+    "@types/jest" "^27.0.1"
+    "@types/node" "^16.4.10"
+    fs-extra "^10.0.0"
+    jest "^27.0.6"
+    near-runner "^0.6.4"
+    ts-jest "^27.0.4"
+    ts-node "^10.1.0"
+    typescript "^4.3.5"
+
 near-sandbox@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.6.tgz#d09bdf4bf30cecab1ab4281381903bd6aaabae98"
