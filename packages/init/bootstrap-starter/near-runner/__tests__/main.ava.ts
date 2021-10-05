@@ -1,58 +1,147 @@
+/**
+ * Welcome to near-runner-ava!
+ *
+ * This is a working test which checks the functionality of [the status-message
+ * contract][1]. For quick reference, here's the contract's implementation:
+ *
+ *     impl StatusMessage {
+ *         pub fn set_status(&mut self, message: String) {
+ *             let account_id = env::signer_account_id();
+ *             self.records.insert(&account_id, &message);
+ *         }
+
+ *         pub fn get_status(&self, account_id: String) -> Option<String> {
+ *             return self.records.get(&account_id);
+ *         }
+ *     }
+ *
+ * As you can see, this contract only has two methods, a setter and a getter.
+ * The setter sets a free-form status message for the account that called the
+ * contract. The getter accepts an `account_id` param and returns the status for
+ * that account.
+ *
+ *   [1]: https://github.com/near-examples/rust-status-message/tree/4e4767db257b748950bb3393352e2fff6c8e9b17
+ */
+
+/**
+ * Start off by importing Runner from near-runner-ava. This is usually the only
+ * import you'll need.
+ */
 import {Runner} from 'near-runner-ava';
 
-// Set up a `runner` with accounts, contracts, and state that will be used in all tests
+/**
+ * Create a new runner. In local sandbox mode, this will:
+ *
+ *   - Create a new local blockchain
+ *   - Create the root account for that blockchain (see `root` below)
+ *   - Execute any actions passed to the function
+ *   - Shut down the newly created blockchain, but *save the data*
+ */
 const runner = Runner.create(async ({root}) => {
+  // Create a subaccount of the root account, like `alice.sandbox`
+  // (the actual account name is not guaranteed; you can get it with `alice.accountId`)
   const alice = await root.createAccount('alice');
+
+  // Create a subaccount of the root account, and also deploy a contract to it
   const contract = await root.createAndDeploy(
-    'contract-account-name',
-    'out/main.wasm', // Resolves relative to project root
-    {
-      method: 'init_method',
-      args: {owner_id: root},
-    },
+    // Subaccount name
+    'status-message',
+
+    // Relative path (from package.json location) to the compiled contract file
+    // which will be deployed to this account
+    'compiled-contracts/status_message.wasm',
+
+    // Provide `method` and `args` to call in the same block as the deploy
+    // {
+    //   method: 'init',
+    //   args: {owner_id: root},
+    // },
   );
 
-  // Don't forget to `await` your calls!
-  await alice.call(contract, 'some_setup_function', {arg1: 'some value'});
+  // You can call any other contract methods that you want to be executed at the
+  // beginning of all subsequent tests. In this example, Alice sets her status.
+  // Don'test forget to `await` your calls!
+  await alice.call(contract, 'set_status', {message: 'hello'});
 
+  // Return the accounts that you want available in subsequent tests
+  // (`root` is always available)
   return {alice, contract};
 });
 
-// 'runner.test' is a shortcut added by near-runner-ava.
-// Using raw near-runner and AVA, this would look like:
-//
-//     test('behavior 1', async t => {
-//       await runner.run(async ({alice, contract}) => { … });
-//     });
-runner.test('behavior 1', async (t, {alice, contract}) => {
-  await alice.call(
-    contract,
-    'some_update_function',
-    {some_string_argument: 'cool', some_number_argument: 42},
-  );
+/**
+ * Now you can write some tests! In local sandbox mode, each `runner.test` will:
+ *
+ *   - start a new local blockchain
+ *   - copy the state from the blockchain created in `Runner.create`
+ *   - run concurrently with all other `runner.test` calls, keeping data isolated
+ *   - shut down at the end, forgetting all new data created
+ *
+ * It's also worth knowing that `runner.test` is syntax sugar added by
+ * near-runner-ava. With raw AVA + near-runner, here's how to write a test:
+ *
+ *     import avaTest from 'ava';
+ *     import {Runner} from 'near-runner';
+ *
+ *     const runner = Runner.create(...);
+ *
+ *     avaTest('behavior 1', async test => {
+ *       await runner.run(async ({alice, contract}) => {
+ *         ...
+ *       });
+ *     });
+ *
+ * Instead, with the syntax sugar, you can write this as you see it below –
+ * saving an indentation level and avoiding one extra `await`.
+ * (Extra credit: try rewriting this test using the "sugar-free" syntax.)
+*/
+runner.test('root sets status', async (test, {contract, root}) => {
+  await root.call(contract, 'set_status', {message: 'lol'});
 
-  // `await contract.view` returns an `any` type;
-  // you can tell TypeScript that it's some other type, like `string`
-  const result: string = await contract.view(
-    'some_view_function',
-    {account_id: alice},
+  // Assert that two things are identical using `test.is`
+  test.is(
+    // Note that Root called the contract with `root.call(contract, ...)`, but
+    // you view the contract with `contract.view`, since the account doing the
+    // viewing is irrelevant.
+    await contract.view('get_status', {account_id: root}),
+    'lol',
   );
-
-  // 't' comes from AVA: https://github.com/avajs/ava/blob/main/docs/03-assertions.md
-  t.is(result, 'whatever');
 });
 
-// Tests run concurrently by default; disable if needed: https://github.com/avajs/ava/blob/main/docs/06-configuration.md
-runner.test('behavior 2', async (t, {alice, contract}) => {
-  const result: string = await contract.view(
-    'some_view_function',
-    {account_id: alice},
-  );
-  t.is(result, 'some default');
+runner.test('statuses initialized in Runner.create', async (test, {alice, contract, root}) => {
+  // If you want to store a `view` into a local variable, you can inform
+  // TypeScript what sort of return value you expect.
+  const aliceStatus: string = await contract.view('get_status', {account_id: alice});
+  const rootStatus: string = await contract.view('get_status', {account_id: root});
+
+  test.is(aliceStatus, 'hello');
+
+  // Note that the test above sets a status for `root`, but here it's still
+  // null! This is because tests run asynchronously in isolated environments,
+  // only sharing the starting state created in `Runner.create`.
+  test.is(rootStatus, null);
 });
 
-// You can also use 'root' in your tests
-runner.test('behavior 3', async (t, {root, alice, contract}) => {
-  // When --verbose CLI option is used, 't.log' will print neatly below test output
-  t.log(root, alice, contract);
+runner.test('extra goodies', async (test, {alice, contract, root}) => {
+  // AVA's `test` object has all sorts of handy functions, such as a
+  // nicely-formatted `log` which only shows up if you pass `--verbose` or if
+  // the test fails (the package.json here sets `--verbose`)
+  test.log({
+    alice: alice.accountId,
+    contract: contract.accountId,
+    root: root.accountId,
+  });
+
+  // The Account class from near-runner overrides the default `toJSON` so that
+  // removing `.accountId` from the lines above gives the same behavior.
+  // (This explains something about the example `contract.view` calls above:
+  // you may have noticed that they use things like `{ account_id: root }`
+  // instead of `{ account_id: root.accountId }`.)
+  // Here's a test to prove it; try updating the `test.log` above to see it.
+  test.is(
+    JSON.stringify({alice}), // This is JS shorthand for `{ alice: alice }`
+    JSON.stringify({alice: alice.accountId}),
+  );
 });
+
+// For more example tests, see:
+// https://github.com/near/runner-js/tree/main/__tests__

@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "test": "near-runner-ava"
+    "test": "near-runner-ava --verbose"
   },
   "devDependencies": {
     "near-runner-ava": "filled in by `near-runner-ava --bootstrap`"
