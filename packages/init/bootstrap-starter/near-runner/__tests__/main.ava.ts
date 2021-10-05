@@ -16,7 +16,7 @@
  *     }
  *
  * As you can see, this contract only has two methods, a setter and a getter.
- * The setter sets a free-form status message for the account that called the
+ * The setter sets a status message for the account that signed the call to the
  * contract. The getter accepts an `account_id` param and returns the status for
  * that account.
  *
