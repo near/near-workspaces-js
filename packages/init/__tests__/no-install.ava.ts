@@ -1,15 +1,10 @@
 import process from 'process';
 import {join} from 'path';
 import {spawnSync} from 'child_process';
-import {pathExists, removeSync, mkdirSync} from 'fs-extra';
+import {mkdirSync, pathExists, removeSync} from 'fs-extra';
 import test from 'ava';
 
-// Note that TEST_PROJECT is nested within the `near-runner` monorepo, so it has
-// access to monorepo's dependencies. This makes it easy to check that tests
-// pass in the newly-created project without wasting time on an `npm install`,
-// but it could also lead to mismatches between this test and real-world uses
-// of `near-runner-init`.
-const TEST_PROJECT = join(process.cwd(), 'test-near-runner-init');
+export const TEST_PROJECT = join(process.cwd(), 'test-near-runner-init');
 
 test.before(async () => {
   if (await pathExists(TEST_PROJECT)) {
@@ -18,10 +13,7 @@ test.before(async () => {
 
   mkdirSync(TEST_PROJECT);
 
-  spawnSync('node', [
-    join(__dirname, '../scripts/cli.js'),
-    '--no-install',
-  ], {
+  spawnSync('node', [join(__dirname, './cli.js'), '--no-install'], {
     cwd: TEST_PROJECT,
   });
 });
@@ -55,7 +47,7 @@ test('package.json includes correct version of near-runner-ava', t => {
   t.is(packageJson.devDependencies!['near-runner-ava'], version); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
 });
 
-test('tests pass in new project', t => {
+test('tests pass in new project since it is nested in monorepo and has access to monorepo dependencies', t => {
   const testRun = spawnSync('yarn', [
     'test',
     '--verbose',
