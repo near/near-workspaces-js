@@ -20,6 +20,9 @@
  * contract. The getter accepts an `account_id` param and returns the status for
  * that account.
  *
+ * The tests below create a local blockchain with this contract deployed to
+ * one account and two more accounts which store statuses in the contract.
+ *
  *   [1]: https://github.com/near-examples/rust-status-message/tree/4e4767db257b748950bb3393352e2fff6c8e9b17
  */
 
@@ -73,6 +76,7 @@ const runner = Runner.create(async ({root}) => {
  *
  *   - start a new local blockchain
  *   - copy the state from the blockchain created in `Runner.create`
+ *   - get access to the accounts created in `Runner.create` using the same variable names
  *   - run concurrently with all other `runner.test` calls, keeping data isolated
  *   - shut down at the end, forgetting all new data created
  *
@@ -81,6 +85,8 @@ const runner = Runner.create(async ({root}) => {
  *
  *     import avaTest from 'ava';
  *     import {Runner} from 'near-runner';
+ *     // Alternatively, you can import Runner and ava both from near-runner-ava:
+ *     // import {ava as avaTest, Runner} from 'near-runner-ava';
  *
  *     const runner = Runner.create(...);
  *
@@ -95,6 +101,7 @@ const runner = Runner.create(async ({root}) => {
  * (Extra credit: try rewriting this test using the "sugar-free" syntax.)
 */
 runner.test('root sets status', async (test, {contract, root}) => {
+  // Don't forget to `await` your calls!
   await root.call(contract, 'set_status', {message: 'lol'});
 
   // Assert that two things are identical using `test.is`
@@ -108,7 +115,7 @@ runner.test('root sets status', async (test, {contract, root}) => {
 });
 
 runner.test('statuses initialized in Runner.create', async (test, {alice, contract, root}) => {
-  // If you want to store a `view` into a local variable, you can inform
+  // If you want to store a `view` in a local variable, you can inform
   // TypeScript what sort of return value you expect.
   const aliceStatus: string = await contract.view('get_status', {account_id: alice});
   const rootStatus: string = await contract.view('get_status', {account_id: root});
@@ -116,27 +123,35 @@ runner.test('statuses initialized in Runner.create', async (test, {alice, contra
   test.is(aliceStatus, 'hello');
 
   // Note that the test above sets a status for `root`, but here it's still
-  // null! This is because tests run asynchronously in isolated environments,
-  // only sharing the starting state created in `Runner.create`.
+  // null! This is because tests run concurrently in isolated environments.
   test.is(rootStatus, null);
 });
 
 runner.test('extra goodies', async (test, {alice, contract, root}) => {
-  // AVA's `test` object has all sorts of handy functions, such as a
-  // nicely-formatted `log` which only shows up if you pass `--verbose` or if
-  // the test fails (the package.json here sets `--verbose`)
+  /**
+   * AVA's `test` object has all sorts of handy functions. For example: `test.log`.
+   * This is better than `console.log` in a couple ways:
+   *
+   *   - The log output only shows up if you pass `--verbose` or if the test fails.
+   *   - The output is nicely-formatted, right below the rest of the test output.
+   *
+   * Try it out using `npm run test -- --verbose` (with yarn: `yarn test --verbose`),
+   * or by adding `--verbose` to the `test` script in package.json
+   */
   test.log({
     alice: alice.accountId,
     contract: contract.accountId,
     root: root.accountId,
   });
 
-  // The Account class from near-runner overrides the default `toJSON` so that
-  // removing `.accountId` from the lines above gives the same behavior.
-  // (This explains something about the example `contract.view` calls above:
-  // you may have noticed that they use things like `{ account_id: root }`
-  // instead of `{ account_id: root.accountId }`.)
-  // Here's a test to prove it; try updating the `test.log` above to see it.
+  /**
+   * The Account class from near-runner overrides `toJSON` so that removing
+   * `.accountId` from the lines above gives the same behavior.
+   * (This explains something about the example `contract.view` calls above:
+   * you may have noticed that they use things like `{account_id: root}`
+   * instead of `{account_id: root.accountId}`.)
+   * Here's a test to prove it; try updating the `test.log` above to see it.
+   */
   test.is(
     JSON.stringify({alice}), // This is JS shorthand for `{ alice: alice }`
     JSON.stringify({alice: alice.accountId}),
