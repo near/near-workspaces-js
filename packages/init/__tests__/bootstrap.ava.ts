@@ -4,11 +4,16 @@ import {spawnSync} from 'child_process';
 import {pathExists, removeSync, mkdirSync} from 'fs-extra';
 import test from 'ava';
 
-const TEST_PROJECT = join(process.cwd(), '../test-near-runner-init');
+// Note that TEST_PROJECT is nested within the `near-runner` monorepo, so it has
+// access to monorepo's dependencies. This makes it easy to check that tests
+// pass in the newly-created project without wasting time on an `npm install`,
+// but it could also lead to mismatches between this test and real-world uses
+// of `near-runner-init`.
+const TEST_PROJECT = join(process.cwd(), 'test-near-runner-init');
 
 test.before(async () => {
   if (await pathExists(TEST_PROJECT)) {
-    throw new Error(`${TEST_PROJECT} already exists! Aborting.`);
+    removeSync(TEST_PROJECT);
   }
 
   mkdirSync(TEST_PROJECT);
@@ -48,4 +53,25 @@ test('package.json includes correct version of near-runner-ava', t => {
   const {version} = require(join(__dirname, '../package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const packageJson = require(join(TEST_PROJECT, 'near-runner/package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   t.is(packageJson.devDependencies!['near-runner-ava'], version); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+});
+
+test('tests pass in new project', t => {
+  const testRun = spawnSync('yarn', [
+    'test',
+    '--verbose',
+  ], {
+    cwd: join(TEST_PROJECT, 'near-runner'),
+  });
+
+  const {status} = testRun;
+  const stderr = testRun.stderr.toString();
+  const stdout = testRun.stdout.toString();
+  t.log(stdout);
+  t.log(stderr);
+
+  if (status === 0) {
+    t.regex(stdout, /tests passed/);
+  } else {
+    t.fail(`"npm run test" failed with exit code ${status}`);
+  }
 });
