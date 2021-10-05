@@ -54,7 +54,7 @@ const runner = Runner.create(async ({root}) => {
     // which will be deployed to this account
     'compiled-contracts/status_message.wasm',
 
-    // Provide `method` and `args` to call in the same block as the deploy
+    // Provide `method` and `args` to call in the same transaction as the deploy
     // {
     //   method: 'init',
     //   args: {owner_id: root},
