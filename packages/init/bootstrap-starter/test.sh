@@ -5,4 +5,4 @@
 # and only runs the tests in the `near-runner` folder.
 cd near-runner
 npm install
-npm run test
+npm run test -- $@ # pass along any CLI flags, such as `--verbose`

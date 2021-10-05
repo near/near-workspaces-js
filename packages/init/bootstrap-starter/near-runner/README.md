@@ -8,3 +8,13 @@ If you want to run `near-runner-ava` or `ava` directly, you can use [npx](https:
 
     npx near-runner-ava --help
     npx ava --help
+
+To run only one test file:
+
+    npm run test "**/main*"         # matches test files starting with "main"
+    npm run test "**/whatever/**/*" # matches test files in the "whatever" directory
+
+To run only one test:
+
+    npm run test -- -m "root sets*" # matches tests with titles starting with "root sets"
+    yarn test -m "root sets*"       # same thing using yarn instead of npm, see https://yarnpkg.com/
