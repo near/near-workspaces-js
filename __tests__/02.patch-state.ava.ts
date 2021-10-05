@@ -12,7 +12,6 @@
  */
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
-import path from 'path';
 import * as borsh from 'borsh';
 import {NEAR} from 'near-units';
 import {Runner} from 'near-runner-ava';
@@ -21,7 +20,7 @@ if (Runner.networkIsSandbox()) {
   const runner = Runner.create(async ({root}) => {
     const contract = await root.createAndDeploy(
       'status-message',
-      path.join(__dirname, 'build', 'debug', 'status_message.wasm'),
+      '__tests__/build/debug/status_message.wasm',
     );
     const ali = await root.createAccount('ali');
     return {contract, ali};

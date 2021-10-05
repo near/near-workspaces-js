@@ -13,7 +13,6 @@
  *   tests below initiate chains of transactions using near-runner's transaction
  *   builder. Search for `createTransaction` below.
  */
-import path from 'path';
 import {Runner, BN, NearAccount, captureError} from 'near-runner-ava';
 
 const STORAGE_BYTE_COST = '10000000000000000000';
@@ -48,11 +47,11 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
 const runner = Runner.create(async ({root}) => ({
   ft: await root.createAndDeploy(
     'fungible-token',
-    path.join(__dirname, 'build', 'debug', 'fungible_token.wasm'),
+    '__tests__/build/debug/fungible_token.wasm',
   ),
   defi: await root.createAndDeploy(
     'defi',
-    path.join(__dirname, 'build', 'debug', 'defi.wasm'),
+    '__tests__/build/debug/defi.wasm',
   ),
   ali: await root.createAccount('ali'),
 }));

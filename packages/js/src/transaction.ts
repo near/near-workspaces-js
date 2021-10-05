@@ -21,7 +21,7 @@ import {
   KeyPair,
   NamedAccount,
 } from './types';
-import {isPathLike} from './internal-utils';
+import {findFile, isPathLike} from './internal-utils';
 import {NO_DEPOSIT} from './utils';
 
 export abstract class Transaction {
@@ -57,8 +57,18 @@ export abstract class Transaction {
     return this;
   }
 
+  /**
+   * Deploy given Wasm file to the account.
+   *
+   * @param code path or data of contract binary. If given an absolute path (such as one created with 'path.join(__dirname, …)') will use it directly. If given a relative path such as `res/contract.wasm`, will resolve it from the project root (meaning the location of the package.json file).
+   */
   async deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction> {
-    return this.deployContract(isPathLike(code) ? await fs.readFile(code) : code);
+    return this.deployContract(isPathLike(code)
+      ? await fs.readFile(
+        code.toString().startsWith('/') ? code : await findFile(code.toString()),
+      )
+      : code,
+    );
   }
 
   deployContract(code: Uint8Array | Buffer): this {
