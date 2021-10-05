@@ -90,8 +90,8 @@ const runner = Runner.create(async ({root}) => {
  *
  *     const runner = Runner.create(...);
  *
- *     avaTest('behavior 1', async test => {
- *       await runner.run(async ({alice, contract}) => {
+ *     avaTest('root sets status', async test => {
+ *       await runner.run(async ({contract, root}) => {
  *         ...
  *       });
  *     });
