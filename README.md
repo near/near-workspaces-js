@@ -21,7 +21,7 @@ This command will:
 
 * Add a `near-runner` directory to the folder where you ran the command. This directory contains all the configuration needed to get you started with near-runner-ava, and a `__tests__` subfolder with a well-commented example test file.
 * Create `test.sh` and `test.bat` scripts in the folder where you ran the command. These can be used to quickly run the tests in `near-runner`. Feel free to integrate test-running into your project in a way that makes more sense for you, and then remove these scripts.
-* Install NPM dependencies using `npm install`. Most of the output you see when running the command comes from this step. You can skip this: `npx near-runner-ava --bootstrap --no-install`.
+* Install NPM dependencies using `npm install`. Most of the output you see when running the command comes from this step. You can skip this: `npx near-runner-init --no-install`.
 
 
 Manual Install

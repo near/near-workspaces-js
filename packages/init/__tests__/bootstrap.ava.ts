@@ -4,7 +4,7 @@ import {spawnSync} from 'child_process';
 import {pathExists, removeSync, mkdirSync} from 'fs-extra';
 import test from 'ava';
 
-const TEST_PROJECT = join(process.cwd(), '../test-near-runner-ava-bootstrap');
+const TEST_PROJECT = join(process.cwd(), '../test-near-runner-init');
 
 test.before(async () => {
   if (await pathExists(TEST_PROJECT)) {
@@ -15,7 +15,6 @@ test.before(async () => {
 
   spawnSync('node', [
     join(__dirname, '../scripts/cli.js'),
-    '--bootstrap',
     '--no-install',
   ], {
     cwd: TEST_PROJECT,
