@@ -57,7 +57,7 @@
   },
   "private": true,
   "workspaces": [
-    "packages/ava",
-    "packages/js"
+    "packages/js",
+    "packages/ava"
   ]
 }
