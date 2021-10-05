@@ -34,11 +34,10 @@ Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { r
 const url_1 = require("url");
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
-// @ts-expect-error no typings
-const getBinary_1 = __importDefault(require("near-sandbox/getBinary"));
+const getBinary_1 = require("near-sandbox/dist/getBinary");
 const fs_extra_1 = __importDefault(require("fs-extra"));
 exports.rm = (0, util_1.promisify)(rimraf_1.default);
-const sandboxBinary = () => (0, getBinary_1.default)().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+const sandboxBinary = async () => ((0, getBinary_1.getBinary)());
 exports.sandboxBinary = sandboxBinary;
 async function exists(d) {
     let file;
@@ -54,22 +53,11 @@ async function exists(d) {
     return true;
 }
 exports.exists = exists;
-async function asyncSpawn(...args) {
-    debug(`spawning \`${(0, exports.sandboxBinary)()} ${args.join(' ')}\``);
-    return (0, promisify_child_process_1.spawn)((0, exports.sandboxBinary)(), args, { encoding: 'utf8' });
+async function asyncSpawn(bin, ...args) {
+    debug(`spawning \`${bin} ${args.join(' ')}\``);
+    return (0, promisify_child_process_1.spawn)(bin, args, { encoding: 'utf8' });
 }
 exports.asyncSpawn = asyncSpawn;
-async function install() {
-    const runPath = require.resolve('near-sandbox/install');
-    try {
-        debug(`spawning \`node ${runPath}\``);
-        await (0, promisify_child_process_1.spawn)('node', [runPath]);
-    }
-    catch (error) {
-        console.error(error);
-        throw new Error('Failed to install binary');
-    }
-}
 function debug(...args) {
     if (process_1.default.env.NEAR_RUNNER_DEBUG) {
         console.error(...args);
@@ -84,11 +72,11 @@ function txDebug(tx) {
 exports.txDebug = txDebug;
 exports.copyDir = (0, util_1.promisify)(fs_extra_1.default.copy);
 async function ensureBinary() {
-    const binPath = (0, exports.sandboxBinary)();
-    if (!await exists(binPath)) {
-        debug(`binPath=${binPath} doesn't yet exist; installing`);
-        await install();
+    const binary = await (0, exports.sandboxBinary)();
+    if (!await binary.exists()) {
+        await binary.install();
     }
+    return binary.binPath;
 }
 exports.ensureBinary = ensureBinary;
 function isPathLike(something) {

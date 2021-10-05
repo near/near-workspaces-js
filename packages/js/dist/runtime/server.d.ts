@@ -1,6 +1,7 @@
 import { Config } from '../interfaces';
 export declare class SandboxServer {
     private static lastPort;
+    private static binPath;
     private subprocess;
     private readyToDie;
     private readonly config;

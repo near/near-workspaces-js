@@ -8,13 +8,13 @@ import {spawn as _spawn} from 'child_process';
 import {URL} from 'url';
 import {spawn as _asyncSpawn} from 'promisify-child-process';
 import rimraf from 'rimraf';
-// @ts-expect-error no typings
-import getBinary from 'near-sandbox/getBinary';
+import {Binary} from 'near-sandbox';
+import {getBinary} from 'near-sandbox/dist/getBinary';
 import fs_extra from 'fs-extra';
 import {ChildProcessPromise} from './types';
 
 export const rm = promisify(rimraf);
-export const sandboxBinary: () => string = () => getBinary().binaryPath; // eslint-disable-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+export const sandboxBinary: () => Promise<Binary> = async () => (getBinary());
 
 export async function exists(d: PathLike): Promise<boolean> {
   let file: fs.FileHandle | undefined;
@@ -29,20 +29,9 @@ export async function exists(d: PathLike): Promise<boolean> {
   return true;
 }
 
-export async function asyncSpawn(...args: string[]): ChildProcessPromise {
-  debug(`spawning \`${sandboxBinary()} ${args.join(' ')}\``);
-  return _asyncSpawn(sandboxBinary(), args, {encoding: 'utf8'});
-}
-
-async function install(): Promise<void> {
-  const runPath = require.resolve('near-sandbox/install');
-  try {
-    debug(`spawning \`node ${runPath}\``);
-    await _asyncSpawn('node', [runPath]);
-  } catch (error: unknown) {
-    console.error(error);
-    throw new Error('Failed to install binary');
-  }
+export async function asyncSpawn(bin: string, ...args: string[]): ChildProcessPromise {
+  debug(`spawning \`${bin} ${args.join(' ')}\``);
+  return _asyncSpawn(bin, args, {encoding: 'utf8'});
 }
 
 export {_spawn as spawn};
@@ -61,12 +50,13 @@ export function txDebug(tx: string): void {
 
 export const copyDir = promisify(fs_extra.copy);
 
-export async function ensureBinary(): Promise<void> {
-  const binPath = sandboxBinary();
-  if (!await exists(binPath)) {
-    debug(`binPath=${binPath} doesn't yet exist; installing`);
-    await install();
+export async function ensureBinary(): Promise<string> {
+  const binary = await sandboxBinary();
+  if (!await binary.exists()) {
+    await binary.install();
   }
+
+  return binary.binPath;
 }
 
 export function isPathLike(something: any): something is URL | string {
