@@ -61,7 +61,7 @@ const runner = Runner.create(async ({root}) => {
     // },
   );
 
-  // You can call any other contract methods that you want to be executed at the
+  // You can call any contract methods that you want executed before the
   // beginning of all subsequent tests. In this example, Alice sets her status.
   // Don't forget to `await` your calls!
   await alice.call(contract, 'set_status', {message: 'hello'});
