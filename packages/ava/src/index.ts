@@ -1,4 +1,3 @@
-/* eslint-disable ava/no-ignored-test-files */
 import {CreateRunnerFn, Config, Runner as RawRunner, AccountArgs, NearRuntime} from 'near-runner';
 import * as ava from 'ava'; // eslint-disable-line ava/use-test
 import test from 'ava'; // eslint-disable-line @typescript-eslint/no-duplicate-imports

@@ -1,0 +1,30 @@
+{
+  "name": "near-runner-init",
+  "version": "0.1.0",
+  "description": "Quickly bootstrap a project with near-runner-ava",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/near/runner-js.git",
+    "directory": "packages/init"
+  },
+  "author": "Near Inc <team@near.org>",
+  "license": "(MIT AND Apache-2.0)",
+  "main": "scripts/cli.js",
+  "bin": {
+    "near-runner-init": "scripts/cli.js"
+  },
+  "files": [
+    "scripts/cli.js",
+    "bootstrap-starter"
+  ],
+  "scripts": {
+    "build": "exit 0"
+  },
+  "dependencies": {
+    "fs-extra": "^10.0.0"
+  },
+  "engines": {
+    "node": "^14.17.0 || >=16.0.0",
+    "npm": ">= 6.0.0"
+  }
+}

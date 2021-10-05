@@ -37,7 +37,8 @@
       "unicorn/prefer-node-protocol": 0,
       "unicorn/prefer-module": 0,
       "unicorn/no-array-callback-reference": 0,
-      "node/prefer-global/url": 0
+      "node/prefer-global/url": 0,
+      "ava/no-ignored-test-files": 0
     },
     "overrides": [
       {
@@ -58,6 +59,7 @@
   "private": true,
   "workspaces": [
     "packages/js",
-    "packages/ava"
+    "packages/ava",
+    "packages/init"
   ]
 }

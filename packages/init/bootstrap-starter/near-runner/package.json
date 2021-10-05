@@ -4,6 +4,6 @@
     "test": "near-runner-ava"
   },
   "devDependencies": {
-    "near-runner-ava": "filled in by `near-runner-ava --bootstrap`"
+    "near-runner-ava": "filled in by `near-runner-init`"
   }
 }
