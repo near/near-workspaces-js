@@ -120,7 +120,7 @@ export interface NearAccount {
   ): Promise<T | string>;
 
   /**
-   * Get full response from RPC about result of view methood
+   * Get full response from RPC about result of view method
    * @param method contract method
    * @param args args to pass to method if required
    */
