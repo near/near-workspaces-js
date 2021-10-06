@@ -13,7 +13,7 @@ test.before(async () => {
 
   mkdirSync(TEST_PROJECT);
 
-  spawnSync('node', [join(__dirname, './cli.js'), '--no-install'], {
+  spawnSync('node', [join(__dirname, '../scripts/cli.js'), '--no-install'], {
     cwd: TEST_PROJECT,
   });
 });
@@ -56,10 +56,10 @@ test('tests pass in new project since it is nested in monorepo and has access to
   });
 
   const {status} = testRun;
-  const stderr = testRun.stderr.toString();
-  const stdout = testRun.stdout.toString();
-  t.log(stdout);
-  t.log(stderr);
+  const stderr = testRun.stderr?.toString();
+  const stdout = testRun.stdout?.toString();
+  t.log('stdout:', stdout);
+  t.log('stderr:', stderr);
 
   if (status === 0) {
     t.regex(stdout, /tests passed/);
