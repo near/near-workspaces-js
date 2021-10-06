@@ -18,7 +18,8 @@
     "dist/",
     "tsconfig.ava.json",
     "ava.config.cjs",
-    "scripts/cli.js"
+    "scripts/cli.js",
+    "setup.js"
   ],
   "scripts": {
     "build": "tsc",
