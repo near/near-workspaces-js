@@ -80,7 +80,7 @@ Manual Install
 4. Write tests.
 
    ```ts
-    runner.test("does something", async (t, { alice, contract }) => {
+    runner.test("does something", async (test, { alice, contract }) => {
       await alice.call(contract, "some_update_function", {
         some_string_argument: "cool",
         some_number_argument: 42,
@@ -89,24 +89,24 @@ Manual Install
         account_id: alice,
       });
       // When --verbose option is used this will print neatly underneath the test in the output.
-      t.log(result)
-      t.is(result, "whatever");
+      test.log(result)
+      test.is(result, "whatever");
     });
 
-    runner.test("does something else", async (t, { alice, contract }) => {
+    runner.test("does something else", async (test, { alice, contract }) => {
       const result = await contract.view("some_view_function", {
         account_id: alice,
       });
-      t.is(result, "some default");
+      test.is(result, "some default");
     });
     ```
 
     `runner.test` is added to `near-runner` by `near-runner-ava`, and is shorthand for:
 
     ```ts
-    import test from 'ava';
+    import avaTest from 'ava';
 
-    test('does something', async (t) => {
+    avaTest('does something', async test => {
       await runner.run(async ({…}) => {
         // tests go here
       });

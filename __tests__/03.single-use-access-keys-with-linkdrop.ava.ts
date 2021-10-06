@@ -33,7 +33,7 @@ const runner = Runner.create(async ({root}) => ({
   ),
 }));
 
-runner.test('Use `create_account_and_claim` to create a new account', async (t, {root, linkdrop}) => {
+runner.test('Use `create_account_and_claim` to create a new account', async (test, {root, linkdrop}) => {
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
@@ -60,15 +60,15 @@ runner.test('Use `create_account_and_claim` to create a new account', async (t, 
   );
   const bob = root.getAccount(new_account_id);
   const balance = await bob.availableBalance();
-  t.log(balance.toHuman());
-  t.deepEqual(balance, NEAR.parse('0.99818'));
+  test.log(balance.toHuman());
+  test.deepEqual(balance, NEAR.parse('0.99818'));
 
-  t.log(
+  test.log(
     `Account ${new_account_id} claim and has ${balance.toHuman()} available`,
   );
 });
 
-runner.test('Use `claim` to transfer to an existing account', async (t, {root, linkdrop}) => {
+runner.test('Use `claim` to transfer to an existing account', async (test, {root, linkdrop}) => {
   const bob = await root.createAccount('bob');
   const originalBalance = await bob.availableBalance();
   // Create temporary keys for access key on linkdrop
@@ -93,9 +93,9 @@ runner.test('Use `claim` to transfer to an existing account', async (t, {root, l
   );
 
   const newBalance = await bob.availableBalance();
-  t.assert(originalBalance.lt(newBalance));
+  test.assert(originalBalance.lt(newBalance));
 
-  t.log(
+  test.log(
     `${bob.accountId} claimed ${newBalance
       .sub(originalBalance).toHuman()}`,
   );

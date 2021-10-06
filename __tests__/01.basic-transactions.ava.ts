@@ -17,30 +17,30 @@ const runner = Runner.create(async ({root}) => ({
   ali: await root.createAccount('ali'),
 }));
 
-runner.test('Root gets null status', async (t, {contract, root}) => {
+runner.test('Root gets null status', async (test, {contract, root}) => {
   const result = await contract.view('get_status', {
     account_id: root,
   });
-  t.is(result, null);
+  test.is(result, null);
 });
 
-runner.test('Ali sets then gets status', async (t, {contract, ali}) => {
+runner.test('Ali sets then gets status', async (test, {contract, ali}) => {
   await ali.call(contract, 'set_status', {message: 'hello'});
   const result: string = await contract.view('get_status', {
     account_id: ali,
   });
-  t.is(result, 'hello');
+  test.is(result, 'hello');
 });
 
-runner.test('Root and Ali have different statuses', async (t, {contract, root, ali}) => {
+runner.test('Root and Ali have different statuses', async (test, {contract, root, ali}) => {
   await root.call(contract, 'set_status', {message: 'world'});
   const rootStatus: string = await contract.view('get_status', {
     account_id: root,
   });
-  t.is(rootStatus, 'world');
+  test.is(rootStatus, 'world');
 
   const aliStatus = await contract.view('get_status', {
     account_id: ali,
   });
-  t.is(aliStatus, null);
+  test.is(aliStatus, null);
 });
