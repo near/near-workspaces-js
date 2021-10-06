@@ -3,4 +3,4 @@
 :: and only runs the tests in the `near-runner` folder.
 cd near-runner
 npm install
-npm run test
+npm run test -- %*
