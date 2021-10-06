@@ -17,7 +17,7 @@
     "test": "yarn test:sandbox && yarn test:testnet",
     "prepare": "husky install",
     "release": "yarn lerna publish",
-    "release:prerelease": "yarn publish --dist-tag next"
+    "release:prerelease": "yarn release --dist-tag next"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
