@@ -25,7 +25,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxServer = void 0;
 const buffer_1 = require("buffer");
 const process_1 = __importDefault(require("process"));
-const fs_1 = require("fs");
+const promises_1 = require("fs/promises");
 const path_1 = require("path");
 const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
@@ -145,7 +145,7 @@ class SandboxServer {
             this.subprocess = (0, internal_utils_1.spawn)(SandboxServer.binPath, args, {
                 env: { RUST_BACKTRACE: 'full' },
                 // @ts-expect-error FileHandle not assignable to Stream | IOType
-                stdio: ['ignore', 'ignore', await fs_1.promises.open(filePath, 'a')],
+                stdio: ['ignore', 'ignore', await (0, promises_1.open)(filePath, 'a')],
             });
         }
         else {

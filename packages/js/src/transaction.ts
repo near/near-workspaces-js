@@ -1,5 +1,5 @@
 import {Buffer} from 'buffer';
-import {promises as fs} from 'fs';
+import * as fs from 'fs/promises';
 import {URL} from 'url';
 import {NEAR} from 'near-units';
 import {TransactionResult} from './transaction-result';

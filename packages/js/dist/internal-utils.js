@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,6 +26,8 @@ exports.findFile = exports.isPathLike = exports.ensureBinary = exports.copyDir =
 const process_1 = __importDefault(require("process"));
 const path_1 = require("path");
 const fs_1 = require("fs");
+const promises_1 = require("fs/promises");
+const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
 const child_process_1 = require("child_process");
 Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
@@ -21,7 +42,7 @@ exports.sandboxBinary = sandboxBinary;
 async function exists(d) {
     let file;
     try {
-        file = await fs_1.promises.open(d, 'r');
+        file = await fs.open(d, 'r');
     }
     catch {
         return false;
@@ -72,9 +93,9 @@ exports.isPathLike = isPathLike;
 async function findFile(relativePath) {
     for (const modulePath of module.paths) {
         try {
-            await fs_1.promises.access(modulePath, fs_1.constants.F_OK); // eslint-disable-line no-await-in-loop
+            await (0, promises_1.access)(modulePath, fs_1.constants.F_OK); // eslint-disable-line no-await-in-loop
             const absolutePath = (0, path_1.join)((0, path_1.dirname)(modulePath), relativePath);
-            await fs_1.promises.access(absolutePath, fs_1.constants.F_OK); // eslint-disable-line no-await-in-loop
+            await (0, promises_1.access)(absolutePath, fs_1.constants.F_OK); // eslint-disable-line no-await-in-loop
             return absolutePath;
         }
         catch { }
@@ -82,7 +103,7 @@ async function findFile(relativePath) {
     const cwd = process_1.default.cwd();
     const absolutePath = (0, path_1.join)(cwd, relativePath);
     try {
-        await fs_1.promises.access(absolutePath, fs_1.constants.F_OK);
+        await (0, promises_1.access)(absolutePath, fs_1.constants.F_OK);
         return absolutePath;
     }
     catch { }

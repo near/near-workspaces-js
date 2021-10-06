@@ -1,5 +1,5 @@
 import * as process from 'process';
-import { promises as fs } from 'fs';
+import * as fs from 'fs/promises';
 import {join, parse} from 'path';
 
 import {KeyPair, NearAccount, Runner, TransactionResult} from '..';

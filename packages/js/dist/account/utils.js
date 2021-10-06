@@ -1,10 +1,29 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sanitize = exports.hashPathBase64 = exports.getKeyFromFile = exports.callsites = exports.findCallerFile = void 0;
-const fs_1 = require("fs");
+const fs = __importStar(require("fs/promises"));
 const buffer_1 = require("buffer");
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const base64url_1 = __importDefault(require("base64url"));
@@ -38,7 +57,7 @@ async function getKeyFromFile(filePath, create = true) {
             throw error;
         }
         const keyPair = types_1.KeyPairEd25519.fromRandom();
-        await fs_1.promises.writeFile(filePath, JSON.stringify({
+        await fs.writeFile(filePath, JSON.stringify({
             secret_key: keyPair.toString(),
         }));
         return keyPair;
