@@ -1,6 +1,6 @@
 {
   "name": "near-runner-init",
-  "version": "0.1.0",
+  "version": "0.1.1-alpha.0",
   "description": "Quickly bootstrap a project with near-runner-ava",
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "fs-extra": "^10.0.0"
   },
   "engines": {
-    "node": "^14.17.0 || >=16.0.0",
+    "node": ">= 14.0.0",
     "npm": ">= 6.0.0"
   }
 }

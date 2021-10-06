@@ -1,6 +1,6 @@
 {
   "name": "near-runner",
-  "version": "0.6.4",
+  "version": "0.6.5-alpha.0",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": {
     "type": "git",
@@ -43,7 +43,7 @@
     "core_contracts"
   ],
   "engines": {
-    "node": "^14.17.0 || >=16.0.0",
+    "node": ">= 14.0.0",
     "npm": ">= 6.0.0"
   }
 }
