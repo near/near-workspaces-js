@@ -53,7 +53,7 @@ if (Runner.networkIsSandbox()) {
     ],
   ]);
 
-  runner.test('View state', async (t, {contract, ali}) => {
+  runner.test('View state', async (test, {contract, ali}) => {
     await ali.call(contract, 'set_status', {message: 'hello'});
 
     const state = await contract.viewState();
@@ -68,12 +68,12 @@ if (Runner.networkIsSandbox()) {
       data,
     );
 
-    t.deepEqual(statusMessage.records[0],
+    test.deepEqual(statusMessage.records[0],
       new Record({k: ali.accountId, v: 'hello'}),
     );
   });
 
-  runner.test('Patch state', async (t, {contract, ali}) => {
+  runner.test('Patch state', async (test, {contract, ali}) => {
     // Contract must have some state for viewState & patchState to work
     await ali.call(contract, 'set_status', {message: 'hello'});
     // Get state
@@ -96,10 +96,10 @@ if (Runner.networkIsSandbox()) {
     const result = await contract.view('get_status', {
       account_id: 'alice.near',
     });
-    t.is(result, 'hello world');
+    test.is(result, 'hello world');
   });
 
-  runner.test('Patch Account', async (t, {root, ali, contract}) => {
+  runner.test('Patch Account', async (test, {root, ali, contract}) => {
     const bob = root.getFullAccount('bob');
     const public_key = await bob.setKey();
     const {code_hash} = await contract.accountView();
@@ -119,11 +119,11 @@ if (Runner.networkIsSandbox()) {
     await bob.updateContract(await contract.viewCode());
 
     const balance = await bob.availableBalance();
-    t.deepEqual(balance, BOB_BALANCE);
+    test.deepEqual(balance, BOB_BALANCE);
     await ali.call(bob, 'set_status', {message: 'hello'});
     const result = await bob.view('get_status', {
       account_id: ali.accountId,
     });
-    t.is(result, 'hello');
+    test.is(result, 'hello');
   });
 }

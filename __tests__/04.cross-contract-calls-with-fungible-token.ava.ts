@@ -56,14 +56,14 @@ const runner = Runner.create(async ({root}) => ({
   ali: await root.createAccount('ali'),
 }));
 
-runner.test('Total supply', async (t, {ft, ali}) => {
+runner.test('Total supply', async (test, {ft, ali}) => {
   await init_ft(ft, ali, '1000');
 
   const totalSupply: string = await ft.view('ft_total_supply');
-  t.is(totalSupply, '1000');
+  test.is(totalSupply, '1000');
 });
 
-runner.test('Simple transfer', async (t, {ft, ali, root}) => {
+runner.test('Simple transfer', async (test, {ft, ali, root}) => {
   const initialAmount = new BN('10000');
   const transferAmount = new BN('100');
   await init_ft(ft, root, initialAmount);
@@ -87,11 +87,11 @@ runner.test('Simple transfer', async (t, {ft, ali, root}) => {
   const aliBalance: string = await ft.view('ft_balance_of', {
     account_id: ali,
   });
-  t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-  t.deepEqual(new BN(aliBalance), transferAmount);
+  test.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
+  test.deepEqual(new BN(aliBalance), transferAmount);
 });
 
-runner.test('Can close empty balance account', async (t, {ft, ali, root}) => {
+runner.test('Can close empty balance account', async (test, {ft, ali, root}) => {
   await init_ft(ft, root);
 
   await registerUser(ft, ali);
@@ -103,15 +103,15 @@ runner.test('Can close empty balance account', async (t, {ft, ali, root}) => {
     {attachedDeposit: '1'},
   ) as boolean;
 
-  t.is(result, true);
+  test.is(result, true);
 });
 
-runner.test('Can force close non-empty balance account', async (t, {ft, root}) => {
+runner.test('Can force close non-empty balance account', async (test, {ft, root}) => {
   await init_ft(ft, root, '100');
   const errorString = await captureError(async () =>
     root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
 
-  t.regex(errorString, /Can't unregister the account with the positive balance without force/);
+  test.regex(errorString, /Can't unregister the account with the positive balance without force/);
 
   const result = await root.call_raw(
     ft,
@@ -120,12 +120,12 @@ runner.test('Can force close non-empty balance account', async (t, {ft, root}) =
     {attachedDeposit: '1'},
   );
 
-  t.is(result.logs[0],
+  test.is(result.logs[0],
     `Closed @${root.accountId} with 100`,
   );
 });
 
-runner.test('Transfer call with burned amount', async (t, {ft, defi, root}) => {
+runner.test('Transfer call with burned amount', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   const burnAmount = new BN(10);
@@ -152,36 +152,36 @@ runner.test('Transfer call with burned amount', async (t, {ft, defi, root}) => {
     )
     .signAndSend();
 
-  t.true(result.logs.includes(
+  test.true(result.logs.includes(
     `Closed @${root.accountId} with ${
       (initialAmount.sub(transferAmount)).toString()}`,
   ));
 
-  t.is(result.parseResult(), true);
+  test.is(result.parseResult(), true);
 
-  t.true(result.logs.includes(
+  test.true(result.logs.includes(
     'The account of the sender was deleted',
   ));
-  t.true(result.logs.includes(
+  test.true(result.logs.includes(
     `Account @${root.accountId} burned ${burnAmount.toString()}`,
   ));
 
   // Help: this index is diff from sim, we have 10 len when they have 4
   const callbackOutcome = result.receipts_outcomes[5];
 
-  t.is(callbackOutcome.parseResult(), transferAmount.toString());
+  test.is(callbackOutcome.parseResult(), transferAmount.toString());
   const expectedAmount = transferAmount.sub(burnAmount).toString();
 
   const totalSupply: string = await ft.view('ft_total_supply');
-  t.is(totalSupply, expectedAmount);
+  test.is(totalSupply, expectedAmount);
 
   const defiBalance: string = await ft.view('ft_balance_of', {
     account_id: defi,
   });
-  t.is(defiBalance, expectedAmount);
+  test.is(defiBalance, expectedAmount);
 });
 
-runner.test('Transfer call immediate return no refund', async (t, {ft, defi, root}) => {
+runner.test('Transfer call immediate return no refund', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   await init_ft(ft, root, initialAmount);
@@ -207,11 +207,11 @@ runner.test('Transfer call immediate return no refund', async (t, {ft, defi, roo
   const defiBalance: string = await ft.view('ft_balance_of', {
     account_id: defi,
   });
-  t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-  t.deepEqual(new BN(defiBalance), transferAmount);
+  test.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
+  test.deepEqual(new BN(defiBalance), transferAmount);
 });
 
-runner.test('Transfer call promise panics for a full refund', async (t, {ft, defi, root}) => {
+runner.test('Transfer call promise panics for a full refund', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   await init_ft(ft, root, initialAmount);
@@ -230,7 +230,7 @@ runner.test('Transfer call promise panics for a full refund', async (t, {ft, def
     },
     {attachedDeposit: '1', gas: '150000000000000'},
   );
-  t.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
+  test.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
 
   const rootBalance: string = await ft.view('ft_balance_of', {
     account_id: root,
@@ -238,6 +238,6 @@ runner.test('Transfer call promise panics for a full refund', async (t, {ft, def
   const defiBalance: string = await ft.view('ft_balance_of', {
     account_id: defi,
   });
-  t.deepEqual(new BN(rootBalance), initialAmount);
-  t.deepEqual(new BN(defiBalance), new BN(0));
+  test.deepEqual(new BN(rootBalance), initialAmount);
+  test.deepEqual(new BN(defiBalance), new BN(0));
 });
