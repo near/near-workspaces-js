@@ -1,7 +1,7 @@
 import {ChildProcess} from 'child_process';
 import {Buffer} from 'buffer';
 import process from 'process';
-import {open} from 'fs/promises';
+import {promises as fs} from 'fs';
 import {join} from 'path';
 import * as http from 'http';
 import tmpDir from 'temp-dir';
@@ -153,7 +153,7 @@ export class SandboxServer {
       this.subprocess = spawn(SandboxServer.binPath, args, {
         env: {RUST_BACKTRACE: 'full'},
         // @ts-expect-error FileHandle not assignable to Stream | IOType
-        stdio: ['ignore', 'ignore', await open(filePath, 'a')],
+        stdio: ['ignore', 'ignore', await fs.open(filePath, 'a')],
       });
     } else {
       this.subprocess = spawn(SandboxServer.binPath, args, {

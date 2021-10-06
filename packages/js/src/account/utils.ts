@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import {promises as fs} from 'fs';
 import {Buffer} from 'buffer';
 import sha256 from 'js-sha256';
 import base64url from 'base64url';

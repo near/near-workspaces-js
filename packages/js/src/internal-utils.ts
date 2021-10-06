@@ -1,8 +1,6 @@
 import process from 'process';
 import {dirname, join} from 'path';
-import {constants, PathLike} from 'fs';
-import {access} from 'fs/promises';
-import * as fs from 'fs/promises';
+import {constants, PathLike, promises as fs} from 'fs';
 import {promisify} from 'util';
 import {spawn as _spawn} from 'child_process';
 import {URL} from 'url';
@@ -73,9 +71,9 @@ export function isPathLike(something: any): something is URL | string {
 export async function findFile(relativePath: string): Promise<string> {
   for (const modulePath of module.paths) {
     try {
-      await access(modulePath, constants.F_OK); // eslint-disable-line no-await-in-loop
+      await fs.access(modulePath, constants.F_OK); // eslint-disable-line no-await-in-loop
       const absolutePath = join(dirname(modulePath), relativePath);
-      await access(absolutePath, constants.F_OK); // eslint-disable-line no-await-in-loop
+      await fs.access(absolutePath, constants.F_OK); // eslint-disable-line no-await-in-loop
       return absolutePath;
     } catch {}
   }
@@ -83,7 +81,7 @@ export async function findFile(relativePath: string): Promise<string> {
   const cwd = process.cwd();
   const absolutePath = join(cwd, relativePath);
   try {
-    await access(absolutePath, constants.F_OK);
+    await fs.access(absolutePath, constants.F_OK);
     return absolutePath;
   } catch {}
 

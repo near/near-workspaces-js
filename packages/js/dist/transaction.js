@@ -1,26 +1,7 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
-const fs = __importStar(require("fs/promises"));
+const fs_1 = require("fs");
 const near_units_1 = require("near-units");
 const types_1 = require("./types");
 const internal_utils_1 = require("./internal-utils");
@@ -56,7 +37,7 @@ class Transaction {
      */
     async deployContractFile(code) {
         return this.deployContract((0, internal_utils_1.isPathLike)(code)
-            ? await fs.readFile(code.toString().startsWith('/') ? code : await (0, internal_utils_1.findFile)(code.toString()))
+            ? await fs_1.promises.readFile(code.toString().startsWith('/') ? code : await (0, internal_utils_1.findFile)(code.toString()))
             : code);
     }
     deployContract(code) {
