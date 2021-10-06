@@ -7,6 +7,6 @@ module.exports = {
   ],
   require: [
     'ts-node/register',
-    './setup.js',
+    require('path').join(__dirname, 'setup.js'),
   ],
 };
