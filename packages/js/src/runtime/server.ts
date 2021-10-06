@@ -15,7 +15,6 @@ import {
   rm,
   spawn,
   copyDir,
-  sandboxBinary,
   ensureBinary,
 } from '../internal-utils';
 import {ChildProcessPromise} from '../types';
@@ -79,6 +78,7 @@ function initialPort(): number {
 
 export class SandboxServer {
   private static lastPort: number = initialPort();
+  private static binPath: string;
 
   private subprocess!: ChildProcess;
   private readyToDie = false;
@@ -98,7 +98,7 @@ export class SandboxServer {
   }
 
   static async init(config: Config): Promise<SandboxServer> {
-    await ensureBinary();
+    this.binPath = await ensureBinary();
     const server = new SandboxServer(config);
     if (server.config.refDir) {
       await rm(server.homeDir);
@@ -150,13 +150,13 @@ export class SandboxServer {
     if (process.env.NEAR_RUNNER_DEBUG) {
       const filePath = join(this.homeDir, 'sandboxServer.log');
       debug(`near-sandbox logs writing to file: ${filePath}`);
-      this.subprocess = spawn(sandboxBinary(), args, {
+      this.subprocess = spawn(SandboxServer.binPath, args, {
         env: {RUST_BACKTRACE: 'full'},
         // @ts-expect-error FileHandle not assignable to Stream | IOType
         stdio: ['ignore', 'ignore', await open(filePath, 'a')],
       });
     } else {
-      this.subprocess = spawn(sandboxBinary(), args, {
+      this.subprocess = spawn(SandboxServer.binPath, args, {
         stdio: ['ignore', 'ignore', 'ignore'],
       });
     }
@@ -190,6 +190,6 @@ export class SandboxServer {
   }
 
   private async spawn(command: string): ChildProcessPromise {
-    return asyncSpawn('--home', this.homeDir, command);
+    return asyncSpawn(SandboxServer.binPath, '--home', this.homeDir, command);
   }
 }

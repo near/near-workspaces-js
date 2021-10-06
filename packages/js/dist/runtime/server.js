@@ -96,7 +96,7 @@ class SandboxServer {
         return (0, path_1.join)(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
     }
     static async init(config) {
-        await (0, internal_utils_1.ensureBinary)();
+        this.binPath = await (0, internal_utils_1.ensureBinary)();
         const server = new SandboxServer(config);
         if (server.config.refDir) {
             await (0, internal_utils_1.rm)(server.homeDir);
@@ -142,14 +142,14 @@ class SandboxServer {
         if (process_1.default.env.NEAR_RUNNER_DEBUG) {
             const filePath = (0, path_1.join)(this.homeDir, 'sandboxServer.log');
             (0, internal_utils_1.debug)(`near-sandbox logs writing to file: ${filePath}`);
-            this.subprocess = (0, internal_utils_1.spawn)((0, internal_utils_1.sandboxBinary)(), args, {
+            this.subprocess = (0, internal_utils_1.spawn)(SandboxServer.binPath, args, {
                 env: { RUST_BACKTRACE: 'full' },
                 // @ts-expect-error FileHandle not assignable to Stream | IOType
                 stdio: ['ignore', 'ignore', await (0, promises_1.open)(filePath, 'a')],
             });
         }
         else {
-            this.subprocess = (0, internal_utils_1.spawn)((0, internal_utils_1.sandboxBinary)(), args, {
+            this.subprocess = (0, internal_utils_1.spawn)(SandboxServer.binPath, args, {
                 stdio: ['ignore', 'ignore', 'ignore'],
             });
         }
@@ -174,7 +174,7 @@ class SandboxServer {
         return `0.0.0.0:${this.port}`;
     }
     async spawn(command) {
-        return (0, internal_utils_1.asyncSpawn)('--home', this.homeDir, command);
+        return (0, internal_utils_1.asyncSpawn)(SandboxServer.binPath, '--home', this.homeDir, command);
     }
 }
 exports.SandboxServer = SandboxServer;
