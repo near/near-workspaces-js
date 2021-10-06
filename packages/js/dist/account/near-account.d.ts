@@ -97,7 +97,7 @@ export interface NearAccount {
         signWithKey?: KeyPair;
     }): Promise<T | string>;
     /**
-     * Get full response from RPC about result of view methood
+     * Get full response from RPC about result of view method
      * @param method contract method
      * @param args args to pass to method if required
      */
@@ -107,7 +107,7 @@ export interface NearAccount {
      * @param method contract method
      * @param args args to pass to method if required
      */
-    view<T>(method: string, args?: Record<string, unknown>): Promise<T | string>;
+    view<T>(method: string, args?: Record<string, unknown>): Promise<T | null>;
     /**
      * Download contract code from provider
      */

@@ -117,7 +117,7 @@ class Account {
                 return value;
             }
         }
-        return '';
+        return null;
     }
     async viewCode() {
         return this.provider.viewCode(this.accountId);

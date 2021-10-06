@@ -170,18 +170,18 @@ export class Account implements NearAccount {
     return this.provider.view_call(this.accountId, method, args);
   }
 
-  async view<T>(method: string, args: Args = {}): Promise<T | string> {
+  async view<T>(method: string, args: Args = {}): Promise<T | null> {
     const result = await this.view_raw(method, args);
     if (result.result) {
       const value = Buffer.from(result.result).toString();
       try {
         return JSON.parse(value) as T;
       } catch {
-        return value;
+        return value as unknown as T;
       }
     }
 
-    return '';
+    return null;
   }
 
   async viewCode(): Promise<Buffer> {
