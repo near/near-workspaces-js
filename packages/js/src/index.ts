@@ -12,3 +12,4 @@ export * from './account';
 export * from './transaction-result';
 export * from './jsonrpc';
 export * from './interfaces';
+export * from 'near-units';

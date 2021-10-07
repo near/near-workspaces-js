@@ -11,8 +11,7 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import {Gas, NEAR} from 'near-units';
-import {Runner, createKeyPair} from 'near-runner-ava';
+import {Runner, createKeyPair, Gas, NEAR} from 'near-runner-ava';
 
 /* Contract API for reference
 impl Linkdrop {

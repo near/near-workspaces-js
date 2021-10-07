@@ -13,8 +13,7 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import * as borsh from 'borsh';
-import {NEAR} from 'near-units';
-import {Runner} from 'near-runner-ava';
+import {Runner, NEAR} from 'near-runner-ava';
 
 if (Runner.networkIsSandbox()) {
   const runner = Runner.create(async ({root}) => {
