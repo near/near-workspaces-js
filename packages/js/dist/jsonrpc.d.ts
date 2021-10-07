@@ -51,3 +51,4 @@ export declare class JsonRpcProvider extends JSONRpc {
      */
     sandbox_patch_state(records: Records): Promise<Empty>;
 }
+//# sourceMappingURL=jsonrpc.d.ts.map

@@ -88,3 +88,4 @@ export declare class ManagedTransaction extends Transaction {
      */
     signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
 }
+//# sourceMappingURL=account-manager.d.ts.map

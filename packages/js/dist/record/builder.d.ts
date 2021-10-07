@@ -15,3 +15,4 @@ export declare class AccountBuilder extends RecordBuilder {
     data(data_key: string, value: string): this;
     contract(binary: Buffer | string): this;
 }
+//# sourceMappingURL=builder.d.ts.map

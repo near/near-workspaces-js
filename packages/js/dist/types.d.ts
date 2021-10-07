@@ -41,3 +41,4 @@ export interface ClientConfig {
     walletUrl?: string;
 }
 export declare type Empty = {};
+//# sourceMappingURL=types.d.ts.map

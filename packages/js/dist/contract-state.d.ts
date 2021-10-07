@@ -12,3 +12,4 @@ export declare class ContractState {
         schema: any;
     }): any;
 }
+//# sourceMappingURL=contract-state.d.ts.map

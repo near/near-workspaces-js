@@ -174,3 +174,4 @@ export interface NearAccount {
      */
     updateData(data: string | Buffer, value: string | Buffer): Promise<Empty>;
 }
+//# sourceMappingURL=near-account.d.ts.map

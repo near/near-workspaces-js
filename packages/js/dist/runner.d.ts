@@ -96,3 +96,4 @@ export declare class Runner {
      */
     runSandbox(fn: RunnerFn): Promise<Runtime | null>;
 }
+//# sourceMappingURL=runner.d.ts.map
