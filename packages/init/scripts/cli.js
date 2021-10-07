@@ -48,7 +48,7 @@ const packageJsonFile = join(process.cwd(), 'near-runner/package.json');
 const version = require(join(__dirname, '../package.json')).version;
 const packageJson = require(packageJsonFile);
 packageJson.devDependencies['near-runner-ava'] = version;
-writeJsonSync(packageJsonFile, packageJson);
+writeJsonSync(packageJsonFile, packageJson, { spaces: 2 });
 
 if (!process.argv.includes('--no-install')) {
   const install = spawnSync('npm', ['install'], {

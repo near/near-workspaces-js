@@ -1,6 +1,7 @@
 import process from 'process';
 import {join} from 'path';
 import {spawnSync} from 'child_process';
+import * as fs from 'fs/promises';
 import {mkdirSync, pathExists, removeSync} from 'fs-extra';
 import test from 'ava';
 
@@ -16,10 +17,6 @@ test.before(async () => {
   spawnSync('node', [join(__dirname, '../scripts/cli.js'), '--no-install'], {
     cwd: TEST_PROJECT,
   });
-});
-
-test.after.always(() => {
-  removeSync(TEST_PROJECT);
 });
 
 for (const file of [
@@ -45,6 +42,14 @@ test('package.json includes correct version of near-runner-ava', t => {
   const {version} = require(join(__dirname, '../package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   const packageJson = require(join(TEST_PROJECT, 'near-runner/package.json')); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
   t.is(packageJson.devDependencies!['near-runner-ava'], version); // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+});
+
+test('package.json is well-formatted with line breaks', async t => {
+  t.regex(
+    (await fs.readFile(join(TEST_PROJECT, 'near-runner/package.json'))).toString(),
+    /{\n/,
+    'expected first line of file to only contain an opening bracket',
+  );
 });
 
 test('tests pass in new project since it is nested in monorepo and has access to monorepo dependencies', t => {
