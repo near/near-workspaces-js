@@ -49,7 +49,7 @@ export declare class Account implements NearAccount {
         signWithKey?: KeyPair;
     }): Promise<T | string>;
     view_raw(method: string, args?: Args): Promise<CodeResult>;
-    view<T>(method: string, args?: Args): Promise<T | string>;
+    view<T>(method: string, args?: Args): Promise<T | null>;
     viewCode(): Promise<Buffer>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<Empty>;

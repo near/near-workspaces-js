@@ -18,7 +18,7 @@ const runner = Runner.create(async ({root}) => ({
 }));
 
 runner.test('Root gets null status', async (test, {contract, root}) => {
-  const result = await contract.view('get_status', {
+  const result: null = await contract.view('get_status', {
     account_id: root,
   });
   test.is(result, null);
@@ -39,7 +39,7 @@ runner.test('Root and Ali have different statuses', async (test, {contract, root
   });
   test.is(rootStatus, 'world');
 
-  const aliStatus = await contract.view('get_status', {
+  const aliStatus: null = await contract.view('get_status', {
     account_id: ali,
   });
   test.is(aliStatus, null);

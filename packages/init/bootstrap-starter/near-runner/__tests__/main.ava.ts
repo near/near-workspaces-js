@@ -117,10 +117,8 @@ runner.test('root sets status', async (test, {contract, root}) => {
 runner.test('statuses initialized in Runner.create', async (test, {alice, contract, root}) => {
   // If you want to store a `view` in a local variable, you can inform
   // TypeScript what sort of return value you expect.
-  // Do this using declaration syntax:
   const aliceStatus: string = await contract.view('get_status', {account_id: alice});
-  // ...or coercion/type-casting syntax:
-  const rootStatus = await contract.view('get_status', {account_id: root}) as null;
+  const rootStatus: null = await contract.view('get_status', {account_id: root});
 
   test.is(aliceStatus, 'hello');
 
