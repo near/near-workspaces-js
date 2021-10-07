@@ -18,11 +18,11 @@
     "dist/",
     "tsconfig.ava.json",
     "ava.config.cjs",
-    "scripts/cli.js",
-    "setup.js"
+    "scripts/*.js"
   ],
   "scripts": {
     "build": "tsc",
+    "postinstall": "node scripts/install.js",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {

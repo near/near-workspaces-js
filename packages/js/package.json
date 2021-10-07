@@ -30,6 +30,7 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
+    "postinstall": "node scripts/install.js",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet ava --verbose",
     "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet ava --verbose",
     "test:sandbox": "yarn build && ava --verbose",
@@ -40,7 +41,8 @@
   "files": [
     "dist/",
     "tsconfig.json",
-    "core_contracts"
+    "core_contracts",
+    "scripts/*.js"
   ],
   "engines": {
     "node": ">= 14.0.0",

@@ -1,3 +1,5 @@
+require('util').inspect.defaultOptions.depth = 5; // Increase AVA's printing depth
+
 module.exports = {
   timeout: '60000',
   files: ['**/*.ava.ts', '**/*.ava.js'],
@@ -7,6 +9,5 @@ module.exports = {
   ],
   require: [
     'ts-node/register',
-    require('path').join(__dirname, 'setup.js'),
   ],
 };
