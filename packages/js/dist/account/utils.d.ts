@@ -12,3 +12,4 @@ export declare type KeyFile = KeyFilePrivate | KeyFileSecret;
 export declare function getKeyFromFile(filePath: string, create?: boolean): Promise<KeyPair>;
 export declare function hashPathBase64(s: string): string;
 export declare function sanitize(s: string): string;
+//# sourceMappingURL=utils.d.ts.map

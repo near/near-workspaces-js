@@ -26,3 +26,4 @@ export interface NearAccountManager {
     createFrom(config: Config): Promise<NearAccountManager>;
     init(): Promise<NearAccountManager>;
 }
+//# sourceMappingURL=near-account-manager.d.ts.map

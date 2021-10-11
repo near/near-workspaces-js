@@ -98,3 +98,4 @@ export declare class Runner extends RawRunner {
      */
     static create(configOrFunction?: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Runner;
 }
+//# sourceMappingURL=index.d.ts.map

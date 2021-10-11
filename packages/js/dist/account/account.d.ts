@@ -70,3 +70,4 @@ export declare class Account implements NearAccount {
     private getOrCreateKey;
     private get rb();
 }
+//# sourceMappingURL=account.d.ts.map

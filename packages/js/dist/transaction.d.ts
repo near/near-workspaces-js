@@ -32,3 +32,4 @@ export declare abstract class Transaction {
     get transferAmount(): NEAR;
     abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
 }
+//# sourceMappingURL=transaction.d.ts.map

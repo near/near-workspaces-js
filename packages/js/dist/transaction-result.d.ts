@@ -63,3 +63,4 @@ export declare class TransactionError extends Error {
     parse(): ExecutionOutcome;
 }
 export declare type TxResult = TransactionResult;
+//# sourceMappingURL=transaction-result.d.ts.map
