@@ -1,8 +1,8 @@
 import path from 'path';
 import {NEAR} from 'near-units';
-import {ava as test} from 'near-runner-ava';
+import {ava as test} from '../../ava';
 import {Runner} from '..';
-import {RecordBuilder} from '../dist/record'; // eslint-disable-line import/extensions
+import {RecordBuilder} from '../dist/record';
 
 if (Runner.networkIsSandbox()) {
   const runner = Runner.create(async ({root}) => {
