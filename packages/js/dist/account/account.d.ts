@@ -29,7 +29,7 @@ export declare class Account implements NearAccount {
         initialBalance?: string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
-    spoonAccount({ testnetContract, mainnetContract, blockId, keyPair, initialBalance, }: {
+    createAccountFrom({ testnetContract, mainnetContract, blockId, keyPair, initialBalance, }: {
         testnetContract?: string;
         mainnetContract?: string;
         keyPair?: KeyPair;

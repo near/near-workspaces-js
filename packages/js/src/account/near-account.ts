@@ -64,7 +64,7 @@ export interface NearAccount {
    * Must pass `testnetContract` or `mainnetContract` but not both.
    * @param options
    */
-  spoonAccount(options: {
+  createAccountFrom(options: {
     testnetContract?: string;
     mainnetContract?: string;
     keyPair?: KeyPair;

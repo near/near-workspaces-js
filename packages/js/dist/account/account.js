@@ -70,7 +70,7 @@ class Account {
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    async spoonAccount({ testnetContract, mainnetContract, blockId, keyPair, initialBalance, }) {
+    async createAccountFrom({ testnetContract, mainnetContract, blockId, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }

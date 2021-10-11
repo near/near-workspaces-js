@@ -83,7 +83,7 @@ export class Account implements NearAccount {
     return this.getAccount(accountId);
   }
 
-  async spoonAccount({
+  async createAccountFrom({
     testnetContract,
     mainnetContract,
     blockId,
