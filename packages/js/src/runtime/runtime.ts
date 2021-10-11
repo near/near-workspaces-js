@@ -1,6 +1,6 @@
 import {Buffer} from 'buffer';
 import {join} from 'path';
-import {toYocto} from '../utils';
+import {toYocto, urlConfigFromNetwork} from '../utils';
 import {ClientConfig, FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
@@ -162,13 +162,7 @@ export class TestnetRuntime extends Runtime {
   }
 
   static get clientConfig(): ClientConfig {
-    return {
-      network: 'testnet',
-      rpcAddr: 'https://rpc.testnet.near.org',
-      walletUrl: 'https://wallet.testnet.near.org',
-      helperUrl: 'https://helper.testnet.near.org',
-      explorerUrl: 'https://explorer.testnet.near.org',
-    };
+    return urlConfigFromNetwork('testnet');
   }
 
   static get provider(): JsonRpcProvider {

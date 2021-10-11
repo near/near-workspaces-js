@@ -3,7 +3,7 @@ import {Buffer} from 'buffer';
 import BN from 'bn.js';
 import {NEAR} from 'near-units';
 import {KeyPair} from 'near-api-js';
-import {AccountBalance, PublicKey, CodeResult, AccountView, Empty} from '../types';
+import {AccountBalance, PublicKey, CodeResult, AccountView, Empty, StateItem} from '../types';
 import {ContractState} from '../contract-state';
 import {Transaction} from '../transaction';
 import {TransactionResult} from '../transaction-result';
@@ -54,8 +54,25 @@ export interface NearAccount {
    */
   createAccount(
     accountId: string,
-    options?: {keyPair?: KeyPair; initialBalance?: string},
+    options?: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean},
   ): Promise<NearAccount>;
+
+  /**
+   * Trasfers a contract from other network with state blockId or default to current block.
+   * This includes the account_id on the reference network.
+   *
+   * Must pass `testnetContract` or `mainnetContract` but not both.
+   * @param options
+   */
+  spoonAccount(options: {
+    testnetContract?: string;
+    mainnetContract?: string;
+    keyPair?: KeyPair;
+    initialBalance?: string;
+    blockId?: number | string;
+    isSubAccount?: boolean;
+  }): Promise<NearAccount>;
+
   /** Adds suffix to accountId if account isn't sub account or have full including top level account */
   getAccount(accountId: string): NearAccount;
 
@@ -67,7 +84,7 @@ export interface NearAccount {
    * the contract can be initialized in the same step.
    *
    * @param accountId Name of contract to deploy
-   * @param wasm path or data of contract binary. If given an absolute path (such as one created with 'path.join(__dirname, …)') will use it directly. If given a relative path such as `res/contract.wasm`, will resolve it from the project root (meaning the location of the package.json file).
+   * @param wasm path or data of contract binary
    * @param options If any method is passed it will be added to the transaction so that contract will be initialized
    */
   createAndDeploy(
@@ -80,7 +97,8 @@ export interface NearAccount {
       initialBalance?: BN | string;
       keyPair?: KeyPair;
       method?: string;
-    },
+      isSubAccount?: boolean;
+    }
   ): Promise<NearAccount>;
 
   /**
@@ -98,7 +116,7 @@ export interface NearAccount {
       gas?: string | BN;
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
-    },
+    }
   ): Promise<TransactionResult>;
 
   /**
@@ -138,10 +156,21 @@ export interface NearAccount {
   viewCode(): Promise<Buffer>;
 
   /**
+   * Download contract code encoded as a Base64 string
+   */
+  viewCodeRaw(): Promise<string>;
+
+  /**
    * Get the data of a contract as a map of raw key/values
-   * @param prefix optional prefix used in storage. Default is ''.
+   * @param prefix optional prefix of key in storage. Default is ''.
    */
   viewState(prefix?: string | Uint8Array): Promise<ContractState>;
+
+  /**
+   * Get raw contract data as base64 encoded strings.
+   * @param prefix optional prefix of key in storage. Default is ''.
+   */
+  viewStateRaw(prefix?: string | Uint8Array): Promise<StateItem[]>;
 
   /** Update record to sandbox */
   sandbox_patch_state(records: Records): Promise<Empty>;

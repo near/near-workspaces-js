@@ -131,13 +131,7 @@ class TestnetRuntime extends Runtime {
         };
     }
     static get clientConfig() {
-        return {
-            network: 'testnet',
-            rpcAddr: 'https://rpc.testnet.near.org',
-            walletUrl: 'https://wallet.testnet.near.org',
-            helperUrl: 'https://helper.testnet.near.org',
-            explorerUrl: 'https://explorer.testnet.near.org',
-        };
+        return (0, utils_1.urlConfigFromNetwork)('testnet');
     }
     static get provider() {
         return jsonrpc_1.JsonRpcProvider.from(this.clientConfig);
