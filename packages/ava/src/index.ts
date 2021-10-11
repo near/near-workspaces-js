@@ -101,7 +101,7 @@ export class Runner extends RawRunner {
    * @returns an instance of the Runner class, which is used to run tests.
    */
   static create(
-    configOrFunction: CreateRunnerFn | Partial<Config>,
+    configOrFunction: CreateRunnerFn | Partial<Config> = async () => ({}),
     f?: CreateRunnerFn,
   ): Runner {
     const runner = RawRunner.create(configOrFunction, f);

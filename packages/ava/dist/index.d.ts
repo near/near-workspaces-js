@@ -96,5 +96,5 @@ export declare class Runner extends RawRunner {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Runner class, which is used to run tests.
      */
-    static create(configOrFunction: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Runner;
+    static create(configOrFunction?: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Runner;
 }
