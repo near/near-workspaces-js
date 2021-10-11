@@ -72,7 +72,7 @@ class Runner extends near_runner_1.Runner {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Runner class, which is used to run tests.
      */
-    static create(configOrFunction, f) {
+    static create(configOrFunction = async () => ({}), f) {
         const runner = near_runner_1.Runner.create(configOrFunction, f);
         runner.test = (description, fn) => {
             (0, ava_1.default)(description, async (t) => {
