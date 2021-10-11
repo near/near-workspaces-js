@@ -5056,10 +5056,10 @@ near-api-js@^0.43.0:
     text-encoding-utf-8 "^1.0.2"
     tweetnacl "^1.0.1"
 
-near-sandbox@^0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.7.tgz#9799c74e0980def01b2c4a9aef65afc6a4c531a3"
-  integrity sha512-AgmRiW/JOnN8OQVOZ9Jin6+rmSCRBFkpoy7YrZZZS5aJrh3CIXt0tOHg0YydIybUz3UWi7okpzbTLeF5h7oVyw==
+near-sandbox@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.8.tgz#5496e300554e9e722fa200204dc8cd302e0074c7"
+  integrity sha512-3JrDcA9rI+wA9lWqfOtSovGxBE/TDZL011TLk+jz5wGezVbm7m3tDh/zCfq+++eFyJ3ZbGkG0KF6+trMQJFPQQ==
   dependencies:
     got "^11.8.2"
     tar "^6.1.0"
