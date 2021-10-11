@@ -24,7 +24,7 @@
     "@types/rimraf": "^3.0.1",
     "husky": "^7.0.1",
     "lerna": "^4.0.0",
-    "near-runner-ava": "0.1.0",
+    "near-runner-ava": "0.1.1-alpha.0",
     "xo": "^0.44.0"
   },
   "engines": {
