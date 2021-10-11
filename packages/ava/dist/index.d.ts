@@ -40,7 +40,7 @@ export declare interface Runner extends RawRunner {
      * @param description title of test run by AVA, shown in test output
      * @param fn body of test
      */
-    test(description: string, fn: AvaRunnerFn): void;
+    test(description: string, fn?: AvaRunnerFn): void;
 }
 /**
  * The main interface to near-runner-ava. Create a new runner instance with {@link Runner.create}, then run tests using {@link Runner.test}.
