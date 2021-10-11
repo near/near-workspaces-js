@@ -14,16 +14,3 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
         run: (yarn && yarn test:sandbox:ci) || NEAR_RUNNER_DEBUG=true yarn test:sandbox:ci --verbose --noStackTrace
-  near-sandbox-install:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest]
-        node-version: [16]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Run tests
-        run: yarn && (rm node_modules/near-sandbox/bin/near-sandbox && yarn test:sandbox:ci) || (rm node_modules/near-sandbox/bin/near-sandbox &&  NEAR_RUNNER_DEBUG=true yarn test:sandbox)

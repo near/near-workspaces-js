@@ -19,7 +19,7 @@
     "fs-extra": "^10.0.0",
     "js-sha256": "^0.9.0",
     "near-api-js": "^0.43.0",
-    "near-sandbox": "^0.0.7",
+    "near-sandbox": "^0.0.8",
     "near-units": "^0.1.9",
     "node-port-check": "^2.0.1",
     "promisify-child-process": "^4.1.1",
@@ -30,6 +30,7 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "yarn build",
+    "postinstall": "node scripts/install.js",
     "test:testnet": "NEAR_RUNNER_NETWORK=testnet ava --verbose",
     "test:testnet:ci": "NEAR_RUNNER_DEBUG=true NEAR_RUNNER_NETWORK=testnet ava --verbose",
     "test:sandbox": "yarn build && ava --verbose",
@@ -40,7 +41,8 @@
   "files": [
     "dist/",
     "tsconfig.json",
-    "core_contracts"
+    "core_contracts",
+    "scripts/*.js"
   ],
   "engines": {
     "node": ">= 14.0.0",

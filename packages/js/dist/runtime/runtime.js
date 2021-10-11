@@ -224,7 +224,12 @@ class SandboxRuntime extends Runtime {
     }
     async afterRun() {
         (0, internal_utils_1.debug)(`Closing server with port ${this.config.port}`);
-        await this.server.close();
+        try {
+            await this.server.close();
+        }
+        catch (error) {
+            (0, internal_utils_1.debug)('this.server.close() threw error.', JSON.stringify(error, null, 2));
+        }
     }
 }
 exports.SandboxRuntime = SandboxRuntime;

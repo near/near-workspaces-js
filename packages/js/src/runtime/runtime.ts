@@ -282,6 +282,10 @@ export class SandboxRuntime extends Runtime {
 
   async afterRun(): Promise<void> {
     debug(`Closing server with port ${this.config.port}`);
-    await this.server.close();
+    try {
+      await this.server.close();
+    } catch (error: unknown) {
+      debug('this.server.close() threw error.', JSON.stringify(error, null, 2));
+    }
   }
 }
