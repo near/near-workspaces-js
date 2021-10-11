@@ -116,8 +116,8 @@ export interface NearAccount {
       gas?: string | BN;
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
-    },
-  ): Promise<T | string>;
+    }
+  ): Promise<T>;
 
   /**
    * Get full response from RPC about result of view method
@@ -130,7 +130,7 @@ export interface NearAccount {
    * @param method contract method
    * @param args args to pass to method if required
    */
-  view<T>(method: string, args?: Record<string, unknown>): Promise<T | null>;
+  view<T>(method: string, args?: Record<string, unknown>): Promise<T>;
 
   /**
    * Download contract code from provider
