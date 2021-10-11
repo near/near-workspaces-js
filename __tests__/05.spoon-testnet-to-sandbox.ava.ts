@@ -115,15 +115,6 @@ if (Runner.networkIsSandbox()) {
     test.assert(tokens.includes('wrap.testnet'));
   });
 
-  runner.test('can create wNear', async (test, {root}) => {
-    const wNear = await createAndDepositWNear(root, 'wrap.near', NEAR.parse('10 N'), DEFAULT_BLOCK_HEIGHT - 15_000_000);
-    const berry = await spoonContract(root, 'berryclub.ek.near', DEFAULT_BLOCK_HEIGHT - 24_000_000);
-    console.log(NEAR.from(await wNear.view('ft_balance_of', {account_id: root})).toHuman());
-    // What's this?
-    // test.regex(tx.logs[0], /Deposit .* NEAR to/);
-    // console.log(tx.logs);
-  });
-
   runner.test('swap wNear for nDai', async (test, {root}) => {
     const pool_id = 2;
     const refFinance = await createRef(root);

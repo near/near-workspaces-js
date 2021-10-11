@@ -69,6 +69,6 @@ test('tests pass in new project since it is nested in monorepo and has access to
   if (status === 0) {
     t.regex(stdout, /tests passed/);
   } else {
-    t.fail(`"npm run test" failed with exit code ${status}`);
+    t.fail(`"npm run test" failed with exit code ${String(status)}`);
   }
 });
