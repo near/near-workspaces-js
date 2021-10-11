@@ -1,19 +1,10 @@
 import {NEAR, Gas, NearAccount, Runner, captureError} from 'near-runner-ava';
 
-const runner = Runner.create();
+const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
 const DEFAULT_ATTACHED_DEPOSIT = NEAR.parse('1.25 mN');
 
 const DEFAULT_BLOCK_HEIGHT = 45_800_000;
-
-// From https://github.com/ref-finance/ref-contracts/blob/e96a6b5e3b403a3ba5271b6a03843a50b3e54a4f/ref-exchange/src/views.rs#L34-L45
-interface Pool {
-  pool_kind: string; // Pool kind
-  token_account_ids: string[]; // List of tokens in the pool
-  amounts: string[]; // How much NEAR this contract has; U128 array
-  total_fee: number; // Fee charged for swap
-  shares_total_supply: string; // Total number of shares
-}
 
 async function spoonContract(
   root: NearAccount,
@@ -36,8 +27,6 @@ async function registerFT(account: NearAccount, token: NearAccount, attachedDepo
     {attachedDeposit},
   );
 }
-
-const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
 // Contract: https://github.com/ref-finance/ref-contracts/
 async function createRef(
@@ -63,7 +52,18 @@ async function createFT(
   return account;
 }
 
+const runner = Runner.create();
+
 if (Runner.networkIsSandbox()) {
+  // From https://github.com/ref-finance/ref-contracts/blob/e96a6b5e3b403a3ba5271b6a03843a50b3e54a4f/ref-exchange/src/views.rs#L34-L45
+  interface Pool {
+    pool_kind: string; // Pool kind
+    token_account_ids: string[]; // List of tokens in the pool
+    amounts: string[]; // How much NEAR this contract has; U128 array
+    total_fee: number; // Fee charged for swap
+    shares_total_supply: string; // Total number of shares
+  }
+
   runner.test('Ref.Finance default contract state too large', async (test, {root}) => {
     test.regex(
       await captureError(async () =>
@@ -149,7 +149,7 @@ if (Runner.networkIsSandbox()) {
     {attachedDeposit: NEAR.parse('0.008 N')},
     )
       .signAndSend();
-    // .signAndSend((await refFinance.getKey())!);
+      // .signAndSend((await refFinance.getKey())!);
     console.log(swapTx.succeeded);
     console.log(await wNear.view('ft_balance_of', {account_id: root}));
     console.log((await refFinance.availableBalance()).toHuman());
@@ -169,4 +169,6 @@ if (Runner.networkIsSandbox()) {
     //     ],
     // }).signAndSend(), null, 4))
   });
+} else {
+  runner.test('skipping; not on sandbox network', async () => {});
 }
