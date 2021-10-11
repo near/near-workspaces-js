@@ -82,7 +82,7 @@ if (Runner.networkIsSandbox()) {
     let pools: Pool[] = await refFinance.view('get_pools', {
       from_index: 0,
       limit: 12,
-    })!;
+    });
     console.log(pools);
     test.deepEqual(
       await refFinance.view('get_pool_fee', {pool_id: 0}),
