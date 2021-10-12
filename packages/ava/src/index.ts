@@ -5,7 +5,7 @@ import test from 'ava'; // eslint-disable-line @typescript-eslint/no-duplicate-i
 export * from 'near-runner';
 export {test as ava};
 
-export type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => Promise<void>;
+export type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => void | Promise<void>;
 
 export declare interface Runner extends RawRunner {
   /**
@@ -116,7 +116,6 @@ export class Runner extends RawRunner {
   }
 }
 
-const DEFAULT_TEST_FN = async (t: ava.ExecutionContext) => {
-  t.assert(true);
+const DEFAULT_TEST_FN = () => {
+  // Do nothing
 };
-

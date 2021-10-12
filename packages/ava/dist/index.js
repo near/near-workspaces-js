@@ -83,7 +83,7 @@ class Runner extends near_runner_1.Runner {
     }
 }
 exports.Runner = Runner;
-const DEFAULT_TEST_FN = async (t) => {
-    t.assert(true);
+const DEFAULT_TEST_FN = () => {
+    // Do nothing
 };
 //# sourceMappingURL=index.js.map

@@ -3,7 +3,7 @@ import * as ava from 'ava';
 import test from 'ava';
 export * from 'near-runner';
 export { test as ava };
-export declare type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => Promise<void>;
+export declare type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => void | Promise<void>;
 export declare interface Runner extends RawRunner {
     /**
      * Convenient wrapper around AVA's test function and near-runner's `runner.run`.
