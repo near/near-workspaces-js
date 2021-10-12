@@ -47,9 +47,9 @@ export declare class Account implements NearAccount {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
-    }): Promise<T | string>;
+    }): Promise<T>;
     view_raw(method: string, args?: Args): Promise<CodeResult>;
-    view<T>(method: string, args?: Args): Promise<T | null>;
+    view<T>(method: string, args?: Args): Promise<T>;
     viewCode(): Promise<Buffer>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<Empty>;

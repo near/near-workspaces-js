@@ -3,7 +3,7 @@ import * as ava from 'ava';
 import test from 'ava';
 export * from 'near-runner';
 export { test as ava };
-export declare type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => Promise<void>;
+export declare type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => void | Promise<void>;
 export declare interface Runner extends RawRunner {
     /**
      * Convenient wrapper around AVA's test function and near-runner's `runner.run`.
@@ -40,7 +40,7 @@ export declare interface Runner extends RawRunner {
      * @param description title of test run by AVA, shown in test output
      * @param fn body of test
      */
-    test(description: string, fn: AvaRunnerFn): void;
+    test(description: string, fn?: AvaRunnerFn): void;
 }
 /**
  * The main interface to near-runner-ava. Create a new runner instance with {@link Runner.create}, then run tests using {@link Runner.test}.

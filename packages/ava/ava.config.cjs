@@ -3,6 +3,7 @@ require('util').inspect.defaultOptions.depth = 5; // Increase AVA's printing dep
 module.exports = {
   timeout: '60000',
   files: ['**/*.ava.ts', '**/*.ava.js'],
+  failWithoutAssertions: false,
   extensions: [
     'ts',
     'js',

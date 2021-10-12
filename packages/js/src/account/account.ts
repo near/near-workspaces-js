@@ -153,7 +153,7 @@ export class Account implements NearAccount {
       attachedDeposit?: string | BN;
       signWithKey?: KeyPair;
     } = {},
-  ): Promise<T | string> {
+  ): Promise<T> {
     const txResult = await this.call_raw(contractId, methodName, args, {
       gas,
       attachedDeposit,
@@ -170,7 +170,7 @@ export class Account implements NearAccount {
     return this.provider.view_call(this.accountId, method, args);
   }
 
-  async view<T>(method: string, args: Args = {}): Promise<T | null> {
+  async view<T>(method: string, args: Args = {}): Promise<T> {
     const result = await this.view_raw(method, args);
     if (result.result) {
       const value = Buffer.from(result.result).toString();
@@ -181,7 +181,7 @@ export class Account implements NearAccount {
       }
     }
 
-    return null;
+    return null as unknown as T;
   }
 
   async viewCode(): Promise<Buffer> {

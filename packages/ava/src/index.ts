@@ -5,7 +5,7 @@ import test from 'ava'; // eslint-disable-line @typescript-eslint/no-duplicate-i
 export * from 'near-runner';
 export {test as ava};
 
-export type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => Promise<void>;
+export type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => void | Promise<void>;
 
 export declare interface Runner extends RawRunner {
   /**
@@ -43,7 +43,7 @@ export declare interface Runner extends RawRunner {
    * @param description title of test run by AVA, shown in test output
    * @param fn body of test
    */
-  test(description: string, fn: AvaRunnerFn): void;
+  test(description: string, fn?: AvaRunnerFn): void;
 }
 
 /**
@@ -106,7 +106,7 @@ export class Runner extends RawRunner {
   ): Runner {
     const runner = RawRunner.create(configOrFunction, f);
 
-    (runner as Runner).test = (description: string, fn: AvaRunnerFn): void => {
+    (runner as Runner).test = (description: string, fn: AvaRunnerFn = DEFAULT_TEST_FN): void => {
       test(description, async t => {
         await runner.run(async (args, runtime) => fn(t, args, runtime));
       });
@@ -116,3 +116,6 @@ export class Runner extends RawRunner {
   }
 }
 
+const DEFAULT_TEST_FN = () => {
+  // Do nothing
+};

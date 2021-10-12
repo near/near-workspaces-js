@@ -15,16 +15,16 @@
 import * as borsh from 'borsh';
 import {Runner, NEAR} from 'near-runner-ava';
 
-if (Runner.networkIsSandbox()) {
-  const runner = Runner.create(async ({root}) => {
-    const contract = await root.createAndDeploy(
-      'status-message',
-      '__tests__/build/debug/status_message.wasm',
-    );
-    const ali = await root.createAccount('ali');
-    return {contract, ali};
-  });
+const runner = Runner.create(async ({root}) => {
+  const contract = await root.createAndDeploy(
+    'status-message',
+    '__tests__/build/debug/status_message.wasm',
+  );
+  const ali = await root.createAccount('ali');
+  return {contract, ali};
+});
 
+if (Runner.networkIsSandbox()) {
   class Assignable {
     [key: string]: any;
     constructor(properties: any) {
@@ -125,4 +125,6 @@ if (Runner.networkIsSandbox()) {
     });
     test.is(result, 'hello');
   });
+} else {
+  runner.test('skipping; not on sandbox');
 }

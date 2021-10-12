@@ -74,7 +74,7 @@ class Runner extends near_runner_1.Runner {
      */
     static create(configOrFunction = async () => ({}), f) {
         const runner = near_runner_1.Runner.create(configOrFunction, f);
-        runner.test = (description, fn) => {
+        runner.test = (description, fn = DEFAULT_TEST_FN) => {
             (0, ava_1.default)(description, async (t) => {
                 await runner.run(async (args, runtime) => fn(t, args, runtime));
             });
@@ -83,4 +83,7 @@ class Runner extends near_runner_1.Runner {
     }
 }
 exports.Runner = Runner;
+const DEFAULT_TEST_FN = () => {
+    // Do nothing
+};
 //# sourceMappingURL=index.js.map

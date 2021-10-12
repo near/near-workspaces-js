@@ -101,7 +101,7 @@ runner.test('Can close empty balance account', async (test, {ft, ali, root}) => 
     'storage_unregister',
     {},
     {attachedDeposit: '1'},
-  ) as boolean;
+  );
 
   test.is(result, true);
 });
