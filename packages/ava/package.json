@@ -18,6 +18,7 @@
     "dist/",
     "tsconfig.ava.json",
     "ava.config.cjs",
+    "ava.testnet.config.cjs",
     "scripts/*.js"
   ],
   "scripts": {

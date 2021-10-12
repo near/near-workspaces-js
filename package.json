@@ -11,7 +11,7 @@
     "lint": "xo",
     "lint:fix": "xo --fix",
     "test:testnet": "yarn test:testnet:ci --verbose",
-    "test:testnet:ci": "yarn build && ava --config ./testnet.ava.config.cjs",
+    "test:testnet:ci": "yarn build && ava --config ./ava.testnet.config.cjs",
     "test:sandbox": "yarn test:sandbox:ci --verbose",
     "test:sandbox:ci": "yarn build && ava",
     "test": "yarn test:sandbox && yarn test:testnet",
