@@ -28,32 +28,31 @@ const INIT_SHARES_SUPPLY = '1000000000000000000000000';
 
 const runner = Runner.create();
 
-if (Runner.networkIsSandbox()) {
-  runner.test('using `withData` for contracts > 50kB fails', async (test, {root}) => {
-    test.regex(
-      await captureError(async () => {
-        await root.createAccountFrom({
-          mainnetContract: REF_FINANCE_ACCOUNT,
-          withData: true,
-          block_id: 50_000_000,
-        });
-      }),
-      new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
-    );
-  });
+runner.test('using `withData` for contracts > 50kB fails', async (test, {root}) => {
+  test.regex(
+    await captureError(async () => {
+      await root.createAccountFrom({
+        mainnetContract: REF_FINANCE_ACCOUNT,
+        withData: true,
+        block_id: 50_000_000,
+      });
+    }),
+    new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
+  );
+});
 
-  runner.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
-    const refFinance = await root.createAccountFrom({
-      mainnetContract: REF_FINANCE_ACCOUNT,
-      block_id: DEFAULT_BLOCK_HEIGHT,
-    });
-    test.regex(
-      await captureError(async () => refFinance.view('version')),
-      /The contract is not initialized/,
-    );
+runner.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
+  const refFinance = await root.createAccountFrom({
+    mainnetContract: REF_FINANCE_ACCOUNT,
+    block_id: DEFAULT_BLOCK_HEIGHT,
   });
+  test.regex(
+    await captureError(async () => refFinance.view('version')),
+    /The contract is not initialized/,
+  );
+});
 
-  /**
+/**
    * This test copies logic from the Ref.Finance source code:
    * https://github.com/ref-finance/ref-contracts/blob/e96a6b5e3b403a3ba5271b6a03843a50b3e54a4f/ref-exchange/src/lib.rs#L454-L501
    *
@@ -67,66 +66,63 @@ if (Runner.networkIsSandbox()) {
    *     confidence that your contracts work as expected with deployed contracts
    *     on testnet or mainnet.
    */
-  runner.test('integrate own FT with Ref.Finance', async (test, {root}) => {
-    const [ft, refFinance, wNEAR] = await Promise.all([
-      root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
-        method: 'new_default_meta',
-        args: {
-          owner_id: root,
-          total_supply: NEAR.parse('1,000,000,000 N'),
-        },
-      }),
-      createRef(root),
-      createWNEAR(root),
-    ]);
-    const pool_id = await createPoolWithLiquidity(root, refFinance, {
-      [ft.accountId]: NEAR.parse('5 N').toJSON(),
-      [wNEAR.accountId]: NEAR.parse('10 N').toJSON(),
-    });
-    await depositTokens(root, refFinance, {
-      [ft.accountId]: NEAR.parse('100 N').toJSON(),
-      [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
-    });
-    await depositTokens(root, refFinance, {});
-    test.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-      NEAR.parse('100 N').toJSON(),
-    );
-    test.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
-      NEAR.parse('100 N').toJSON(),
-    );
-    test.is(
-      await refFinance.view('get_pool_total_shares', {pool_id}),
-      INIT_SHARES_SUPPLY,
-    );
-
-    // Get price from pool :0 1 -> 2 tokens.
-    const expectedOut = await refFinance.view('get_return', {
-      pool_id,
-      token_in: ft,
-      amount_in: NEAR.parse('1 N'),
-      token_out: wNEAR,
-    });
-    test.is(expectedOut, '1662497915624478906119726');
-    const amountOut: string = await root.call(refFinance, 'swap', {actions: [{
-      pool_id,
-      token_in: ft,
-      amount_in: NEAR.parse('1 N'),
-      token_out: wNEAR,
-      min_amount_out: '1',
-    }]}, {
-      attachedDeposit: '1',
-    });
-    test.is(amountOut, expectedOut);
-    test.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-      NEAR.parse('99 N').toJSON(),
-    );
+runner.test('integrate own FT with Ref.Finance', async (test, {root}) => {
+  const [ft, refFinance, wNEAR] = await Promise.all([
+    root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
+      method: 'new_default_meta',
+      args: {
+        owner_id: root,
+        total_supply: NEAR.parse('1,000,000,000 N'),
+      },
+    }),
+    createRef(root),
+    createWNEAR(root),
+  ]);
+  const pool_id = await createPoolWithLiquidity(root, refFinance, {
+    [ft.accountId]: NEAR.parse('5 N').toJSON(),
+    [wNEAR.accountId]: NEAR.parse('10 N').toJSON(),
   });
-} else {
-  runner.test('skipping; not on sandbox network');
-}
+  await depositTokens(root, refFinance, {
+    [ft.accountId]: NEAR.parse('100 N').toJSON(),
+    [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
+  });
+  await depositTokens(root, refFinance, {});
+  test.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
+    NEAR.parse('100 N').toJSON(),
+  );
+  test.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
+    NEAR.parse('100 N').toJSON(),
+  );
+  test.is(
+    await refFinance.view('get_pool_total_shares', {pool_id}),
+    INIT_SHARES_SUPPLY,
+  );
+
+  // Get price from pool :0 1 -> 2 tokens.
+  const expectedOut = await refFinance.view('get_return', {
+    pool_id,
+    token_in: ft,
+    amount_in: NEAR.parse('1 N'),
+    token_out: wNEAR,
+  });
+  test.is(expectedOut, '1662497915624478906119726');
+  const amountOut: string = await root.call(refFinance, 'swap', {actions: [{
+    pool_id,
+    token_in: ft,
+    amount_in: NEAR.parse('1 N'),
+    token_out: wNEAR,
+    min_amount_out: '1',
+  }]}, {
+    attachedDeposit: '1',
+  });
+  test.is(amountOut, expectedOut);
+  test.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
+    NEAR.parse('99 N').toJSON(),
+  );
+});
 
 // Contract: https://github.com/near/core-contracts/blob/master/w-near
 async function createWNEAR(
