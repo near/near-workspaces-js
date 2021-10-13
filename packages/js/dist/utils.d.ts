@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
-import { NamedAccount, KeyPair, ClientConfig } from './types';
+import { NamedAccount, KeyPair, ClientConfig, KeyStore } from './types';
 export declare const ONE_NEAR: BN;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
@@ -21,4 +21,10 @@ export declare function urlConfigFromNetwork(network: string | {
  */
 export declare function hashContract(contract: string | Buffer): string;
 export declare const EMPTY_CONTRACT_HASH = "11111111111111111111111111111111";
+/**
+ *
+ * @returns network to connect to. Default 'sandbox'
+ */
+export declare function getNetworkFromEnv(): 'sandbox' | 'testnet';
+export declare function homeKeyStore(): KeyStore;
 //# sourceMappingURL=utils.d.ts.map

@@ -29,7 +29,7 @@ export interface NearAccount {
    * Then once built can be signed and transmitted.
    * E.g.
    * ```ts
-   * const result = await account.createTransaction(bob).transfer(toYocto("1")).signAndSend();
+   * const result = await account.createTransaction(bob).transfer(NEAR.parse("1N")).signAndSend();
    * ```
    * @param receiver account that the transaction is addressed to.
    */

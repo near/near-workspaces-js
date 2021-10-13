@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxRuntime = exports.TestnetRuntime = exports.Runtime = void 0;
 const buffer_1 = require("buffer");
 const path_1 = require("path");
+const near_units_1 = require("near-units");
 const utils_1 = require("../utils");
 const account_1 = require("../account");
 const jsonrpc_1 = require("../jsonrpc");
@@ -19,7 +20,8 @@ class Runtime {
         }
     }
     static async create(config, fn) {
-        switch (config.network) {
+        var _a;
+        switch ((_a = config.network) !== null && _a !== void 0 ? _a : (0, utils_1.getNetworkFromEnv)()) {
             case 'testnet':
                 return TestnetRuntime.create(config, fn);
             case 'sandbox':
@@ -189,7 +191,7 @@ class SandboxRuntime extends Runtime {
             network: 'sandbox',
             rootAccount: SandboxRuntime.BASE_ACCOUNT_ID,
             rpcAddr: '',
-            initialBalance: (0, utils_1.toYocto)('100'),
+            initialBalance: near_units_1.NEAR.parse('100 N').toJSON(),
         };
     }
     get provider() {

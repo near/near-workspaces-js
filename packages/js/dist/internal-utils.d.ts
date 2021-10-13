@@ -22,4 +22,5 @@ export declare function isPathLike(something: any): something is URL | string;
  * user-facing error if no file found.
  */
 export declare function findFile(relativePath: string): Promise<string>;
+export declare const TESTNET: 'testnet';
 //# sourceMappingURL=internal-utils.d.ts.map

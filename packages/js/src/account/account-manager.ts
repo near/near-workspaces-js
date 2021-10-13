@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {NEAR} from 'near-units';
-import {asId, isTopLevelAccount, randomAccountId, toYocto} from '../utils';
+import {asId, isTopLevelAccount, randomAccountId} from '../utils';
 import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
@@ -254,7 +254,7 @@ export class TestnetManager extends AccountManager {
   }
 
   get DEFAULT_INITIAL_BALANCE(): string {
-    return toYocto('10');
+    return NEAR.parse('10 N').toJSON();
   }
 
   get defaultKeyStore(): KeyStore {
@@ -432,7 +432,7 @@ export class SandboxManager extends AccountManager {
   }
 
   get DEFAULT_INITIAL_BALANCE(): string {
-    return toYocto('200');
+    return NEAR.parse('200 N').toJSON();
   }
 
   get defaultKeyStore(): KeyStore {

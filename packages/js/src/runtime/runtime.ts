@@ -1,6 +1,7 @@
 import {Buffer} from 'buffer';
 import {join} from 'path';
-import {toYocto, urlConfigFromNetwork} from '../utils';
+import {NEAR} from 'near-units';
+import {getNetworkFromEnv, urlConfigFromNetwork} from '../utils';
 import {ClientConfig, FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
 import {AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
@@ -29,7 +30,7 @@ export abstract class Runtime {
     config: Partial<Config>,
     fn?: CreateRunnerFn,
   ): Promise<Runtime> {
-    switch (config.network) {
+    switch (config.network ?? getNetworkFromEnv()) {
       case 'testnet':
         return TestnetRuntime.create(config, fn);
       case 'sandbox':
@@ -240,7 +241,7 @@ export class SandboxRuntime extends Runtime {
       network: 'sandbox',
       rootAccount: SandboxRuntime.BASE_ACCOUNT_ID,
       rpcAddr: '', // With be over written
-      initialBalance: toYocto('100'),
+      initialBalance: NEAR.parse('100 N').toJSON(),
     };
   }
 

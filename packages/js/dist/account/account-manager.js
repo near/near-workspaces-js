@@ -24,6 +24,7 @@ const path = __importStar(require("path"));
 const os = __importStar(require("os"));
 const process = __importStar(require("process"));
 const nearAPI = __importStar(require("near-api-js"));
+const near_units_1 = require("near-units");
 const utils_1 = require("../utils");
 const types_1 = require("../types");
 const internal_utils_1 = require("../internal-utils");
@@ -219,7 +220,7 @@ class TestnetManager extends AccountManager {
         return keyStore;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return (0, utils_1.toYocto)('10');
+        return near_units_1.NEAR.parse('10 N').toJSON();
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -368,7 +369,7 @@ class SandboxManager extends AccountManager {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return (0, utils_1.toYocto)('200');
+        return near_units_1.NEAR.parse('200 N').toJSON();
     }
     get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.config.homeDir);

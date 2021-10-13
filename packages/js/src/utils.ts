@@ -1,9 +1,12 @@
 import {Buffer} from 'buffer';
+import * as process from 'process';
+import * as os from 'os';
+import * as path from 'path';
 import BN from 'bn.js';
 import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
 import bs58 from 'bs58';
-import {NamedAccount, KeyPair, ClientConfig} from './types';
+import {NamedAccount, KeyPair, ClientConfig, KeyStore} from './types';
 
 export const ONE_NEAR = new BN('1' + '0'.repeat(24));
 
@@ -91,3 +94,29 @@ export function hashContract(contract: string | Buffer): string {
 }
 
 export const EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
+
+/**
+ *
+ * @returns network to connect to. Default 'sandbox'
+ */
+export function getNetworkFromEnv(): 'sandbox' | 'testnet' {
+  const network = process.env.NEAR_RUNNER_NETWORK;
+  switch (network) {
+    case 'sandbox':
+    case 'testnet':
+      return network;
+    case undefined:
+      return 'sandbox';
+    default:
+      throw new Error(
+        `environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+        + 'use \'testnet\' or \'sandbox\' (the default)',
+      );
+  }
+}
+
+export function homeKeyStore(): KeyStore {
+  return new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
+    path.join(os.homedir(), '.near-credentials'),
+  );
+}

@@ -1,6 +1,8 @@
-import process from 'process';
+import * as os from 'os';
 import {Runtime} from './runtime';
 import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
+import {getNetworkFromEnv, homeKeyStore} from './utils';
+import {TESTNET} from './internal-utils';
 
 /**
  * The main interface to near-runner. Create a new runner instance with {@link Runner.create}, then run code using {@link Runner.run}.
@@ -79,7 +81,6 @@ export class Runner {
     f?: CreateRunnerFn,
   ): Runner {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
-    config.network = config.network ?? this.getNetworkFromEnv();
     return new Runner(Runtime.create(config, fn));
   }
 
@@ -92,19 +93,29 @@ export class Runner {
   }
 
   static getNetworkFromEnv(): 'sandbox' | 'testnet' {
-    const network = process.env.NEAR_RUNNER_NETWORK;
-    switch (network) {
-      case 'sandbox':
-      case 'testnet':
-        return network;
-      case undefined:
-        return 'sandbox';
-      default:
-        throw new Error(
-          `environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
-          + 'use \'testnet\' or \'sandbox\' (the default)',
-        );
-    }
+    return getNetworkFromEnv();
+  }
+
+  /**
+   *
+   * Sets up a connection to a network and executes the provided function.
+   * Unlike `run`, this will run the function once and not clean up after itself.
+   * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
+   * It also defaults to use your home directory's key store.
+   *
+   * @param config Config with the rootAccount argument required.
+   * @param fn Function to run when connected.
+   */
+  static async open(config: Partial<Config> & {rootAccount: string}, fn: RunnerFn): Promise<void> {
+    const innerConfig = {
+      init: false,
+      rm: false,
+      network: TESTNET,
+      homeDir: os.homedir(),
+      keyStore: homeKeyStore(),
+      ...config,
+    };
+    return (await Runtime.create(innerConfig)).run(fn);
   }
 
   async startWaiting(runtime: Promise<Runtime>): Promise<void> {

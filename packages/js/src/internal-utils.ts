@@ -89,3 +89,5 @@ export async function findFile(relativePath: string): Promise<string> {
 
   throw new Error(`Could not find '${relativePath}' relative to any package.json file or your current working directory (${cwd})`);
 }
+
+export const TESTNET: 'testnet' = 'testnet' as const;
