@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccountBuilder = exports.RecordBuilder = void 0;
 const types_1 = require("../types");
+const utils_1 = require("../utils");
 class RecordBuilder {
     constructor() {
         this.records = [];
@@ -78,12 +79,23 @@ class AccountBuilder extends RecordBuilder {
     }
     contract(binary) {
         const code = typeof binary === 'string' ? binary : binary.toString('base64');
-        return this.push({
+        const record = {
             Contract: {
                 account_id: this.account_id,
                 code,
             },
-        });
+        };
+        /**
+         * Check conditions on ordering and hashes in records to throw error before sandbox does.
+        */
+        const accountRecord = this.records.find(r => 'Account' in r && r.Account.account_id === this.account_id);
+        if (!accountRecord) {
+            throw new Error(`Contract record with account_id: ${this.account_id} does not have a preceding Account record.`);
+        }
+        if ((0, utils_1.hashContract)(record.Contract.code) !== accountRecord.Account.account.code_hash) {
+            throw new Error(`The hash field of the Account record with account_id: ${this.account_id} does not equal the hash of the binary in the Contract record.`);
+        }
+        return this.push(record);
     }
 }
 exports.AccountBuilder = AccountBuilder;

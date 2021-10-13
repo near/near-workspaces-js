@@ -12,11 +12,12 @@ import {
   Args,
   AccountView,
   Empty,
+  StateItem,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JsonRpcProvider} from '../jsonrpc';
-import {NO_DEPOSIT} from '../utils';
+import {EMPTY_CONTRACT_HASH, NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {debug} from '../internal-utils';
 import {AccessKeyData, AccountBuilder, AccountData, RecordBuilder, Records} from '../record';
@@ -70,14 +71,70 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-    }: {keyPair?: KeyPair; initialBalance?: string} = {},
+      isSubAccount,
+    }: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean} = {},
   ): Promise<NearAccount> {
     const tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,
+      isSubAccount,
     });
     await tx.signAndSend();
     return this.getAccount(accountId);
+  }
+
+  async createAccountFrom({
+    testnetContract,
+    mainnetContract,
+    withData = false,
+    block_id,
+    keyPair,
+    initialBalance,
+  }: {
+    testnetContract?: string;
+    mainnetContract?: string;
+    withData?: boolean;
+    keyPair?: KeyPair;
+    initialBalance?: string;
+    block_id?: number | string;
+  }): Promise<NearAccount> {
+    if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
+      throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
+    }
+
+    const network = mainnetContract ? 'mainnet' : 'testnet';
+    const refContract = (mainnetContract ?? testnetContract)!;
+
+    const rpc = JsonRpcProvider.fromNetwork(network);
+    const blockQuery = block_id ? {block_id} : undefined;
+    const account = this.getFullAccount(refContract) as Account;
+
+    // Get account view of account on reference network
+    const accountView = await rpc.viewAccount(refContract, blockQuery);
+    accountView.amount = initialBalance ?? accountView.amount;
+    const pubKey = await account.setKey(keyPair);
+    const records = account.recordBuilder()
+      .account(accountView)
+      .accessKey(pubKey);
+
+    if (accountView.code_hash !== EMPTY_CONTRACT_HASH) {
+      const binary = await rpc.viewCodeRaw(refContract, blockQuery);
+      records.contract(binary);
+    }
+
+    await account.sandbox_patch_state(records);
+
+    if (withData) {
+      const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
+      const data = rawData.map(({key, value}) => ({
+        Data: {
+          account_id: account.accountId, data_key: key, value,
+        },
+      }));
+      await account.sandbox_patch_state({records: data});
+    }
+
+    return account;
   }
 
   getAccount(accountId: string): NearAccount {
@@ -99,6 +156,7 @@ export class Account implements NearAccount {
       initialBalance,
       keyPair,
       method,
+      isSubAccount,
     }: {
       args?: Record<string, unknown> | Uint8Array;
       attachedDeposit?: string | BN;
@@ -106,11 +164,13 @@ export class Account implements NearAccount {
       initialBalance?: BN | string;
       keyPair?: KeyPair;
       method?: string;
+      isSubAccount?: boolean;
     } = {},
   ): Promise<NearAccount> {
     let tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,
+      isSubAccount,
     });
     tx = await tx.deployContractFile(wasm);
     if (method) {
@@ -188,10 +248,18 @@ export class Account implements NearAccount {
     return this.provider.viewCode(this.accountId);
   }
 
+  async viewCodeRaw(): Promise<string> {
+    return this.provider.viewCodeRaw(this.accountId);
+  }
+
   async viewState(prefix: string | Uint8Array = ''): Promise<ContractState> {
     return new ContractState(
       await this.provider.viewState(this.accountId, prefix),
     );
+  }
+
+  async viewStateRaw(prefix: string | Uint8Array = ''): Promise<StateItem[]> {
+    return this.provider.viewStateRaw(this.accountId, prefix);
   }
 
   async patchState(key: string, value_: any, borshSchema?: any): Promise<Empty> {
@@ -236,21 +304,24 @@ export class Account implements NearAccount {
   }
 
   async updateAccount(accountData?: Partial<AccountData>): Promise<Empty> {
-    return this.sandbox_patch_state(this.rb.account(accountData));
+    return this.sandbox_patch_state(this.recordBuilder().account(accountData));
   }
 
   async updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty> {
-    return this.sandbox_patch_state(this.rb.accessKey(key, access_key_data));
+    return this.sandbox_patch_state(this.recordBuilder().accessKey(key, access_key_data));
   }
 
   async updateContract(binary: Buffer | string): Promise<Empty> {
-    return this.sandbox_patch_state(this.rb.contract(binary));
+    const accountView = await this.accountView();
+    const rb = this.recordBuilder();
+    rb.account(accountView);
+    return this.sandbox_patch_state(rb.contract(binary));
   }
 
   async updateData(key: string | Buffer, value: string | Buffer): Promise<Empty> {
     const key_string = key instanceof Buffer ? key.toString('base64') : key;
     const value_string = value instanceof Buffer ? value.toString('base64') : value;
-    return this.sandbox_patch_state(this.rb.data(key_string, value_string));
+    return this.sandbox_patch_state(this.recordBuilder().data(key_string, value_string));
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
@@ -262,9 +333,10 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-    }: {keyPair?: KeyPair; initialBalance?: string | BN} = {},
+      isSubAccount = true,
+    }: {keyPair?: KeyPair; initialBalance?: string | BN; isSubAccount?: boolean} = {},
   ): Promise<Transaction> {
-    const newAccountId = this.makeSubAccount(accountId);
+    const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
     const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
     const amount = (initialBalance ?? this.manager.initialBalance).toString();
     return this.createTransaction(newAccountId)
@@ -277,7 +349,8 @@ export class Account implements NearAccount {
     return (await this.manager.getKey(accountId)) ?? this.manager.setKey(accountId, keyPair);
   }
 
-  private get rb(): AccountBuilder {
+  private recordBuilder(): AccountBuilder {
     return RecordBuilder.fromAccount(this);
   }
 }
+

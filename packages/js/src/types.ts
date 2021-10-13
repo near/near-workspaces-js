@@ -54,14 +54,26 @@ export interface AccountBalance {
   available: NEAR;
 }
 
+export type Network = 'testnet' | 'mainnet';
+
 export interface ClientConfig {
-  network: 'sandbox' | 'testnet';
+  network: 'sandbox' | Network;
   rootAccount?: string;
   rpcAddr: string;
   helperUrl?: string;
   explorerUrl?: string;
   initialBalance?: string;
   walletUrl?: string;
+  archivalUrl?: string;
+}
+
+export const TESTNET_RPC_ADDR = 'https://archival-rpc.testnet.near.org';
+export const MAINNET_RPC_ADDR = 'https://archival-rpc.mainnet.near.org';
+
+export interface StateItem {
+  key: string;
+  value: string;
+  proof: string[];
 }
 
 export type Empty = {}; // eslint-disable-line @typescript-eslint/ban-types

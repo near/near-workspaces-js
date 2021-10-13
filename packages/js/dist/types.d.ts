@@ -31,14 +31,23 @@ export interface AccountBalance {
     staked: NEAR;
     available: NEAR;
 }
+export declare type Network = 'testnet' | 'mainnet';
 export interface ClientConfig {
-    network: 'sandbox' | 'testnet';
+    network: 'sandbox' | Network;
     rootAccount?: string;
     rpcAddr: string;
     helperUrl?: string;
     explorerUrl?: string;
     initialBalance?: string;
     walletUrl?: string;
+    archivalUrl?: string;
+}
+export declare const TESTNET_RPC_ADDR = "https://archival-rpc.testnet.near.org";
+export declare const MAINNET_RPC_ADDR = "https://archival-rpc.mainnet.near.org";
+export interface StateItem {
+    key: string;
+    value: string;
+    proof: string[];
 }
 export declare type Empty = {};
 //# sourceMappingURL=types.d.ts.map

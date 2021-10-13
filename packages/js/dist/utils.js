@@ -22,9 +22,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+const buffer_1 = require("buffer");
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
+const js_sha256_1 = __importDefault(require("js-sha256"));
+const bs58_1 = __importDefault(require("bs58"));
 exports.ONE_NEAR = new bn_js_1.default('1' + '0'.repeat(24));
 function toYocto(amount) {
     return nearAPI.utils.format.parseNearAmount(amount);
@@ -67,4 +70,41 @@ function isTopLevelAccount(accountId) {
     return accountId.includes('.');
 }
 exports.isTopLevelAccount = isTopLevelAccount;
+function configFromDomain(network) {
+    return {
+        network,
+        rpcAddr: `https://archival-rpc.${network}.near.org`,
+        walletUrl: `https://wallet.${network}.near.org`,
+        helperUrl: `https://helper.${network}.near.org`,
+        explorerUrl: `https://explorer.${network}.near.org`,
+        archivalUrl: `https://archival-rpc.${network}.near.org`,
+    };
+}
+function urlConfigFromNetwork(network) {
+    const networkName = typeof network === 'string' ? network : network.network;
+    switch (networkName) {
+        case 'sandbox':
+            return {
+                network: 'sandbox',
+                rpcAddr: 'http://localhost',
+            };
+        case 'testnet':
+        case 'mainnet': return configFromDomain(networkName);
+        default:
+            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+    }
+}
+exports.urlConfigFromNetwork = urlConfigFromNetwork;
+/**
+ *
+ * @param contract Base64 encoded binary or Buffer.
+ * @returns sha256 hash of contract.
+ */
+function hashContract(contract) {
+    const bytes = typeof contract === 'string' ? buffer_1.Buffer.from(contract, 'base64') : contract;
+    const buffer = buffer_1.Buffer.from(js_sha256_1.default.sha256(bytes), 'hex');
+    return bs58_1.default.encode(buffer);
+}
+exports.hashContract = hashContract;
+exports.EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
 //# sourceMappingURL=utils.js.map

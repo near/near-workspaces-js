@@ -15,10 +15,11 @@
     "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
+    "bs58": "^4.0.1",
     "callsites": "^4.0.0",
     "fs-extra": "^10.0.0",
     "js-sha256": "^0.9.0",
-    "near-api-js": "^0.43.0",
+    "near-api-js": "^0.43.1",
     "near-sandbox": "^0.0.8",
     "near-units": "^0.1.9",
     "node-port-check": "^2.0.1",
@@ -47,5 +48,8 @@
   "engines": {
     "node": ">= 14.0.0",
     "npm": ">= 6.0.0"
+  },
+  "devDependencies": {
+    "@types/bs58": "^4.0.1"
   }
 }

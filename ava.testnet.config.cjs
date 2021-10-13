@@ -5,4 +5,5 @@ module.exports = {
 
 module.exports.files.push(
   '!__tests__/02*',
+  '!__tests__/05*',
 );
