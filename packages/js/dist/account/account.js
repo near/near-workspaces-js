@@ -204,7 +204,10 @@ class Account {
         return this.sandbox_patch_state(this.recordBuilder().accessKey(key, access_key_data));
     }
     async updateContract(binary) {
-        return this.sandbox_patch_state(this.recordBuilder().contract(binary));
+        const accountView = await this.accountView();
+        const rb = this.recordBuilder();
+        rb.account(accountView);
+        return this.sandbox_patch_state(rb.contract(binary));
     }
     async updateData(key, value) {
         const key_string = key instanceof buffer_1.Buffer ? key.toString('base64') : key;

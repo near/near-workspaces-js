@@ -11,21 +11,6 @@ export class RecordBuilder {
   }
 
   push(record: StateRecord): this {
-    /**
-     * Check conditions on ordering and hashs in records to throw error before sandbox does.
-    */
-    if ('Contract' in record) {
-      const {account_id} = record.Contract;
-      const accountRecord = this.records.find(r => 'Account' in r && r.Account.account_id === account_id) as Account;
-      if (!accountRecord) {
-        throw new Error(`Contract record with account_id: ${account_id} does not have a preceding Account record.`);
-      }
-
-      if (hashContract(record.Contract.code) !== accountRecord.Account.account.code_hash) {
-        throw new Error(`The hash field of the Account record with account_id: ${account_id} does not equal the hash of the binary in the Contract record.`);
-      }
-    }
-
     this.records.push(record);
     return this;
   }
@@ -103,14 +88,26 @@ export class AccountBuilder extends RecordBuilder {
   }
 
   contract(binary: Buffer | string): this {
-    const code
-      = typeof binary === 'string' ? binary : binary.toString('base64');
-
-    return this.push({
+    const code = typeof binary === 'string' ? binary : binary.toString('base64');
+    const record = {
       Contract: {
         account_id: this.account_id,
         code,
       },
-    });
+    };
+
+    /**
+     * Check conditions on ordering and hashes in records to throw error before sandbox does.
+    */
+    const accountRecord = this.records.find(r => 'Account' in r && r.Account.account_id === this.account_id) as Account;
+    if (!accountRecord) {
+      throw new Error(`Contract record with account_id: ${this.account_id} does not have a preceding Account record.`);
+    }
+
+    if (hashContract(record.Contract.code) !== accountRecord.Account.account.code_hash) {
+      throw new Error(`The hash field of the Account record with account_id: ${this.account_id} does not equal the hash of the binary in the Contract record.`);
+    }
+
+    return this.push(record);
   }
 }

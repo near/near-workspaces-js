@@ -312,7 +312,10 @@ export class Account implements NearAccount {
   }
 
   async updateContract(binary: Buffer | string): Promise<Empty> {
-    return this.sandbox_patch_state(this.recordBuilder().contract(binary));
+    const accountView = await this.accountView();
+    const rb = this.recordBuilder();
+    rb.account(accountView);
+    return this.sandbox_patch_state(rb.contract(binary));
   }
 
   async updateData(key: string | Buffer, value: string | Buffer): Promise<Empty> {
