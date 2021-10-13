@@ -52,9 +52,9 @@ export function isTopLevelAccount(accountId: string): boolean {
   return accountId.includes('.');
 }
 
-function configFromDomain(network: string): ClientConfig {
+function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
   return {
-    network: 'mainnet',
+    network,
     rpcAddr: `https://archival-rpc.${network}.near.org`,
     walletUrl: `https://wallet.${network}.near.org`,
     helperUrl: `https://helper.${network}.near.org`,

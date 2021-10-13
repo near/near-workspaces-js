@@ -72,7 +72,7 @@ function isTopLevelAccount(accountId) {
 exports.isTopLevelAccount = isTopLevelAccount;
 function configFromDomain(network) {
     return {
-        network: 'mainnet',
+        network,
         rpcAddr: `https://archival-rpc.${network}.near.org`,
         walletUrl: `https://wallet.${network}.near.org`,
         helperUrl: `https://helper.${network}.near.org`,
