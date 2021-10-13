@@ -131,11 +131,11 @@ if (Runner.networkIsSandbox()) {
 // Contract: https://github.com/near/core-contracts/blob/master/w-near
 async function createWNEAR(
   creator: NearAccount,
-  /// block_id = DEFAULT_BLOCK_HEIGHT,
+  block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
   const wNEAR = await creator.createAccountFrom({
     mainnetContract: 'wrap.near',
-    /// block_id
+    block_id,
   });
   await creator.call(wNEAR, 'new', {
     owner_id: creator,
@@ -153,11 +153,11 @@ async function createWNEAR(
 // Contract: https://github.com/ref-finance/ref-contracts/
 async function createRef(
   creator: NearAccount,
-  /// block_id = DEFAULT_BLOCK_HEIGHT,
+  block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
   const refFinance = await creator.createAccountFrom({
     mainnetContract: REF_FINANCE_ACCOUNT,
-    /// block_id,
+    block_id,
     initialBalance: NEAR.parse('1000 N').toJSON(),
   });
   await creator.call(
