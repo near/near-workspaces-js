@@ -70,14 +70,14 @@ class Account {
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    async createAccountFrom({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
+    async createAccountFrom({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }
         const network = mainnetContract ? 'mainnet' : 'testnet';
         const refContract = (mainnetContract !== null && mainnetContract !== void 0 ? mainnetContract : testnetContract);
         const rpc = jsonrpc_1.JsonRpcProvider.fromNetwork(network);
-        const blockQuery = blockId ? { blockId } : undefined;
+        const blockQuery = block_id ? { block_id } : undefined;
         const account = this.getFullAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);

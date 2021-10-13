@@ -53,7 +53,7 @@ export interface NearAccount {
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     /**
-     * Transfers a contract from other network with state blockId or default to current block.
+     * Transfers a contract from other network with state block_id or default to current block.
      * This includes the account_id on the reference network.
      *
      * Must pass `testnetContract` or `mainnetContract` but not both.
@@ -65,7 +65,7 @@ export interface NearAccount {
         withData?: boolean;
         keyPair?: KeyPair;
         initialBalance?: string;
-        blockId?: number | string;
+        block_id?: number | string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     /** Adds suffix to accountId if account isn't sub account or have full including top level account */

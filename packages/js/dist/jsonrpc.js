@@ -76,6 +76,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
         });
     }
     async protocolConfig(blockQuery = OPTIMISTIC) {
+        // @ts-expect-error Bad type
         return this.experimental_protocolConfig(blockQuery);
     }
     async account_balance(account_id, blockQuery) {

@@ -23,7 +23,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns Buffer of Wasm binary
      */
     viewCode(account_id: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<Buffer>;
@@ -33,37 +33,37 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns Base64 string of Wasm binary
      */
     viewCodeRaw(account_id: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<string>;
     viewAccount(account_id: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<AccountView>;
     accountExists(account_id: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<boolean>;
     view_access_key(account_id: string, publicKey: PublicKey | string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<any>;
     protocolConfig(blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<NearProtocolConfig>;
     account_balance(account_id: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<AccountBalance>;
     view_call(account_id: string, method_name: string, args: Record<string, unknown>, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<CodeResult>;
@@ -76,7 +76,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns
      */
     view_call_raw(account_id: string, method_name: string, args_base64: string, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<CodeResult>;
@@ -89,7 +89,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns raw RPC response
      */
     viewState(account_id: string, prefix: string | Uint8Array, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<Array<{
@@ -105,7 +105,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns raw RPC response
      */
     viewStateRaw(account_id: string, prefix: string | Uint8Array, blockQuery?: {
-        blockId: BlockId;
+        block_id: BlockId;
     } | {
         finality: Finality;
     }): Promise<StateItem[]>;

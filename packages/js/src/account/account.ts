@@ -87,7 +87,7 @@ export class Account implements NearAccount {
     testnetContract,
     mainnetContract,
     withData = false,
-    blockId,
+    block_id,
     keyPair,
     initialBalance,
   }: {
@@ -96,7 +96,7 @@ export class Account implements NearAccount {
     withData?: boolean;
     keyPair?: KeyPair;
     initialBalance?: string;
-    blockId?: number | string;
+    block_id?: number | string;
   }): Promise<NearAccount> {
     if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
       throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
@@ -106,7 +106,7 @@ export class Account implements NearAccount {
     const refContract = (mainnetContract ?? testnetContract)!;
 
     const rpc = JsonRpcProvider.fromNetwork(network);
-    const blockQuery = blockId ? {blockId} : undefined;
+    const blockQuery = block_id ? {block_id} : undefined;
     const account = this.getFullAccount(refContract) as Account;
 
     // Get account view of account on reference network

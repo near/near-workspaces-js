@@ -2,7 +2,7 @@ import {Gas, NEAR, NearAccount, Runner, captureError} from 'near-runner-ava';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
-/// const DEFAULT_BLOCK_HEIGHT = 45_800_000;
+const DEFAULT_BLOCK_HEIGHT = 45_800_000;
 
 const INIT_SHARES_SUPPLY = '1000000000000000000000000';
 
@@ -15,7 +15,7 @@ if (Runner.networkIsSandbox()) {
         await root.createAccountFrom({
           mainnetContract: REF_FINANCE_ACCOUNT,
           withData: true,
-          /// blockId: DEFAULT_BLOCK_HEIGHT,
+          block_id: 50_000_000,
         });
       }),
       new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
@@ -25,7 +25,7 @@ if (Runner.networkIsSandbox()) {
   runner.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
     const refFinance = await root.createAccountFrom({
       mainnetContract: REF_FINANCE_ACCOUNT,
-      /// blockId: DEFAULT_BLOCK_HEIGHT,
+      block_id: DEFAULT_BLOCK_HEIGHT,
     });
     test.regex(
       await captureError(async () => refFinance.view('version')),
@@ -97,11 +97,11 @@ if (Runner.networkIsSandbox()) {
 // Contract: https://github.com/near/core-contracts/blob/master/w-near
 async function createWNEAR(
   creator: NearAccount,
-  /// blockId = DEFAULT_BLOCK_HEIGHT,
+  /// block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
   const wNEAR = await creator.createAccountFrom({
     mainnetContract: 'wrap.near',
-    /// blockId
+    /// block_id
   });
   await creator.call(wNEAR, 'new', {
     owner_id: creator,
@@ -119,11 +119,11 @@ async function createWNEAR(
 // Contract: https://github.com/ref-finance/ref-contracts/
 async function createRef(
   creator: NearAccount,
-  /// blockId = DEFAULT_BLOCK_HEIGHT,
+  /// block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
   const refFinance = await creator.createAccountFrom({
     mainnetContract: REF_FINANCE_ACCOUNT,
-    /// blockId,
+    /// block_id,
     initialBalance: NEAR.parse('1000 N').toJSON(),
   });
   await creator.call(
