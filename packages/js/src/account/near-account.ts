@@ -58,7 +58,7 @@ export interface NearAccount {
   ): Promise<NearAccount>;
 
   /**
-   * Trasfers a contract from other network with state blockId or default to current block.
+   * Transfers a contract from other network with state blockId or default to current block.
    * This includes the account_id on the reference network.
    *
    * Must pass `testnetContract` or `mainnetContract` but not both.
@@ -67,6 +67,7 @@ export interface NearAccount {
   createAccountFrom(options: {
     testnetContract?: string;
     mainnetContract?: string;
+    withData?: boolean;
     keyPair?: KeyPair;
     initialBalance?: string;
     blockId?: number | string;

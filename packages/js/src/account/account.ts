@@ -86,12 +86,14 @@ export class Account implements NearAccount {
   async createAccountFrom({
     testnetContract,
     mainnetContract,
+    withData = false,
     blockId,
     keyPair,
     initialBalance,
   }: {
     testnetContract?: string;
     mainnetContract?: string;
+    withData?: boolean;
     keyPair?: KeyPair;
     initialBalance?: string;
     blockId?: number | string;
@@ -121,13 +123,17 @@ export class Account implements NearAccount {
     }
 
     await account.sandbox_patch_state(records);
-    const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
-    const data = rawData.map(({key, value}) => ({
-      Data: {
-        account_id: account.accountId, data_key: key, value,
-      },
-    }));
-    await account.sandbox_patch_state({records: data});
+
+    if (withData) {
+      const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
+      const data = rawData.map(({key, value}) => ({
+        Data: {
+          account_id: account.accountId, data_key: key, value,
+        },
+      }));
+      await account.sandbox_patch_state({records: data});
+    }
+
     return account;
   }
 

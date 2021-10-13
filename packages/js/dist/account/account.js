@@ -70,7 +70,7 @@ class Account {
         await tx.signAndSend();
         return this.getAccount(accountId);
     }
-    async createAccountFrom({ testnetContract, mainnetContract, blockId, keyPair, initialBalance, }) {
+    async createAccountFrom({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }
@@ -91,13 +91,15 @@ class Account {
             records.contract(binary);
         }
         await account.sandbox_patch_state(records);
-        const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
-        const data = rawData.map(({ key, value }) => ({
-            Data: {
-                account_id: account.accountId, data_key: key, value,
-            },
-        }));
-        await account.sandbox_patch_state({ records: data });
+        if (withData) {
+            const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
+            const data = rawData.map(({ key, value }) => ({
+                Data: {
+                    account_id: account.accountId, data_key: key, value,
+                },
+            }));
+            await account.sandbox_patch_state({ records: data });
+        }
         return account;
     }
     getAccount(accountId) {
