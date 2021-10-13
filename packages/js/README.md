@@ -87,6 +87,28 @@ Let's look at some code that focuses on near-runner itself, without any AVA or o
 
 See the [\_\_tests__](./__tests__) directory in this project for more examples.
 
+"Spooning" Contracts from Testnet and Mainnet
+=============================================
+
+[Spooning a blockchain](https://coinmarketcap.com/alexandria/glossary/spoon-blockchain) is copying the data from one network into a different network. near-runner makes it easy to copy data from Mainnet or Testnet contracts into your local Sandbox environment:
+
+```ts
+await runner.run(async ({root}) => {
+  const refFinance = await root.createAccountFrom({
+    mainnetContract: 'v2.ref-finance.near',
+    blockId: 50_000_000,
+    withData: true,
+  });
+});
+```
+
+This would copy the Wasm bytes and contract state from [v2.ref-finance.near](https://explorer.near.org/accounts/v2.ref-finance.near) to your local blockchain as it existed at block `50_000_000`. This makes use of Sandbox's special [patch state](#patch-state-on-the-fly) feature to keep the contract name the same, even though the top level account might not exist locally (note that this means it only works in Sandbox testing mode). You can then interact with the contract in a deterministic way the same way you interact with all other accounts created with near-runner.
+
+Gotcha: `withData` will only work out-of-the-box if the contract's data is 50kB or less. This is due to the default configuration of RPC servers; see [the "Heads Up" note here](https://docs.near.org/docs/api/rpc/contracts#view-contract-state). Some teams at NEAR are hard at work giving you an easy way to run your own RPC server, at which point you can point tests at your custom RPC endpoint and get around the 50kB limit.
+
+See an example of spooning contracts at [__tests__/05.spoon-contract-to-sandbox.ava.ts](./__tests__/05.spoon-contract-to-sandbox.ava.ts).
+
+
 Running on Testnet
 ==================
 

@@ -58,10 +58,15 @@ export interface NearAccount {
   ): Promise<NearAccount>;
 
   /**
-   * Transfers a contract from other network with state block_id or default to current block.
-   * This includes the account_id on the reference network.
+   * Create an account, copying Wasm bytes and contract name from a given `testnetContract` or `mainnetContract`.
    *
-   * Must pass `testnetContract` or `mainnetContract` but not both.
+   * This makes use of Sandbox's patch state feature, and so only works in Sandbox mode.
+   *
+   * You can include `withData: true` to copy account data as well, but this is
+   * currently limited by the default RPC limit of 50kB. You could set up your
+   * own RPC server to get around this limit (using your own RPC endpoint will
+   * be easier soon).
+   *
    * @param options
    */
   createAccountFrom(options: {

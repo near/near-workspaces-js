@@ -1,3 +1,23 @@
+/**
+ * This test shows how to "spoon" a contract from testnet or mainnet to your
+ * local sandbox environment. "Spooning" is copying a contract's bytes (compiled
+ * source code) and data from one network and pasting it into another.
+ *
+ * This test shows off how to spoon just contract bytes from mainnet. You could
+ * do the same with testnet: just replace the `mainnetContract` lines below with
+ * a `testnetContract` equivalent.
+ *
+ * You can use `withData` to also pull the data of a contract. However, at this
+ * time most RPC endpoints limit these queries to 50kB (see the "Heads Up" at
+ * https://docs.near.org/docs/api/rpc/contracts#view-contract-state). Some teams
+ * at NEAR are hard at work giving you an easy way to run your own RPC server,
+ * at which point you can point tests at your custom RPC endpoint and get around
+ * the 50kB limit.
+ *
+ * Even without the ability to fetch the data, being able to test against "live"
+ * contracts can give you a huge confidence boost that your contracts will work
+ * as expected once actually deployed.
+ */
 import {Gas, NEAR, NearAccount, Runner, captureError} from 'near-runner-ava';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
@@ -33,6 +53,20 @@ if (Runner.networkIsSandbox()) {
     );
   });
 
+  /**
+   * This test copies logic from the Ref.Finance source code:
+   * https://github.com/ref-finance/ref-contracts/blob/e96a6b5e3b403a3ba5271b6a03843a50b3e54a4f/ref-exchange/src/lib.rs#L454-L501
+   *
+   * However, this test also has some cool upgrades compared to the tests there:
+   *
+   *   - Whereas Rust unit tests can only interact with one contract, this
+   *     test makes actual cross-contract calls (compare `depositTokens` here to
+   *     `deposit_tokens` at the link above, for example).
+   *   - It uses a local Fungible Token contract while pulling "live" versions
+   *     of Ref Finance and wNEAR. Using this approach can help give you
+   *     confidence that your contracts work as expected with deployed contracts
+   *     on testnet or mainnet.
+   */
   runner.test('integrate own FT with Ref.Finance', async (test, {root}) => {
     const [ft, refFinance, wNEAR] = await Promise.all([
       root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
