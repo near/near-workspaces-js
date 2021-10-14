@@ -13,4 +13,4 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Run tests
-        run: (yarn && yarn test:sandbox:ci --fail-fast) || NEAR_RUNNER_DEBUG=true yarn test:sandbox:ci --fail-fast --verbose --noStackTrace
+        run: (yarn && yarn test:sandbox:ci --fail-fast) || NEAR_WORKSPACES_DEBUG=true yarn test:sandbox:ci --fail-fast --verbose --noStackTrace

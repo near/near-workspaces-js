@@ -5,27 +5,27 @@ const {existsSync} = require('fs');
 const {spawnSync} = require('child_process');
 const {copySync, writeJsonSync} = require('fs-extra');
 
-const HELP = `Bootstrap a project with near-runner-ava. Examples:
+const HELP = `Bootstrap a project with near-workspaces-ava. Examples:
 
-    near-runner-init             # Bootstrap a project with near-runner-ava
-    near-runner-init -h, --help  # Print this (for AVA's help, use 'ava --help')`;
+    near-workspaces-init             # Bootstrap a project with near-workspaces-ava
+    near-workspaces-init -h, --help  # Print this (for AVA's help, use 'ava --help')`;
 
 if (process.argv.includes('-h') || process.argv.includes('--help')) {
   console.log(HELP);
   process.exit(0);
 }
 
-if (existsSync(join(process.cwd(), 'near-runner'))) {
+if (existsSync(join(process.cwd(), 'near-workspaces'))) {
   console.log(
-    'near-runner directory exists; perhaps you already bootstrapped?'
+    'near-workspaces directory exists; perhaps you already bootstrapped?'
   );
   process.exit(1);
 }
 
 try {
   copySync(
-    join(__dirname, '..', 'bootstrap-starter', 'near-runner'),
-    join(process.cwd(), 'near-runner')
+    join(__dirname, '..', 'bootstrap-starter', 'near-workspaces'),
+    join(process.cwd(), 'near-workspaces')
   );
   copySync(
     join(__dirname, '..', 'bootstrap-starter', 'test.sh'),
@@ -44,15 +44,15 @@ try {
   process.exit(1);
 }
 
-const packageJsonFile = join(process.cwd(), 'near-runner/package.json');
+const packageJsonFile = join(process.cwd(), 'near-workspaces/package.json');
 const version = require(join(__dirname, '../package.json')).version;
 const packageJson = require(packageJsonFile);
-packageJson.devDependencies['near-runner-ava'] = version;
+packageJson.devDependencies['near-workspaces-ava'] = version;
 writeJsonSync(packageJsonFile, packageJson, { spaces: 2 });
 
 if (!process.argv.includes('--no-install')) {
   const install = spawnSync('npm', ['install'], {
-    cwd: join(process.cwd(), 'near-runner'),
+    cwd: join(process.cwd(), 'near-workspaces'),
     stdio: 'inherit',
   });
 

@@ -1,35 +1,35 @@
-import { CreateRunnerFn, Config, Runner as RawRunner, AccountArgs, NearRuntime } from 'near-runner';
+import { InitWorkspaceFn, Config, Workspace as RawWorkspace, AccountArgs, WorkspaceContainerInterface } from 'near-workspaces';
 import * as ava from 'ava';
 import test from 'ava';
-export * from 'near-runner';
+export * from 'near-workspaces';
 export { test as ava };
-export declare type AvaRunnerFn = (t: ava.ExecutionContext, args: AccountArgs, runtime: NearRuntime) => void | Promise<void>;
-export declare interface Runner extends RawRunner {
+export declare type AvaWorkspaceFn = (t: ava.ExecutionContext, args: AccountArgs, workspace: WorkspaceContainerInterface) => void | Promise<void>;
+export declare interface Workspace extends RawWorkspace {
     /**
-     * Convenient wrapper around AVA's test function and near-runner's `runner.run`.
-     * In local sandbox mode, each `runner.test` will:
+     * Convenient wrapper around AVA's test function and `Workspace.clone`
+     * In local sandbox mode, each `workspace.clone` will:
      *
      *   - start a new local blockchain
-     *   - copy the state from the blockchain created in `Runner.create`
-     *   - get access to the accounts created in `Runner.create` using the same variable names
-     *   - run concurrently with all other `runner.test` calls, keeping data isolated
+     *   - copy the state from the blockchain created in `Workspace.init`
+     *   - get access to the accounts created in `Workspace.init` using the same variable names
+     *   - run concurrently with all other `workspace.clone` calls, keeping data isolated
      *   - shut down at the end, forgetting all new data created
      *
      * In testnet mode, the same functionality is achieved via different means,
      * since all actions must occur on one blockchain instead of N blockchains.
      *
-     * It's also worth knowing that `runner.test` is syntax sugar added by
-     * near-runner-ava. With raw AVA + near-runner, here's how to write a test:
+     * `workspace.test` is added to `near-workspaces` by `near-workspaces-ava`, and is
+     * shorthand for:
      *
      *     import avaTest from 'ava';
-     *     import {Runner} from 'near-runner';
-     *     // Alternatively, you can import Runner and ava both from near-runner-ava:
-     *     // import {ava as avaTest, Runner} from 'near-runner-ava';
+     *     import {Workspace} from 'near-workspaces';
+     *     // Alternatively, you can import Workspace and ava both from near-workspaces-ava:
+     *     // import {ava as avaTest, Workspace} from 'near-workspaces-ava';
      *
-     *     const runner = Runner.create(...);
+     *     const workspace = Workspace.init(...);
      *
      *     avaTest('some behavior', async test => {
-     *       await runner.run(async ({root, ...}) => {
+     *       await workspace.clone(async ({root, ...}) => {
      *         ...
      *       });
      *     });
@@ -38,16 +38,16 @@ export declare interface Runner extends RawRunner {
      * saving an indentation level and avoiding one extra `await`.
      *
      * @param description title of test run by AVA, shown in test output
-     * @param fn body of test
+     * @param fn body of test; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.clone(async ({root, alice, bob}) => {...})`
      */
-    test(description: string, fn?: AvaRunnerFn): void;
+    test(description: string, fn?: AvaWorkspaceFn): void;
 }
 /**
- * The main interface to near-runner-ava. Create a new runner instance with {@link Runner.create}, then run tests using {@link Runner.test}.
+ * The main interface to near-workspace-ava. Create a new workspace instance with {@link Workspace.init}, then run tests using {@link Workspace.clone}.
  *
  * @example
- * const {Runner, NEAR, Gas} from 'near-runner';
- * const runner = Runner.create(async ({root}) => {
+ * const {Workspace, NEAR, Gas} from 'near-workspace';
+ * const workspace = Workspace.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.sandbox` (get actual account ID with `alice.accountId`)
  *   const alice = root.createAccount('alice');
  *   // Create a subaccount of `root`, deploy a contract to it, and call a method on that contract
@@ -55,15 +55,15 @@ export declare interface Runner extends RawRunner {
  *     method: 'init',
  *     args: {owner_id: root}
  *   });
- *   // Everything in this Runner.create function will happen prior to each call of `runner.test`
+ *   // Everything in this Workspace.init function will happen prior to each call of `workspace.clone`
  *   await alice.call(contract, 'some_registration_method', {}, {
  *     attachedDeposit: NEAR.parse('50 milliNEAR'),
  *     gas: Gas.parse('300Tgas'), // 300 Tgas is the max; 30 is the default
  *   });
- *   // Accounts returned from `Runner.create` function will be available in `runner.test` calls
+ *   // Accounts returned from `Workspace.init` function will be available in `workspace.clone` calls
  *   return {alice, contract};
  * });
- * runner.test(async (test, {alice, contract, root}) => {
+ * workspace.clone(async (test, {alice, contract, root}) => {
  *   await root.call(contract, 'some_change_method', {account_id: alice});
  *   // the `test` object comes from AVA, and has test assertions and other helpers
  *   test.is(
@@ -71,7 +71,7 @@ export declare interface Runner extends RawRunner {
  *     await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
- * runner.test(async (test, {alice, contract, root}) => {
+ * workspace.clone(async (test, {alice, contract, root}) => {
  *   // This test does not call `some_change_method`
  *   test.not(
  *     await contract.view('some_view_method', {account_id: root});
@@ -79,23 +79,23 @@ export declare interface Runner extends RawRunner {
  *   );
  * });
  */
-export declare class Runner extends RawRunner {
+export declare class Workspace extends RawWorkspace {
     /**
-     * Create a new runner. In local sandbox mode, this will:
+     * Create a new workspace. In local sandbox mode, this will:
      *
      *   - Create a new local blockchain
      *   - Create the root account for that blockchain, available as `root`:
-     *         Runner.create(async => ({root}) => {...})
+     *         Workspace.init(async => ({root}) => {...})
      *   - Execute any actions passed to the function
      *   - Shut down the newly created blockchain, but *save the data*
      *
      * In testnet mode, the same functionality is achieved via different means,
      * since all actions must occur on one blockchain instead of N blockchains.
      *
-     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `runner.test` calls.
+     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.clone` calls.
      * @param f If configOrFunction is a config object, this must be a function to run
-     * @returns an instance of the Runner class, which is used to run tests.
+     * @returns an instance of the Workspace class, which is used to run tests.
      */
-    static create(configOrFunction?: CreateRunnerFn | Partial<Config>, f?: CreateRunnerFn): Runner;
+    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Workspace;
 }
 //# sourceMappingURL=index.d.ts.map

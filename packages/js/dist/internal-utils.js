@@ -59,13 +59,13 @@ async function asyncSpawn(bin, ...args) {
 }
 exports.asyncSpawn = asyncSpawn;
 function debug(...args) {
-    if (process_1.default.env.NEAR_RUNNER_DEBUG) {
+    if (process_1.default.env.NEAR_WORKSPACES_DEBUG) {
         console.error(...args);
     }
 }
 exports.debug = debug;
 function txDebug(tx) {
-    if (process_1.default.env.NEAR_RUNNER_TXDEBUG) {
+    if (process_1.default.env.NEAR_WORKSPACES_TXDEBUG) {
         console.error(tx);
     }
 }

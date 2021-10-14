@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SandboxRuntime = exports.TestnetRuntime = exports.Runtime = void 0;
+exports.SandboxRuntime = exports.TestnetRuntime = exports.WorkspaceContainer = void 0;
 const buffer_1 = require("buffer");
 const path_1 = require("path");
 const near_units_1 = require("near-units");
@@ -9,7 +9,7 @@ const account_1 = require("../account");
 const jsonrpc_1 = require("../jsonrpc");
 const internal_utils_1 = require("../internal-utils");
 const server_1 = require("./server");
-class Runtime {
+class WorkspaceContainer {
     constructor(config, accounts) {
         this.returnedAccounts = new Map();
         this.createdAccounts = {};
@@ -32,8 +32,8 @@ class Runtime {
         }
     }
     static async createAndRun(fn, config = {}) {
-        const runtime = await Runtime.create(config);
-        await runtime.run(fn);
+        const runtime = await WorkspaceContainer.create(config);
+        await runtime.clone(fn);
     }
     get accounts() {
         return { root: this.manager.root, ...Object.fromEntries(Object.entries(this.createdAccounts).map(([argName, account]) => [
@@ -56,7 +56,7 @@ class Runtime {
     isTestnet() {
         return this.config.network === 'testnet';
     }
-    async run(fn) {
+    async clone(fn) {
         (0, internal_utils_1.debug)('About to runtime.run with config', this.config);
         try {
             await this.beforeRun();
@@ -86,7 +86,7 @@ class Runtime {
         (0, internal_utils_1.debug)('About to runtime.createRun with config', this.config);
         try {
             await this.beforeRun();
-            const accounts = await fn({ runtime: this, root: this.root });
+            const accounts = await fn({ workspace: this, root: this.root });
             this.createdAccounts = { ...this.createdAccounts, ...accounts };
             return accounts;
         }
@@ -105,12 +105,12 @@ class Runtime {
         return fn();
     }
 }
-exports.Runtime = Runtime;
-class TestnetRuntime extends Runtime {
+exports.WorkspaceContainer = WorkspaceContainer;
+class TestnetRuntime extends WorkspaceContainer {
     static async create(config, initFn) {
         // Add better error handling
         const fullConfig = { ...this.defaultConfig, initFn, ...config };
-        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `runner.run`');
+        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `workspace.clone`');
         const runtime = new TestnetRuntime(fullConfig);
         await runtime.manager.init();
         return runtime;
@@ -141,7 +141,7 @@ class TestnetRuntime extends Runtime {
     }
     async beforeRun() {
         if (this.config.initFn) {
-            this.createdAccounts = await this.config.initFn({ runtime: this, root: this.root });
+            this.createdAccounts = await this.config.initFn({ workspace: this, root: this.root });
         }
     }
     async afterRun() {
@@ -149,7 +149,7 @@ class TestnetRuntime extends Runtime {
     }
 }
 exports.TestnetRuntime = TestnetRuntime;
-class SandboxRuntime extends Runtime {
+class SandboxRuntime extends WorkspaceContainer {
     // Edit genesis.json to add `sandbox` as an account
     static get BASE_ACCOUNT_ID() {
         return 'test.near';
@@ -175,7 +175,7 @@ class SandboxRuntime extends Runtime {
         return sandbox;
     }
     async createAndRun(fn, config = {}) {
-        await Runtime.createAndRun(fn, config);
+        await WorkspaceContainer.createAndRun(fn, config);
     }
     async createFrom() {
         let config = await SandboxRuntime.defaultConfig();
