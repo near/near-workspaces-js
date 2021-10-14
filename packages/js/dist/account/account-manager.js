@@ -39,11 +39,13 @@ async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
     (0, internal_utils_1.debug)(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
     const paths = accounts.filter(f => f.startsWith(prefix));
-    (0, internal_utils_1.debug)(`Found:\n  ${paths.join('\n  ')}`);
     if (paths.length > 0) {
+        (0, internal_utils_1.debug)(`Found:\n  ${paths.join('\n  ')}`);
         return paths;
     }
-    return [timeSuffix(prefix, 9999999)];
+    const newAccount = timeSuffix(prefix, 9999999);
+    (0, internal_utils_1.debug)(`Creating account: ${newAccount}`);
+    return [newAccount];
 }
 class AccountManager {
     constructor(config) {
@@ -74,13 +76,12 @@ class AccountManager {
         return this.getAccount(split.slice(1).join('.'));
     }
     async deleteKey(account_id) {
-        (0, internal_utils_1.debug)(`About to delete key for ${account_id}`);
         try {
             await this.keyStore.removeKey(this.networkId, account_id);
             (0, internal_utils_1.debug)(`deleted Key for ${account_id}`);
         }
         catch {
-            (0, internal_utils_1.debug)('failed to delete key');
+            (0, internal_utils_1.debug)(`Failed to delete key for ${account_id}`);
         }
     }
     async init() {
@@ -116,7 +117,7 @@ class AccountManager {
     async setKey(accountId, keyPair) {
         const key = keyPair !== null && keyPair !== void 0 ? keyPair : types_1.KeyPairEd25519.fromRandom();
         await this.keyStore.setKey(this.networkId, accountId, key);
-        (0, internal_utils_1.debug)(`setting keys for ${accountId}`);
+        (0, internal_utils_1.debug)(`Setting keys for ${accountId}`);
         return (await this.getKey(accountId));
     }
     async removeKey(accountId) {
@@ -128,7 +129,7 @@ class AccountManager {
         }
         catch (error) {
             if (keyPair) {
-                (0, internal_utils_1.debug)(`failed to delete ${accountId} with different keyPair`);
+                (0, internal_utils_1.debug)(`Failed to delete ${accountId} with different keyPair`);
                 return this.deleteAccount(accountId, beneficiaryId);
             }
             throw error;

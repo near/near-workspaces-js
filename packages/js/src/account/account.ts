@@ -19,7 +19,6 @@ import {ContractState} from '../contract-state';
 import {JsonRpcProvider} from '../jsonrpc';
 import {EMPTY_CONTRACT_HASH, NO_DEPOSIT} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
-import {debug} from '../internal-utils';
 import {AccessKeyData, AccountBuilder, AccountData, RecordBuilder, Records} from '../record';
 import {NearAccount} from './near-account';
 import {NearAccountManager} from './near-account-manager';
@@ -278,7 +277,6 @@ export class Account implements NearAccount {
       .signAndSend(keyPair);
     if (result.succeeded && await this.getKey() !== null) {
       await this.manager.deleteKey(this.accountId);
-      debug(`Deleting key for ${this.accountId} after deletion and it still exists`);
     }
 
     return result;

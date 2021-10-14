@@ -58,13 +58,11 @@ async function pingServer(port) {
                 resolve(false);
             }
         });
-        request.on('error', error => {
-            (0, internal_utils_1.debug)(JSON.stringify(error));
+        request.on('error', _ => {
             resolve(false);
         });
         // Write data to request body
         request.write(pollData);
-        (0, internal_utils_1.debug)(`polling server at port ${options.port}`);
         request.end();
     });
 }
@@ -106,19 +104,12 @@ class SandboxServer {
             await (0, internal_utils_1.rm)(server.homeDir);
         }
         if (server.config.init) {
-            try {
-                const { stderr, code } = await server.spawn('init');
+            const { stderr, code } = await server.spawn('init');
+            if (code && code < 0) {
                 (0, internal_utils_1.debug)(stderr);
-                if (code && code < 0) {
-                    throw new Error('Failed to spawn sandbox server');
-                }
-            }
-            catch (error) {
-                (0, internal_utils_1.debug)(JSON.stringify(error));
-                throw error;
+                throw new Error('Failed to spawn sandbox server');
             }
         }
-        (0, internal_utils_1.debug)('created ' + server.homeDir);
         return server;
     }
     get homeDir() {
@@ -138,14 +129,17 @@ class SandboxServer {
             '--rpc-addr',
             this.internalRpcAddr,
         ];
-        (0, internal_utils_1.debug)(`sending args, ${args.join(' ')}`);
         if (process_1.default.env.NEAR_RUNNER_DEBUG) {
             const filePath = (0, path_1.join)(this.homeDir, 'sandboxServer.log');
             (0, internal_utils_1.debug)(`near-sandbox logs writing to file: ${filePath}`);
+            const fd = await (0, promises_1.open)(filePath, 'a');
             this.subprocess = (0, internal_utils_1.spawn)(SandboxServer.binPath, args, {
                 env: { RUST_BACKTRACE: 'full' },
                 // @ts-expect-error FileHandle not assignable to Stream | IOType
-                stdio: ['ignore', 'ignore', await (0, promises_1.open)(filePath, 'a')],
+                stdio: ['ignore', 'ignore', fd],
+            });
+            this.subprocess.on('exit', async () => {
+                await fd.close();
             });
         }
         else {
@@ -154,10 +148,11 @@ class SandboxServer {
             });
         }
         this.subprocess.on('exit', () => {
-            (0, internal_utils_1.debug)(`Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'}`);
+            if (!this.readyToDie) {
+                (0, internal_utils_1.debug)(`Server with port ${this.port}: died horribly`);
+            }
         });
         await sandboxStarted(this.port);
-        (0, internal_utils_1.debug)(`Connected to server at ${this.internalRpcAddr}`);
         return this;
     }
     async close() {

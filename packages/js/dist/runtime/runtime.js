@@ -57,7 +57,6 @@ class Runtime {
     async run(fn) {
         (0, internal_utils_1.debug)('About to runtime.run with config', this.config);
         try {
-            (0, internal_utils_1.debug)('About to call beforeRun');
             await this.beforeRun();
             await fn(this.accounts, this);
         }
@@ -84,7 +83,6 @@ class Runtime {
     async createRun(fn) {
         (0, internal_utils_1.debug)('About to runtime.createRun with config', this.config);
         try {
-            (0, internal_utils_1.debug)('About to call beforeRun');
             await this.beforeRun();
             const accounts = await fn({ runtime: this, root: this.root });
             this.createdAccounts = { ...this.createdAccounts, ...accounts };
@@ -141,7 +139,6 @@ class TestnetRuntime extends Runtime {
     }
     async beforeRun() {
         if (this.config.initFn) {
-            (0, internal_utils_1.debug)('About to run initFn');
             this.createdAccounts = await this.config.initFn({ runtime: this, root: this.root });
         }
     }
@@ -171,7 +168,6 @@ class SandboxRuntime extends Runtime {
         const defaultConfig = await this.defaultConfig();
         const sandbox = new SandboxRuntime({ ...defaultConfig, ...config });
         if (fn) {
-            (0, internal_utils_1.debug)('Running initialization function to set up sandbox for all future calls to `runner.run`');
             await sandbox.createRun(fn);
         }
         return sandbox;
@@ -217,7 +213,6 @@ class SandboxRuntime extends Runtime {
         }
     }
     async afterRun() {
-        (0, internal_utils_1.debug)(`Closing server with port ${this.config.port}`);
         try {
             await this.server.close();
         }

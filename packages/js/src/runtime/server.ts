@@ -45,14 +45,12 @@ async function pingServer(port: number): Promise<boolean> {
         resolve(false);
       }
     });
-    request.on('error', error => {
-      debug(JSON.stringify(error));
+    request.on('error', _ => {
       resolve(false);
     });
 
     // Write data to request body
     request.write(pollData);
-    debug(`polling server at port ${options.port}`);
     request.end();
   });
 }
@@ -110,19 +108,13 @@ export class SandboxServer {
     }
 
     if (server.config.init) {
-      try {
-        const {stderr, code} = await server.spawn('init');
+      const {stderr, code} = await server.spawn('init');
+      if (code && code < 0) {
         debug(stderr);
-        if (code && code < 0) {
-          throw new Error('Failed to spawn sandbox server');
-        }
-      } catch (error: unknown) {
-        debug(JSON.stringify(error));
-        throw error;
+        throw new Error('Failed to spawn sandbox server');
       }
     }
 
-    debug('created ' + server.homeDir);
     return server;
   }
 
@@ -146,14 +138,17 @@ export class SandboxServer {
       '--rpc-addr',
       this.internalRpcAddr,
     ];
-    debug(`sending args, ${args.join(' ')}`);
     if (process.env.NEAR_RUNNER_DEBUG) {
       const filePath = join(this.homeDir, 'sandboxServer.log');
       debug(`near-sandbox logs writing to file: ${filePath}`);
+      const fd = await open(filePath, 'a');
       this.subprocess = spawn(SandboxServer.binPath, args, {
         env: {RUST_BACKTRACE: 'full'},
         // @ts-expect-error FileHandle not assignable to Stream | IOType
-        stdio: ['ignore', 'ignore', await open(filePath, 'a')],
+        stdio: ['ignore', 'ignore', fd],
+      });
+      this.subprocess.on('exit', async () => {
+        await fd.close();
       });
     } else {
       this.subprocess = spawn(SandboxServer.binPath, args, {
@@ -162,13 +157,11 @@ export class SandboxServer {
     }
 
     this.subprocess.on('exit', () => {
-      debug(
-        `Server with port ${this.port}: Died ${this.readyToDie ? 'gracefully' : 'horribly'
-        }`,
-      );
+      if (!this.readyToDie) {
+        debug(`Server with port ${this.port}: died horribly`);
+      }
     });
     await sandboxStarted(this.port);
-    debug(`Connected to server at ${this.internalRpcAddr}`);
     return this;
   }
 
