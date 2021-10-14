@@ -26,8 +26,8 @@ const process = __importStar(require("process"));
 if (!process.env.NEAR_PRINT_LOGS) {
     process.env.NEAR_NO_LOGS = 'true';
 }
-__exportStar(require("./runner"), exports);
-__exportStar(require("./runtime"), exports);
+__exportStar(require("./workspace"), exports);
+__exportStar(require("./container"), exports);
 __exportStar(require("./utils"), exports);
 __exportStar(require("./types"), exports);
 __exportStar(require("./account"), exports);

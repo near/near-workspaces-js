@@ -1,9 +1,0 @@
-{
-  "private": true,
-  "scripts": {
-    "test": "near-runner-ava"
-  },
-  "devDependencies": {
-    "near-runner-ava": "filled in by `near-runner-init`"
-  }
-}

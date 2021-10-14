@@ -8,9 +8,9 @@
       "es2020",
       "ESNext"
     ], /* Specify library files to be included in the compilation. */
-    "allowJs": true,                       /* Allow javascript files to be compiled. */
+    "allowJs": true, /* Allow javascript files to be compiled. */
     "declaration": true, /* Generates corresponding '.d.ts' file. */
-    "declarationMap": true,                /* Generates a sourcemap for each corresponding '.d.ts' file. */
+    "declarationMap": true, /* Generates a sourcemap for each corresponding '.d.ts' file. */
     "sourceMap": true, /* Generates corresponding '.map' file. */
     "outDir": "./dist", /* Redirect output structure to the directory. */
     /* Strict Type-Checking Options */
@@ -24,6 +24,6 @@
   "include": [
     "src/*.ts",
     "src/**/*.ts",
-    "src/runtime/*.d.ts"
+    "src/container/*.d.ts"
   ]
 }

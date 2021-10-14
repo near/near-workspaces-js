@@ -242,7 +242,7 @@ export abstract class AccountManager implements NearAccountManager {
 }
 
 export class TestnetManager extends AccountManager {
-  static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials', 'runner');
+  static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials', 'workspaces');
   private static numRootAccounts = 0;
   private static numTestAccounts = 0;
 

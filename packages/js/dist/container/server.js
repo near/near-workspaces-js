@@ -129,7 +129,7 @@ class SandboxServer {
             '--rpc-addr',
             this.internalRpcAddr,
         ];
-        if (process_1.default.env.NEAR_RUNNER_DEBUG) {
+        if (process_1.default.env.NEAR_WORKSPACES_DEBUG) {
             const filePath = (0, path_1.join)(this.homeDir, 'sandboxServer.log');
             (0, internal_utils_1.debug)(`near-sandbox logs writing to file: ${filePath}`);
             const fd = await (0, promises_1.open)(filePath, 'a');

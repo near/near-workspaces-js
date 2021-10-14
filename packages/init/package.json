@@ -1,17 +1,17 @@
 {
-  "name": "near-runner-init",
-  "version": "1.0.0",
-  "description": "Quickly bootstrap a project with near-runner-ava",
+  "name": "near-workspaces-init",
+  "version": "1.0.0-alpha.1",
+  "description": "Quickly bootstrap a project with near-workspaces-ava",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/near/runner-js.git",
+    "url": "git+https://github.com/near/workspaces-js.git",
     "directory": "packages/init"
   },
   "author": "Near Inc <team@near.org>",
   "license": "(MIT AND Apache-2.0)",
   "main": "scripts/cli.js",
   "bin": {
-    "near-runner-init": "scripts/cli.js"
+    "near-workspaces-init": "scripts/cli.js"
   },
   "files": [
     "scripts/cli.js",

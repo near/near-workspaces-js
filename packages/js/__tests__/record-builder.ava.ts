@@ -1,11 +1,11 @@
 import path from 'path';
 import {NEAR} from 'near-units';
 import {ava as test} from '../../ava';
-import {Runner} from '..';
+import {Workspace} from '..';
 import {RecordBuilder} from '../dist/record';
 
-if (Runner.networkIsSandbox()) {
-  const runner = Runner.create(async ({root}) => {
+if (Workspace.networkIsSandbox()) {
+  const workspace = Workspace.init(async ({root}) => {
     const contract = await root.createAndDeploy(
       'status-message',
       path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
@@ -15,7 +15,7 @@ if (Runner.networkIsSandbox()) {
   });
 
   test('Patch Account', async t => {
-    await runner.run(async ({root, ali, contract}) => {
+    await workspace.fork(async ({root, ali, contract}) => {
       const bob = root.getFullAccount('bob');
       const public_key = await bob.setKey();
       const {code_hash} = await contract.accountView();
