@@ -33,7 +33,7 @@ class WorkspaceContainer {
     }
     static async createAndRun(fn, config = {}) {
         const runtime = await WorkspaceContainer.create(config);
-        await runtime.clone(fn);
+        await runtime.fork(fn);
     }
     get accounts() {
         return { root: this.manager.root, ...Object.fromEntries(Object.entries(this.createdAccounts).map(([argName, account]) => [
@@ -56,7 +56,7 @@ class WorkspaceContainer {
     isTestnet() {
         return this.config.network === 'testnet';
     }
-    async clone(fn) {
+    async fork(fn) {
         (0, internal_utils_1.debug)('About to runtime.run with config', this.config);
         try {
             await this.beforeRun();
@@ -110,7 +110,7 @@ class TestnetRuntime extends WorkspaceContainer {
     static async create(config, initFn) {
         // Add better error handling
         const fullConfig = { ...this.defaultConfig, initFn, ...config };
-        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `workspace.clone`');
+        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `workspace.fork`');
         const runtime = new TestnetRuntime(fullConfig);
         await runtime.manager.init();
         return runtime;

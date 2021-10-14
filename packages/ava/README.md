@@ -102,7 +102,7 @@ Manual Install
 4. Write tests.
 
    ```ts
-    workspace.clone("does something", async (test, { alice, contract }) => {
+    workspace.fork("does something", async (test, { alice, contract }) => {
       await alice.call(contract, "some_update_function", {
         some_string_argument: "cool",
         some_number_argument: 42,
@@ -115,7 +115,7 @@ Manual Install
       test.is(result, "whatever");
     });
 
-    workspaces.clone("does something else", async (test, { alice, contract }) => {
+    workspaces.fork("does something else", async (test, { alice, contract }) => {
       const result = await contract.view("some_view_function", {
         account_id: alice,
       });
@@ -135,12 +135,12 @@ Manual Install
     const workspace = Workspace.init(…);
 
     avaTest('does something', async test => {
-      await workspaces.clone(async ({…}) => {
+      await workspaces.fork(async ({…}) => {
         // tests go here
       });
     });
    ```
 
-   Where [`avaTest`](https://github.com/avajs/ava/blob/main/docs/01-writing-tests.md) and [`t`](https://github.com/avajs/ava/blob/main/docs/03-assertions.md) come from AVA and [`workspace.clone`](https://github.com/near/workspaces-js#how-it-works) comes from near-workspaces.
+   Where [`avaTest`](https://github.com/avajs/ava/blob/main/docs/01-writing-tests.md) and [`t`](https://github.com/avajs/ava/blob/main/docs/03-assertions.md) come from AVA and [`workspace.fork`](https://github.com/near/workspaces-js#how-it-works) comes from near-workspaces.
 
 See the [`__tests__`](https://github.com/near/workspaces-js/tree/main/__tests__) directory for more examples.

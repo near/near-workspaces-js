@@ -12,7 +12,7 @@ export interface Config extends ClientConfig {
 }
 
 export interface WorkspaceContainerInterface {
-  clone(fn: WorkspaceFn): Promise<void>;
+  fork(fn: WorkspaceFn): Promise<void>;
   createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts>; // What to call this?
 }
 

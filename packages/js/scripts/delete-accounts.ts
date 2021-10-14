@@ -40,7 +40,7 @@ async function pMap<I, O=I>(array: I[], fn: (i: I) => Promise<O>): Promise<O[]> 
   return Promise.all(array.map(fn));
 }
 
-workspace.clone(async ({root}) => {
+workspace.fork(async ({root}) => {
   const accounts = (await fs.readdir(join(process.cwd(), '.near-credentials', 'workspaces', 'testnet')))
     .map(s => parse(s).name);
   const originalMap: Map<string, string[]> = new Map();

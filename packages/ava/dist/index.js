@@ -19,7 +19,7 @@ const ava_1 = __importDefault(require("ava")); // eslint-disable-line @typescrip
 exports.ava = ava_1.default;
 __exportStar(require("near-workspaces"), exports);
 /**
- * The main interface to near-workspace-ava. Create a new workspace instance with {@link Workspace.init}, then run tests using {@link Workspace.clone}.
+ * The main interface to near-workspace-ava. Create a new workspace instance with {@link Workspace.init}, then run tests using {@link Workspace.fork}.
  *
  * @example
  * const {Workspace, NEAR, Gas} from 'near-workspace';
@@ -31,15 +31,15 @@ __exportStar(require("near-workspaces"), exports);
  *     method: 'init',
  *     args: {owner_id: root}
  *   });
- *   // Everything in this Workspace.init function will happen prior to each call of `workspace.clone`
+ *   // Everything in this Workspace.init function will happen prior to each call of `workspace.fork`
  *   await alice.call(contract, 'some_registration_method', {}, {
  *     attachedDeposit: NEAR.parse('50 milliNEAR'),
  *     gas: Gas.parse('300Tgas'), // 300 Tgas is the max; 30 is the default
  *   });
- *   // Accounts returned from `Workspace.init` function will be available in `workspace.clone` calls
+ *   // Accounts returned from `Workspace.init` function will be available in `workspace.fork` calls
  *   return {alice, contract};
  * });
- * workspace.clone(async (test, {alice, contract, root}) => {
+ * workspace.fork(async (test, {alice, contract, root}) => {
  *   await root.call(contract, 'some_change_method', {account_id: alice});
  *   // the `test` object comes from AVA, and has test assertions and other helpers
  *   test.is(
@@ -47,7 +47,7 @@ __exportStar(require("near-workspaces"), exports);
  *     await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
- * workspace.clone(async (test, {alice, contract, root}) => {
+ * workspace.fork(async (test, {alice, contract, root}) => {
  *   // This test does not call `some_change_method`
  *   test.not(
  *     await contract.view('some_view_method', {account_id: root});
@@ -68,7 +68,7 @@ class Workspace extends near_workspaces_1.Workspace {
      * In testnet mode, the same functionality is achieved via different means,
      * since all actions must occur on one blockchain instead of N blockchains.
      *
-     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.clone` calls.
+     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.fork` calls.
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Workspace class, which is used to run tests.
      */
@@ -76,7 +76,7 @@ class Workspace extends near_workspaces_1.Workspace {
         const workspace = near_workspaces_1.Workspace.init(configOrFunction, f);
         workspace.test = (description, fn = DEFAULT_TEST_FN) => {
             (0, ava_1.default)(description, async (t) => {
-                await workspace.clone(async (args, workspace) => fn(t, args, workspace));
+                await workspace.fork(async (args, workspace) => fn(t, args, workspace));
             });
         };
         return workspace;

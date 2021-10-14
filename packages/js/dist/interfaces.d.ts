@@ -10,7 +10,7 @@ export interface Config extends ClientConfig {
     keyStore?: KeyStore;
 }
 export interface WorkspaceContainerInterface {
-    clone(fn: WorkspaceFn): Promise<void>;
+    fork(fn: WorkspaceFn): Promise<void>;
     createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts>;
 }
 export interface InitWorkspaceArg {

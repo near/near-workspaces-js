@@ -18,7 +18,7 @@ export declare abstract class WorkspaceContainer {
     protected get root(): NearAccount;
     isSandbox(): boolean;
     isTestnet(): boolean;
-    clone(fn: WorkspaceFn): Promise<void>;
+    fork(fn: WorkspaceFn): Promise<void>;
     createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts>;
     executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
     abstract createFrom(): Promise<WorkspaceContainer>;

@@ -56,7 +56,7 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
    import {strict as assert} from 'assert';
 
    await Promise.all([
-     workspace.clone(async ({alice, contract}) => {
+     workspace.fork(async ({alice, contract}) => {
        await alice.call(
          contract,
          'some_update_function',
@@ -68,13 +68,13 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
        );
        assert.equal(result, 'whatever');
      }),
-     workspace.clone(async ({alice, contract}) => {
+     workspace.fork(async ({alice, contract}) => {
        const result = await contract.view(
          'some_view_function',
          {account_id: alice}
        );
        // Note that we expect the value returned from `some_view_function` to be
-       // a default here, because this `clone` runs *at the same time* as the
+       // a default here, because this `fork` runs *at the same time* as the
        // previous, in a separate local blockchain
        assert.equal(result, 'some default');
      });
@@ -83,7 +83,7 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
 
    Let's step through this.
 
-   1. Like the earlier call to `Workspace.init`, each call to `workspace.clone` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
+   1. Like the earlier call to `Workspace.init`, each call to `workspace.fork` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
    2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
    4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
@@ -97,7 +97,7 @@ See the [\_\_tests__](./__tests__) directory in this project for more examples.
 [Spooning a blockchain](https://coinmarketcap.com/alexandria/glossary/spoon-blockchain) is copying the data from one network into a different network. near-workspaces makes it easy to copy data from Mainnet or Testnet contracts into your local Sandbox environment:
 
 ```ts
-await workspace.clone(async ({root}) => {
+await workspace.fork(async ({root}) => {
   const refFinance = await root.createAccountFrom({
     mainnetContract: 'v2.ref-finance.near',
     blockId: 50_000_000,
@@ -182,13 +182,13 @@ Let's revisit a shortened version of the example from How It Works above, descri
    });
    ```
 
-   `Workspace.init` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `workspace.clone`. This matches the semantics of the sandbox that all subsequent calls to `clone` have the same starting point, however, testnet requires that each cloned workspace has its own root account. In fact `Workspace.init` creates a unique testnet account and each test is a unique sub-account.
+   `Workspace.init` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `workspace.fork`. This matches the semantics of the sandbox that all subsequent calls to `fork` have the same starting point, however, testnet requires that each forkd workspace has its own root account. In fact `Workspace.init` creates a unique testnet account and each test is a unique sub-account.
 
    If you want to run a single script on Testnet, you can use `Workspace.open`:
 
    ```ts
    Workspace.open(async ({root}) => {
-     // Anything here will run right away, rather than needing a subsequent `workspace.clone`
+     // Anything here will run right away, rather than needing a subsequent `workspace.fork`
    })
    ```
 
@@ -196,7 +196,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
    ```ts
    await Promise.all([
-     workspace.clone(async ({alice, contract}) => {
+     workspace.fork(async ({alice, contract}) => {
        await alice.call(
          contract,
          'some_update_function',
@@ -208,7 +208,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
        );
        assert.equal(result, 'whatever');
      }),
-     workspace.clone(async ({alice, contract}) => {
+     workspace.fork(async ({alice, contract}) => {
        const result = await contract.view(
          'some_view_function',
          {account_id: alice}
@@ -218,7 +218,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
    ]);
    ```
 
-   Each call to `workspace.clone` will:
+   Each call to `workspace.fork` will:
 
    - Get or create its own sub-account on testnet account, e.g. `t.rdsq0289478`. If creating the account the keys will be stored at `$PWD/.near-credentials/workspaces/testnet/t.rdsq0289478.json`.
    - Run the `initFn` passed to `Workspace.init`
@@ -233,11 +233,11 @@ Skipping Sandbox-specific tests
 
 If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in a few ways:
 
-1. `runSandbox`: Instead of `workspace.clone`, you can use `workspace.cloneSandbox`:
+1. `runSandbox`: Instead of `workspace.fork`, you can use `workspace.forkSandbox`:
 
    ```ts
    await Promise.all([
-     workspace.clone(async ({…}) => {
+     workspace.fork(async ({…}) => {
        // runs on any network, sandbox or testnet
      }),
      workspace.runSandbox(async ({…}) => {
@@ -255,11 +255,11 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
        'path/to/compiled.wasm'
      )
    }));
-   workspace.clone('thing that makes sense on any network', async ({…}) => {
+   workspace.fork('thing that makes sense on any network', async ({…}) => {
      // logic using basic contract & account interactions
    });
    if (Workspace.networkIsSandbox) {
-     workspace.clone('thing that only makes sense with sandbox', async ({…}) => {
+     workspace.fork('thing that only makes sense with sandbox', async ({…}) => {
        // logic using patch-state, fast-forwarding, etc
      });
    }

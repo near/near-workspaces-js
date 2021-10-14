@@ -24,7 +24,7 @@ const os = __importStar(require("os"));
 const runtime_1 = require("./runtime");
 const utils_1 = require("./utils");
 /**
- * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.clone}.
+ * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
  *
  * @example
  * // Run multiple routines on testnet simultaneously
@@ -33,10 +33,10 @@ const utils_1 = require("./utils");
  *   rootAccount: 'me.testnet',
  * });
  * await Promise.all([
- *   workspace.clone(async ({root}) => {
+ *   workspace.fork(async ({root}) => {
  *     await root.call('some-contract.testnet', 'some_method', { a: 1, b: 2 });
  *   }),
- *   workspace.clone(async ({root}) => {
+ *   workspace.fork(async ({root}) => {
  *     await root.call('some-other-contract.testnet', 'some_method', { a: 2, b: 3 });
  *   }),
  * ]);
@@ -52,7 +52,7 @@ const utils_1 = require("./utils");
  *
  * @example
  * const {Workspace, NEAR} from 'near-workspaces';
- * // Test contracts in local sandbox mode, creating initial state for each `workspace.clone`
+ * // Test contracts in local sandbox mode, creating initial state for each `workspace.fork`
  * const workspace = Workspace.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.dev-account-123456.testnet`
  *   const alice = root.createAccount('alice');
@@ -61,21 +61,21 @@ const utils_1 = require("./utils");
  *     method: 'init',
  *     args: {owner_id: root}
  *   });
- *   // Everything in this Workspace.init function will happen prior to each call of `workspace.clone`
+ *   // Everything in this Workspace.init function will happen prior to each call of `workspace.fork`
  *   await alice.call(contract, 'some_registration_method', {}, {
  *     attachedDeposit: NEAR.parse('50 milliNEAR')
  *   });
- *   // Accounts returned from `Workspace.init` function will be available in `workspace.clone` calls
+ *   // Accounts returned from `Workspace.init` function will be available in `workspace.fork` calls
  *   return {alice, contract};
  * });
- * workspace.clone(async ({alice, contract, root}) => {
+ * workspace.fork(async ({alice, contract, root}) => {
  *   await root.call(contract, 'some_change_method', {account_id: alice});
  *   console.log({
  *     valueForRoot: await contract.view('some_view_method', {account_id: root});
  *     valueForAlice: await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
- * workspace.clone(async ({alice, contract, root}) => {
+ * workspace.fork(async ({alice, contract, root}) => {
  *   // This workspace does not call `some_change_method`
  *   console.log({
  *     valueForRoot: await contract.view('some_view_method', {account_id: root});
@@ -99,9 +99,9 @@ class Workspace {
      * In testnet mode, the same functionality is achieved via different means,
      * since all actions must occur on one blockchain instead of N.
      *
-     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.clone` calls.
+     * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.fork` calls.
      * @param f If configOrFunction is a config object, this must be a function to run
-     * @returns an instance of the Workspace class, to be used as a starting point for cloned workspaces.
+     * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static init(configOrFunction = async () => ({}), f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
@@ -118,7 +118,7 @@ class Workspace {
     }
     /**
      * Sets up a connection to a network and executes the provided function.
-     * Unlike `clone`, this will run the function once and not clean up after itself.
+     * Unlike `fork`, this will run the function once and not clean up after itself.
      * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
      * It also defaults to use your home directory's key store.
      *
@@ -133,41 +133,41 @@ class Workspace {
             keyStore: (0, utils_1.homeKeyStore)(),
             ...config,
         };
-        return (await runtime_1.WorkspaceContainer.create(innerConfig)).clone(fn);
+        return (await runtime_1.WorkspaceContainer.create(innerConfig)).fork(fn);
     }
     async startWaiting(container) {
         this.container = await container;
     }
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
-     * In local sandbox mode, each `workspace.clone` will:
+     * In local sandbox mode, each `workspace.fork` will:
      *
      *   - start a new local blockchain
      *   - copy the state from the blockchain created in `Workspace.init`
      *   - get access to the accounts created in `Workspace.init` using the same variable names
-     *   - keep all data isolated from other `workspace.clone` calls, so they can be run concurrently
+     *   - keep all data isolated from other `workspace.fork` calls, so they can be run concurrently
      *   - shut down at the end, forgetting all new data created
      *
      * In testnet mode, the same functionality is achieved via different means,
      * since all actions must occur on one blockchain instead of N blockchains.
      *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.clone(async ({root, alice, bob}) => {...})`
+     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
-    async clone(fn) {
+    async fork(fn) {
         await this.ready;
         const container = await this.container.createFrom();
-        await container.clone(fn);
+        await container.fork(fn);
         return container;
     }
     /**
-     * Like `clone`, but only runs when in local sandbox mode, not on testnet or mainnet. See `clone` docs for more info.
+     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
      *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.cloneSandbox(async ({root, alice, bob}) => {...})`
+     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
      */
-    async cloneSandbox(fn) {
+    async forkSandbox(fn) {
         await this.ready;
         if (this.container.config.network === 'sandbox') {
-            return this.clone(fn);
+            return this.fork(fn);
         }
         return null;
     }

@@ -48,7 +48,7 @@ export abstract class WorkspaceContainer {
     config: Partial<Config> = {},
   ): Promise<void> {
     const runtime = await WorkspaceContainer.create(config);
-    await runtime.clone(fn);
+    await runtime.fork(fn);
   }
 
   protected get accounts(): AccountArgs {
@@ -80,7 +80,7 @@ export abstract class WorkspaceContainer {
     return this.config.network === 'testnet';
   }
 
-  async clone(fn: WorkspaceFn): Promise<void> {
+  async fork(fn: WorkspaceFn): Promise<void> {
     debug('About to runtime.run with config', this.config);
     try {
       await this.beforeRun();
@@ -137,7 +137,7 @@ export class TestnetRuntime extends WorkspaceContainer {
   static async create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetRuntime> {
     // Add better error handling
     const fullConfig = {...this.defaultConfig, initFn, ...config};
-    debug('Skipping initialization function for testnet; will run before each `workspace.clone`');
+    debug('Skipping initialization function for testnet; will run before each `workspace.fork`');
     const runtime = new TestnetRuntime(fullConfig);
     await runtime.manager.init();
     return runtime;

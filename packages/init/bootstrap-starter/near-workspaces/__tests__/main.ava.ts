@@ -90,7 +90,7 @@ const workspace = Workspace.init(async ({root}) => {
  *     const workspace = Workspace.init(...);
  *
  *     avaTest('root sets status', async test => {
- *       await workspace.clone(async ({contract, root}) => {
+ *       await workspace.fork(async ({contract, root}) => {
  *         ...
  *       });
  *     });

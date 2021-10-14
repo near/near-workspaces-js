@@ -15,7 +15,7 @@ if (Workspace.networkIsSandbox()) {
   });
 
   test('Patch Account', async t => {
-    await workspace.clone(async ({root, ali, contract}) => {
+    await workspace.fork(async ({root, ali, contract}) => {
       const bob = root.getFullAccount('bob');
       const public_key = await bob.setKey();
       const {code_hash} = await contract.accountView();
