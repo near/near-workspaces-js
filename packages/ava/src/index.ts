@@ -9,13 +9,13 @@ export type AvaWorkspaceFn = (t: ava.ExecutionContext, args: AccountArgs, worksp
 
 export declare interface Workspace extends RawWorkspace {
   /**
-   * Convenient wrapper around AVA's test function and `Workspace.fork`
-   * In local sandbox mode, each `workspace.fork` will:
+   * Convenient wrapper around AVA's test function and `workspace.fork`
+   * In local sandbox mode, each `workspace.test` will:
    *
    *   - start a new local blockchain
    *   - copy the state from the blockchain created in `Workspace.init`
    *   - get access to the accounts created in `Workspace.init` using the same variable names
-   *   - run concurrently with all other `workspace.fork` calls, keeping data isolated
+   *   - run concurrently with all other `workspace.test` calls, keeping data isolated
    *   - shut down at the end, forgetting all new data created
    *
    * In testnet mode, the same functionality is achieved via different means,
@@ -47,7 +47,7 @@ export declare interface Workspace extends RawWorkspace {
 }
 
 /**
- * The main interface to near-workspace-ava. Create a new workspace instance with {@link Workspace.init}, then run tests using {@link Workspace.fork}.
+ * The main interface to near-workspace-ava. Create a new workspace instance with {@link Workspace.init}, then run tests using {@link Workspace.test}.
  *
  * @example
  * const {Workspace, NEAR, Gas} from 'near-workspace';
@@ -59,15 +59,15 @@ export declare interface Workspace extends RawWorkspace {
  *     method: 'init',
  *     args: {owner_id: root}
  *   });
- *   // Everything in this Workspace.init function will happen prior to each call of `workspace.fork`
+ *   // Everything in this Workspace.init function will happen prior to each call of `workspace.test`
  *   await alice.call(contract, 'some_registration_method', {}, {
  *     attachedDeposit: NEAR.parse('50 milliNEAR'),
  *     gas: Gas.parse('300Tgas'), // 300 Tgas is the max; 30 is the default
  *   });
- *   // Accounts returned from `Workspace.init` function will be available in `workspace.fork` calls
+ *   // Accounts returned from `Workspace.init` function will be available in `workspace.test` calls
  *   return {alice, contract};
  * });
- * workspace.fork(async (test, {alice, contract, root}) => {
+ * workspace.test(async (test, {alice, contract, root}) => {
  *   await root.call(contract, 'some_change_method', {account_id: alice});
  *   // the `test` object comes from AVA, and has test assertions and other helpers
  *   test.is(
@@ -75,7 +75,7 @@ export declare interface Workspace extends RawWorkspace {
  *     await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
- * workspace.fork(async (test, {alice, contract, root}) => {
+ * workspace.test(async (test, {alice, contract, root}) => {
  *   // This test does not call `some_change_method`
  *   test.not(
  *     await contract.view('some_view_method', {account_id: root});
@@ -96,7 +96,7 @@ export class Workspace extends RawWorkspace {
    * In testnet mode, the same functionality is achieved via different means,
    * since all actions must occur on one blockchain instead of N blockchains.
    *
-   * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.fork` calls.
+   * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.test` calls.
    * @param f If configOrFunction is a config object, this must be a function to run
    * @returns an instance of the Workspace class, which is used to run tests.
    */
