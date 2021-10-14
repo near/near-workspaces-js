@@ -147,7 +147,7 @@ export class SandboxServer {
       this.internalRpcAddr,
     ];
     debug(`sending args, ${args.join(' ')}`);
-    if (process.env.NEAR_RUNNER_DEBUG) {
+    if (process.env.NEAR_WORKSPACES_DEBUG) {
       const filePath = join(this.homeDir, 'sandboxServer.log');
       debug(`near-sandbox logs writing to file: ${filePath}`);
       this.subprocess = spawn(SandboxServer.binPath, args, {

@@ -2,7 +2,7 @@
 
 /**
  * This script is meant to run on CI environments where we can test that
- * `near-runner-init` works for the expected range of NodeJS versions and that
+ * `near-workspaces-init` works for the expected range of NodeJS versions and that
  * it correctly installs all dependencies and runs tests. It does not run as
  * part of the normal test workflow (see __tests__/no-install.ava.ts for that),
  * and is not meant to be included in the `files` list in package.json.
@@ -15,10 +15,10 @@ const {pathExists, removeSync, mkdirSync} = require('fs-extra');
 /**
  * Unlike the no-install.ava.ts test, this creates the new project outside the
  * monorepo, which means it cannot rely on Node finding the monorepo's
- * dependencies for the `near-runner-ava` lookup. This is a truer test that
+ * dependencies for the `near-workspaces-ava` lookup. This is a truer test that
  * everything works as expected.
  */
-const TEST_PROJECT = join(process.cwd(), '../test-near-runner-init');
+const TEST_PROJECT = join(process.cwd(), '../test-near-workspaces-init');
 
 (async () => {
   if (await pathExists(TEST_PROJECT)) {
@@ -29,7 +29,7 @@ const TEST_PROJECT = join(process.cwd(), '../test-near-runner-init');
   console.log(`Creating new project ${TEST_PROJECT}`);
   mkdirSync(TEST_PROJECT);
 
-  console.log('Running `near-runner-init`');
+  console.log('Running `near-workspaces-init`');
   spawnSync('node', [join(__dirname, './cli.js')], {
     cwd: TEST_PROJECT,
     stdio: ['inherit', 'inherit', 'inherit'],
@@ -40,7 +40,7 @@ const TEST_PROJECT = join(process.cwd(), '../test-near-runner-init');
     'test',
     '--verbose',
   ], {
-    cwd: join(TEST_PROJECT, 'near-runner'),
+    cwd: join(TEST_PROJECT, 'near-workspaces'),
     stdio: ['inherit', 'inherit', 'inherit'],
   });
 

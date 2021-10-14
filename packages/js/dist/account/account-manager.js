@@ -353,7 +353,7 @@ class TestnetManager extends AccountManager {
     }
 }
 exports.TestnetManager = TestnetManager;
-TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'runner');
+TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'workspaces');
 TestnetManager.numRootAccounts = 0;
 TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {

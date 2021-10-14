@@ -11,7 +11,7 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import {Runner, createKeyPair, Gas, NEAR} from 'near-runner-ava';
+import {Workspace, createKeyPair, Gas, NEAR} from 'near-workspaces-ava';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -25,14 +25,14 @@ impl Linkdrop {
 }
 */
 
-const runner = Runner.create(async ({root}) => ({
+const workspace = Workspace.init(async ({root}) => ({
   linkdrop: await root.createAndDeploy(
     'linkdrop',
     '__tests__/build/debug/linkdrop.wasm',
   ),
 }));
 
-runner.test('Use `create_account_and_claim` to create a new account', async (test, {root, linkdrop}) => {
+workspace.test('Use `create_account_and_claim` to create a new account', async (test, {root, linkdrop}) => {
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
@@ -67,7 +67,7 @@ runner.test('Use `create_account_and_claim` to create a new account', async (tes
   );
 });
 
-runner.test('Use `claim` to transfer to an existing account', async (test, {root, linkdrop}) => {
+workspace.test('Use `claim` to transfer to an existing account', async (test, {root, linkdrop}) => {
   const bob = await root.createAccount('bob');
   const originalBalance = await bob.availableBalance();
   // Create temporary keys for access key on linkdrop

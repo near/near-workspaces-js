@@ -6,21 +6,21 @@ export interface Config extends ClientConfig {
     init: boolean;
     rm: boolean;
     refDir: string | null;
-    initFn?: CreateRunnerFn;
+    initFn?: InitWorkspaceFn;
     keyStore?: KeyStore;
 }
-export interface NearRuntime {
-    run(fn: RunnerFn): Promise<void>;
-    createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts>;
+export interface WorkspaceContainerInterface {
+    clone(fn: WorkspaceFn): Promise<void>;
+    createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts>;
 }
-export interface RuntimeArg {
-    runtime: NearRuntime;
+export interface InitWorkspaceArg {
+    workspace: WorkspaceContainerInterface;
     root: NearAccount;
 }
 export declare type ReturnedAccounts = Record<string, NearAccount>;
 export interface AccountArgs extends ReturnedAccounts {
     root: NearAccount;
 }
-export declare type CreateRunnerFn = (args: RuntimeArg) => Promise<ReturnedAccounts>;
-export declare type RunnerFn = (args: AccountArgs, runtime: NearRuntime) => Promise<void>;
+export declare type InitWorkspaceFn = (args: InitWorkspaceArg) => Promise<ReturnedAccounts>;
+export declare type WorkspaceFn = (args: AccountArgs, workspace: WorkspaceContainerInterface) => Promise<void>;
 //# sourceMappingURL=interfaces.d.ts.map

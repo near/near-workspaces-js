@@ -1,5 +1,5 @@
 {
-  "extends": "near-runner-ava/tsconfig.ava.json",
+  "extends": "near-workspaces-ava/tsconfig.ava.json",
   "compilerOptions": {
     "incremental": true,
     "declaration": true,

@@ -18,7 +18,7 @@
  * contracts can give you a huge confidence boost that your contracts will work
  * as expected once actually deployed.
  */
-import {Gas, NEAR, NearAccount, Runner, captureError} from 'near-runner-ava';
+import {Gas, NEAR, NearAccount, Workspace, captureError} from 'near-workspaces-ava';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
@@ -26,9 +26,9 @@ const DEFAULT_BLOCK_HEIGHT = 45_800_000;
 
 const INIT_SHARES_SUPPLY = '1000000000000000000000000';
 
-const runner = Runner.create();
+const workspace = Workspace.init();
 
-runner.test('using `withData` for contracts > 50kB fails', async (test, {root}) => {
+workspace.test('using `withData` for contracts > 50kB fails', async (test, {root}) => {
   test.regex(
     await captureError(async () => {
       await root.createAccountFrom({
@@ -41,7 +41,7 @@ runner.test('using `withData` for contracts > 50kB fails', async (test, {root}) 
   );
 });
 
-runner.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
+workspace.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
   const refFinance = await root.createAccountFrom({
     mainnetContract: REF_FINANCE_ACCOUNT,
     block_id: DEFAULT_BLOCK_HEIGHT,
@@ -66,7 +66,7 @@ runner.test('if skipping `withData`, fetches only contract Wasm bytes', async (t
    *     confidence that your contracts work as expected with deployed contracts
    *     on testnet or mainnet.
    */
-runner.test('integrate own FT with Ref.Finance', async (test, {root}) => {
+workspace.test('integrate own FT with Ref.Finance', async (test, {root}) => {
   const [ft, refFinance, wNEAR] = await Promise.all([
     root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
       method: 'new_default_meta',

@@ -3,14 +3,14 @@ import {join} from 'path';
 import {toYocto, urlConfigFromNetwork} from '../utils';
 import {ClientConfig, FinalExecutionOutcome} from '../types';
 import {AccountManager, NearAccount, NearAccountManager} from '../account';
-import {AccountArgs, Config, CreateRunnerFn, ReturnedAccounts, RunnerFn} from '../interfaces';
+import {AccountArgs, Config, InitWorkspaceFn, ReturnedAccounts, WorkspaceFn} from '../interfaces';
 import {JsonRpcProvider} from '../jsonrpc';
 import {debug} from '../internal-utils';
 import {SandboxServer} from './server';
 
 type AccountShortName = string;
 type AccountId = string;
-export abstract class Runtime {
+export abstract class WorkspaceContainer {
   config: Config; // Should be protected?
   returnedAccounts: Map<AccountId, AccountShortName> = new Map();
 
@@ -27,8 +27,8 @@ export abstract class Runtime {
 
   static async create(
     config: Partial<Config>,
-    fn?: CreateRunnerFn,
-  ): Promise<Runtime> {
+    fn?: InitWorkspaceFn,
+  ): Promise<WorkspaceContainer> {
     switch (config.network) {
       case 'testnet':
         return TestnetRuntime.create(config, fn);
@@ -43,11 +43,11 @@ export abstract class Runtime {
   }
 
   static async createAndRun(
-    fn: RunnerFn,
+    fn: WorkspaceFn,
     config: Partial<Config> = {},
   ): Promise<void> {
-    const runtime = await Runtime.create(config);
-    await runtime.run(fn);
+    const runtime = await WorkspaceContainer.create(config);
+    await runtime.clone(fn);
   }
 
   protected get accounts(): AccountArgs {
@@ -79,7 +79,7 @@ export abstract class Runtime {
     return this.config.network === 'testnet';
   }
 
-  async run(fn: RunnerFn): Promise<void> {
+  async clone(fn: WorkspaceFn): Promise<void> {
     debug('About to runtime.run with config', this.config);
     try {
       debug('About to call beforeRun');
@@ -105,12 +105,12 @@ export abstract class Runtime {
     }
   }
 
-  async createRun(fn: CreateRunnerFn): Promise<ReturnedAccounts> {
+  async createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts> {
     debug('About to runtime.createRun with config', this.config);
     try {
       debug('About to call beforeRun');
       await this.beforeRun();
-      const accounts = await fn({runtime: this, root: this.root});
+      const accounts = await fn({workspace: this, root: this.root});
       this.createdAccounts = {...this.createdAccounts, ...accounts};
       return accounts;
     } catch (error: unknown) {
@@ -129,16 +129,16 @@ export abstract class Runtime {
     return fn();
   }
 
-  abstract createFrom(): Promise<Runtime>;
+  abstract createFrom(): Promise<WorkspaceContainer>;
   protected abstract beforeRun(): Promise<void>;
   protected abstract afterRun(): Promise<void>;
 }
 
-export class TestnetRuntime extends Runtime {
-  static async create(config: Partial<Config>, initFn?: CreateRunnerFn): Promise<TestnetRuntime> {
+export class TestnetRuntime extends WorkspaceContainer {
+  static async create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetRuntime> {
     // Add better error handling
     const fullConfig = {...this.defaultConfig, initFn, ...config};
-    debug('Skipping initialization function for testnet; will run before each `runner.run`');
+    debug('Skipping initialization function for testnet; will run before each `workspace.clone`');
     const runtime = new TestnetRuntime(fullConfig);
     await runtime.manager.init();
     return runtime;
@@ -176,7 +176,7 @@ export class TestnetRuntime extends Runtime {
   async beforeRun(): Promise<void> {
     if (this.config.initFn) {
       debug('About to run initFn');
-      this.createdAccounts = await this.config.initFn({runtime: this, root: this.root});
+      this.createdAccounts = await this.config.initFn({workspace: this, root: this.root});
     }
   }
 
@@ -185,7 +185,7 @@ export class TestnetRuntime extends Runtime {
   }
 }
 
-export class SandboxRuntime extends Runtime {
+export class SandboxRuntime extends WorkspaceContainer {
   private static readonly LINKDROP_PATH = join(__dirname, '..', '..', 'core_contracts', 'testnet-linkdrop.wasm');
   // Edit genesis.json to add `sandbox` as an account
   private static get BASE_ACCOUNT_ID() {
@@ -209,13 +209,13 @@ export class SandboxRuntime extends Runtime {
 
   static async create(
     config: Partial<Config>,
-    fn?: CreateRunnerFn,
+    fn?: InitWorkspaceFn,
   ): Promise<SandboxRuntime> {
     const defaultConfig = await this.defaultConfig();
     const sandbox = new SandboxRuntime({...defaultConfig, ...config});
     if (fn) {
       debug(
-        'Running initialization function to set up sandbox for all future calls to `runner.run`',
+        'Running initialization function to set up sandbox for all future calls to `workspace.clone`',
       );
       await sandbox.createRun(fn);
     }
@@ -224,10 +224,10 @@ export class SandboxRuntime extends Runtime {
   }
 
   async createAndRun(
-    fn: RunnerFn,
+    fn: WorkspaceFn,
     config: Partial<Config> = {},
   ): Promise<void> {
-    await Runtime.createAndRun(fn, config);
+    await WorkspaceContainer.createAndRun(fn, config);
   }
 
   async createFrom(): Promise<SandboxRuntime> {

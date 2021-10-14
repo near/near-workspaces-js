@@ -1,17 +1,17 @@
 {
-  "name": "near-runner-ava",
+  "name": "near-workspaces-ava",
   "version": "0.1.1-alpha.1",
-  "description": "Thin wrapper around near-runner to make it easier to use with AVA and TypeScript",
+  "description": "Thin wrapper around near-workspaces to make it easier to use with AVA and TypeScript",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/near/runner-js.git",
+    "url": "git+https://github.com/near/workspaces-js.git",
     "directory": "packages/ava"
   },
   "author": "Near Inc <team@near.org>",
   "license": "(MIT AND Apache-2.0)",
   "main": "dist/index.js",
   "bin": {
-    "near-runner-ava": "scripts/cli.js"
+    "near-workspaces-ava": "scripts/cli.js"
   },
   "types": "dist/index.d.ts",
   "files": [
@@ -31,7 +31,7 @@
     "@types/bn.js": "^5.1.0",
     "@types/node": "^16.4.10",
     "ava": "3.15.0",
-    "near-runner": "^0.6.5-alpha.1",
+    "near-workspaces": "^0.6.5-alpha.1",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   },

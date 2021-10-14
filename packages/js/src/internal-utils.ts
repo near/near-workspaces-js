@@ -37,13 +37,13 @@ export async function asyncSpawn(bin: string, ...args: string[]): ChildProcessPr
 export {_spawn as spawn};
 
 export function debug(...args: any[]): void {
-  if (process.env.NEAR_RUNNER_DEBUG) {
+  if (process.env.NEAR_WORKSPACES_DEBUG) {
     console.error(...args);
   }
 }
 
 export function txDebug(tx: string): void {
-  if (process.env.NEAR_RUNNER_TXDEBUG) {
+  if (process.env.NEAR_WORKSPACES_TXDEBUG) {
     console.error(tx);
   }
 }
