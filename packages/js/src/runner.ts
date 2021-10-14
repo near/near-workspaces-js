@@ -97,7 +97,6 @@ export class Runner {
   }
 
   /**
-   *
    * Sets up a connection to a network and executes the provided function.
    * Unlike `run`, this will run the function once and not clean up after itself.
    * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
