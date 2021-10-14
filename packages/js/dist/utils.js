@@ -124,7 +124,7 @@ function getNetworkFromEnv() {
             return 'sandbox';
         default:
             throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
-                + 'use \'testnet\' or \'sandbox\' (the default)');
+                + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)');
     }
 }
 exports.getNetworkFromEnv = getNetworkFromEnv;

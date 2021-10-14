@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TESTNET = exports.findFile = exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.txDebug = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
+exports.findFile = exports.isPathLike = exports.ensureBinary = exports.copyDir = exports.txDebug = exports.debug = exports.spawn = exports.asyncSpawn = exports.exists = exports.sandboxBinary = exports.rm = void 0;
 const process_1 = __importDefault(require("process"));
 const path_1 = require("path");
 const fs_1 = require("fs");
@@ -110,5 +110,4 @@ async function findFile(relativePath) {
     throw new Error(`Could not find '${relativePath}' relative to any package.json file or your current working directory (${cwd})`);
 }
 exports.findFile = findFile;
-exports.TESTNET = 'testnet';
 //# sourceMappingURL=internal-utils.js.map

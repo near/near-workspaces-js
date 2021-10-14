@@ -2,7 +2,6 @@ import * as os from 'os';
 import {Runtime} from './runtime';
 import {Config, RunnerFn, CreateRunnerFn} from './interfaces';
 import {getNetworkFromEnv, homeKeyStore} from './utils';
-import {TESTNET} from './internal-utils';
 
 /**
  * The main interface to near-runner. Create a new runner instance with {@link Runner.create}, then run code using {@link Runner.run}.
@@ -109,7 +108,6 @@ export class Runner {
     const innerConfig = {
       init: false,
       rm: false,
-      network: TESTNET,
       homeDir: os.homedir(),
       keyStore: homeKeyStore(),
       ...config,

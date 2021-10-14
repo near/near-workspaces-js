@@ -23,7 +23,6 @@ exports.Runner = void 0;
 const os = __importStar(require("os"));
 const runtime_1 = require("./runtime");
 const utils_1 = require("./utils");
-const internal_utils_1 = require("./internal-utils");
 /**
  * The main interface to near-runner. Create a new runner instance with {@link Runner.create}, then run code using {@link Runner.run}.
  *
@@ -106,7 +105,6 @@ class Runner {
         return (0, utils_1.getNetworkFromEnv)();
     }
     /**
-     *
      * Sets up a connection to a network and executes the provided function.
      * Unlike `run`, this will run the function once and not clean up after itself.
      * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
@@ -119,7 +117,6 @@ class Runner {
         const innerConfig = {
             init: false,
             rm: false,
-            network: internal_utils_1.TESTNET,
             homeDir: os.homedir(),
             keyStore: (0, utils_1.homeKeyStore)(),
             ...config,
