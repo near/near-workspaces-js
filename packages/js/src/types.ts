@@ -54,10 +54,10 @@ export interface AccountBalance {
   available: NEAR;
 }
 
-export type Network = 'testnet' | 'mainnet';
+export type Network = 'testnet' | 'mainnet' | 'sandbox';
 
 export interface ClientConfig {
-  network: 'sandbox' | Network;
+  network: Network;
   rootAccount?: string;
   rpcAddr: string;
   helperUrl?: string;

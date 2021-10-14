@@ -72,6 +72,18 @@ export declare class Runner {
     static networkIsTestnet(): boolean;
     static networkIsSandbox(): boolean;
     static getNetworkFromEnv(): 'sandbox' | 'testnet';
+    /**
+     * Sets up a connection to a network and executes the provided function.
+     * Unlike `run`, this will run the function once and not clean up after itself.
+     * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
+     * It also defaults to use your home directory's key store.
+     *
+     * @param config Config with the rootAccount argument required.
+     * @param fn Function to run when connected.
+     */
+    static open(config: Partial<Config> & {
+        rootAccount: string;
+    }, fn: RunnerFn): Promise<void>;
     startWaiting(runtime: Promise<Runtime>): Promise<void>;
     /**
      * Run code in the context of a runner initialized with `Runner.create`.

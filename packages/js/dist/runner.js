@@ -1,11 +1,28 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Runner = void 0;
-const process_1 = __importDefault(require("process"));
+const os = __importStar(require("os"));
 const runtime_1 = require("./runtime");
+const utils_1 = require("./utils");
 /**
  * The main interface to near-runner. Create a new runner instance with {@link Runner.create}, then run code using {@link Runner.run}.
  *
@@ -75,9 +92,7 @@ class Runner {
      * @returns an instance of the Runner class, which is used to run tests.
      */
     static create(configOrFunction = async () => ({}), f) {
-        var _a;
         const { config, fn } = getConfigAndFn(configOrFunction, f);
-        config.network = (_a = config.network) !== null && _a !== void 0 ? _a : this.getNetworkFromEnv();
         return new Runner(runtime_1.Runtime.create(config, fn));
     }
     static networkIsTestnet() {
@@ -87,17 +102,26 @@ class Runner {
         return this.getNetworkFromEnv() === 'sandbox';
     }
     static getNetworkFromEnv() {
-        const network = process_1.default.env.NEAR_RUNNER_NETWORK;
-        switch (network) {
-            case 'sandbox':
-            case 'testnet':
-                return network;
-            case undefined:
-                return 'sandbox';
-            default:
-                throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
-                    + 'use \'testnet\' or \'sandbox\' (the default)');
-        }
+        return (0, utils_1.getNetworkFromEnv)();
+    }
+    /**
+     * Sets up a connection to a network and executes the provided function.
+     * Unlike `run`, this will run the function once and not clean up after itself.
+     * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
+     * It also defaults to use your home directory's key store.
+     *
+     * @param config Config with the rootAccount argument required.
+     * @param fn Function to run when connected.
+     */
+    static async open(config, fn) {
+        const innerConfig = {
+            init: false,
+            rm: false,
+            homeDir: os.homedir(),
+            keyStore: (0, utils_1.homeKeyStore)(),
+            ...config,
+        };
+        return (await runtime_1.Runtime.create(innerConfig)).run(fn);
     }
     async startWaiting(runtime) {
         this.runtime = await runtime;

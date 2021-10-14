@@ -22,8 +22,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.homeKeyStore = exports.getNetworkFromEnv = exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
 const buffer_1 = require("buffer");
+const process = __importStar(require("process"));
+const os = __importStar(require("os"));
+const path = __importStar(require("path"));
 const bn_js_1 = __importDefault(require("bn.js"));
 const nearAPI = __importStar(require("near-api-js"));
 const js_sha256_1 = __importDefault(require("js-sha256"));
@@ -107,4 +110,26 @@ function hashContract(contract) {
 }
 exports.hashContract = hashContract;
 exports.EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
+/**
+ *
+ * @returns network to connect to. Default 'sandbox'
+ */
+function getNetworkFromEnv() {
+    const network = process.env.NEAR_RUNNER_NETWORK;
+    switch (network) {
+        case 'sandbox':
+        case 'testnet':
+            return network;
+        case undefined:
+            return 'sandbox';
+        default:
+            throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+                + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)');
+    }
+}
+exports.getNetworkFromEnv = getNetworkFromEnv;
+function homeKeyStore() {
+    return new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path.join(os.homedir(), '.near-credentials'));
+}
+exports.homeKeyStore = homeKeyStore;
 //# sourceMappingURL=utils.js.map
