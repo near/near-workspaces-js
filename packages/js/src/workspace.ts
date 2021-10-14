@@ -1,5 +1,5 @@
 import * as os from 'os';
-import {WorkspaceContainer} from './runtime';
+import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
 import {getNetworkFromEnv, homeKeyStore} from './utils';
 

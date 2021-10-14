@@ -1,4 +1,4 @@
-import { WorkspaceContainer } from './runtime';
+import { WorkspaceContainer } from './container';
 import { Config, WorkspaceFn, InitWorkspaceFn } from './interfaces';
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -120,4 +120,4 @@ export declare class Workspace {
      */
     forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null>;
 }
-//# sourceMappingURL=runner.d.ts.map
+//# sourceMappingURL=workspace.d.ts.map

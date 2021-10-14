@@ -21,7 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Workspace = void 0;
 const os = __importStar(require("os"));
-const runtime_1 = require("./runtime");
+const container_1 = require("./container");
 const utils_1 = require("./utils");
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -105,7 +105,7 @@ class Workspace {
      */
     static init(configOrFunction = async () => ({}), f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
-        return new Workspace(runtime_1.WorkspaceContainer.create(config, fn));
+        return new Workspace(container_1.WorkspaceContainer.create(config, fn));
     }
     static networkIsTestnet() {
         return this.getNetworkFromEnv() === 'testnet';
@@ -133,7 +133,7 @@ class Workspace {
             keyStore: (0, utils_1.homeKeyStore)(),
             ...config,
         };
-        return (await runtime_1.WorkspaceContainer.create(innerConfig)).fork(fn);
+        return (await container_1.WorkspaceContainer.create(innerConfig)).fork(fn);
     }
     async startWaiting(container) {
         this.container = await container;
@@ -187,4 +187,4 @@ function getConfigAndFn(configOrFunction, f) {
     throw new Error('Invalid arguments! '
         + 'Expected `(config, runFunction)` or just `(runFunction)`');
 }
-//# sourceMappingURL=runner.js.map
+//# sourceMappingURL=workspace.js.map
