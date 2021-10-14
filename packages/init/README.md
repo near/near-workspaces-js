@@ -1,10 +1,10 @@
-near-runner-init
-================
+near-workspaces-init
+====================
 
-Get started with [near-runner-ava](../ava) using one command. You will need [NodeJS] installed. Then:
+Get started with [near-workspaces-ava](../ava) using one command. You will need [NodeJS] installed. Then:
 
-    npx near-runner-init
+    npx near-workspaces-init
 
-For more info, see [near-runner-ava].
+For more info, see [near-workspaces-ava].
 
-  [near-runner-ava]: (../ava)
+  [near-workspaces-ava]: (../ava)

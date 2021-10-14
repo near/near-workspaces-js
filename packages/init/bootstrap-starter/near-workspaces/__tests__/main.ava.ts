@@ -1,5 +1,5 @@
 /**
- * Welcome to near-runner-ava!
+ * Welcome to near-workspaces-ava!
  *
  * This is a working test which checks the functionality of [the status-message
  * contract][1]. For quick reference, here's the contract's implementation:
@@ -27,20 +27,19 @@
  */
 
 /**
- * Start off by importing Runner from near-runner-ava. This is usually the only
- * import you'll need.
+ * Start off by importing Workspace from near-workspaces-ava.
  */
-import {Runner} from 'near-runner-ava';
+import {Workspace} from 'near-workspaces-ava';
 
 /**
- * Create a new runner. In local sandbox mode, this will:
+ * Initialize a new workspace. In local sandbox mode, this will:
  *
  *   - Create a new local blockchain
  *   - Create the root account for that blockchain (see `root` below)
  *   - Execute any actions passed to the function
  *   - Shut down the newly created blockchain, but *save the data*
  */
-const runner = Runner.create(async ({root}) => {
+const workspace = Workspace.init(async ({root}) => {
   // Create a subaccount of the root account, like `alice.sandbox`
   // (the actual account name is not guaranteed; you can get it with `alice.accountId`)
   const alice = await root.createAccount('alice');
@@ -72,26 +71,26 @@ const runner = Runner.create(async ({root}) => {
 });
 
 /**
- * Now you can write some tests! In local sandbox mode, each `runner.test` will:
+ * Now you can write some tests! In local sandbox mode, each `workspace.test` will:
  *
  *   - start a new local blockchain
- *   - copy the state from the blockchain created in `Runner.create`
- *   - get access to the accounts created in `Runner.create` using the same variable names
- *   - run concurrently with all other `runner.test` calls, keeping data isolated
+ *   - copy the state from the blockchain created in `Workspace.init`
+ *   - get access to the accounts created in `Workspace.init` using the same variable names
+ *   - run concurrently with all other `workspace.test` calls, keeping data isolated
  *   - shut down at the end, forgetting all new data created
  *
- * It's also worth knowing that `runner.test` is syntax sugar added by
- * near-runner-ava. With raw AVA + near-runner, here's how to write a test:
+ * It's also worth knowing that `workspace.test` is syntax sugar added by
+ * near-workspaces-ava. With raw AVA + near-workspaces, here's how to write a test:
  *
  *     import avaTest from 'ava';
- *     import {Runner} from 'near-runner';
- *     // Alternatively, you can import Runner and ava both from near-runner-ava:
- *     // import {ava as avaTest, Runner} from 'near-runner-ava';
+ *     import {Workspace} from 'near-workspaces';
+ *     // Alternatively, you can import Workspace and ava both from near-workspaces-ava:
+ *     // import {ava as avaTest, Workspace} from 'near-workspaces-ava';
  *
- *     const runner = Runner.create(...);
+ *     const workspace = Workspace.init(...);
  *
  *     avaTest('root sets status', async test => {
- *       await runner.run(async ({contract, root}) => {
+ *       await workspace.fork(async ({contract, root}) => {
  *         ...
  *       });
  *     });
@@ -100,7 +99,7 @@ const runner = Runner.create(async ({root}) => {
  * saving an indentation level and avoiding one extra `await`.
  * (Extra credit: try rewriting this test using the "sugar-free" syntax.)
 */
-runner.test('root sets status', async (test, {contract, root}) => {
+workspace.test('root sets status', async (test, {contract, root}) => {
   // Don't forget to `await` your calls!
   await root.call(contract, 'set_status', {message: 'lol'});
 
@@ -114,7 +113,7 @@ runner.test('root sets status', async (test, {contract, root}) => {
   );
 });
 
-runner.test('statuses initialized in Runner.create', async (test, {alice, contract, root}) => {
+workspace.test('statuses initialized in Workspace.init', async (test, {alice, contract, root}) => {
   // If you want to store a `view` in a local variable, you can inform
   // TypeScript what sort of return value you expect.
   const aliceStatus: string = await contract.view('get_status', {account_id: alice});
@@ -127,7 +126,7 @@ runner.test('statuses initialized in Runner.create', async (test, {alice, contra
   test.is(rootStatus, null);
 });
 
-runner.test('extra goodies', async (test, {alice, contract, root}) => {
+workspace.test('extra goodies', async (test, {alice, contract, root}) => {
   /**
    * AVA's `test` object has all sorts of handy functions. For example: `test.log`.
    * This is better than `console.log` in a couple ways:
@@ -145,7 +144,7 @@ runner.test('extra goodies', async (test, {alice, contract, root}) => {
   });
 
   /**
-   * The Account class from near-runner overrides `toJSON` so that removing
+   * The Account class from near-workspaces overrides `toJSON` so that removing
    * `.accountId` from the lines above gives the same behavior.
    * (This explains something about the example `contract.view` calls above:
    * you may have noticed that they use things like `{account_id: root}`
@@ -159,4 +158,4 @@ runner.test('extra goodies', async (test, {alice, contract, root}) => {
 });
 
 // For more example tests, see:
-// https://github.com/near/runner-js/tree/main/__tests__
+// https://github.com/near/workspaces-js/tree/main/__tests__

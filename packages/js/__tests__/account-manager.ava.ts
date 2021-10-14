@@ -1,7 +1,7 @@
 import {ava as test} from '../../ava';
-import {AccountManager, TestnetRuntime, Runner, TestnetManager} from '..';
+import {AccountManager, TestnetRuntime, Workspace, TestnetManager} from '..';
 
-if (Runner.networkIsTestnet()) {
+if (Workspace.networkIsTestnet()) {
   test('should create a new account', async t => {
     const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
     await accountManager.init();
@@ -19,7 +19,7 @@ if (Runner.networkIsTestnet()) {
     t.true(balance.lt(newBalance));
   });
 } else {
-  test('skipping on ' + Runner.getNetworkFromEnv(), t => {
+  test('skipping on ' + Workspace.getNetworkFromEnv(), t => {
     t.true(true);
   });
 }

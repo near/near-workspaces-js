@@ -1,8 +1,8 @@
 {
-  "name": "runner-js",
+  "name": "near-workspaces-monorepo",
   "version": "0.0.0",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
-  "repository": "https://github.com/near/runner-js",
+  "repository": "https://github.com/near/workspaces-js",
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
   "scripts": {

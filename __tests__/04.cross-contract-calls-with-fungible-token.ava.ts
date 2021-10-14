@@ -2,7 +2,7 @@
  * This tests the behavior of the standard FT contract at
  * https://github.com/near/near-sdk-rs/tree/master/examples/fungible-token
  *
- * Some advanced features of near-runner this shows off:
+ * Some advanced features of near-workspaces this shows off:
  *
  * - Cross-Contract Calls: the "defi" contract implements basic features that
  *   might be used by a marketplace contract. You can see its source code at the
@@ -10,10 +10,10 @@
  *   these are tested below using this "defi" contract.
  *
  * - Complex transactions: to exercise certain edge cases of the FT standard,
- *   tests below initiate chains of transactions using near-runner's transaction
+ *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `createTransaction` below.
  */
-import {Runner, BN, NearAccount, captureError} from 'near-runner-ava';
+import {Workspace, BN, NearAccount, captureError} from 'near-workspaces-ava';
 
 const STORAGE_BYTE_COST = '10000000000000000000';
 
@@ -44,7 +44,7 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
   );
 }
 
-const runner = Runner.create(async ({root}) => ({
+const workspace = Workspace.init(async ({root}) => ({
   ft: await root.createAndDeploy(
     'fungible-token',
     '__tests__/build/debug/fungible_token.wasm',
@@ -56,14 +56,14 @@ const runner = Runner.create(async ({root}) => ({
   ali: await root.createAccount('ali'),
 }));
 
-runner.test('Total supply', async (test, {ft, ali}) => {
+workspace.test('Total supply', async (test, {ft, ali}) => {
   await init_ft(ft, ali, '1000');
 
   const totalSupply: string = await ft.view('ft_total_supply');
   test.is(totalSupply, '1000');
 });
 
-runner.test('Simple transfer', async (test, {ft, ali, root}) => {
+workspace.test('Simple transfer', async (test, {ft, ali, root}) => {
   const initialAmount = new BN('10000');
   const transferAmount = new BN('100');
   await init_ft(ft, root, initialAmount);
@@ -91,7 +91,7 @@ runner.test('Simple transfer', async (test, {ft, ali, root}) => {
   test.deepEqual(new BN(aliBalance), transferAmount);
 });
 
-runner.test('Can close empty balance account', async (test, {ft, ali, root}) => {
+workspace.test('Can close empty balance account', async (test, {ft, ali, root}) => {
   await init_ft(ft, root);
 
   await registerUser(ft, ali);
@@ -106,7 +106,7 @@ runner.test('Can close empty balance account', async (test, {ft, ali, root}) => 
   test.is(result, true);
 });
 
-runner.test('Can force close non-empty balance account', async (test, {ft, root}) => {
+workspace.test('Can force close non-empty balance account', async (test, {ft, root}) => {
   await init_ft(ft, root, '100');
   const errorString = await captureError(async () =>
     root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
@@ -125,7 +125,7 @@ runner.test('Can force close non-empty balance account', async (test, {ft, root}
   );
 });
 
-runner.test('Transfer call with burned amount', async (test, {ft, defi, root}) => {
+workspace.test('Transfer call with burned amount', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   const burnAmount = new BN(10);
@@ -181,7 +181,7 @@ runner.test('Transfer call with burned amount', async (test, {ft, defi, root}) =
   test.is(defiBalance, expectedAmount);
 });
 
-runner.test('Transfer call immediate return no refund', async (test, {ft, defi, root}) => {
+workspace.test('Transfer call immediate return no refund', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   await init_ft(ft, root, initialAmount);
@@ -211,7 +211,7 @@ runner.test('Transfer call immediate return no refund', async (test, {ft, defi, 
   test.deepEqual(new BN(defiBalance), transferAmount);
 });
 
-runner.test('Transfer call promise panics for a full refund', async (test, {ft, defi, root}) => {
+workspace.test('Transfer call promise panics for a full refund', async (test, {ft, defi, root}) => {
   const initialAmount = new BN(10_000);
   const transferAmount = new BN(100);
   await init_ft(ft, root, initialAmount);

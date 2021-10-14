@@ -8,14 +8,14 @@
  * created within the testing environment, `alice.near`.
  *
  * patchState is a Sandbox-specific feature, so these tests can't be run on
- * testnet. That's why they're wrapped with `if (Runner.networkIsSandbox())`.
+ * testnet. That's why they're wrapped with `if (Workspace.networkIsSandbox())`.
  */
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import * as borsh from 'borsh';
-import {Runner, NEAR} from 'near-runner-ava';
+import {Workspace, NEAR} from 'near-workspaces-ava';
 
-const runner = Runner.create(async ({root}) => {
+const workspace = Workspace.init(async ({root}) => {
   const contract = await root.createAndDeploy(
     'status-message',
     '__tests__/build/debug/status_message.wasm',
@@ -24,7 +24,7 @@ const runner = Runner.create(async ({root}) => {
   return {contract, ali};
 });
 
-if (Runner.networkIsSandbox()) {
+if (Workspace.networkIsSandbox()) {
   class Assignable {
     [key: string]: any;
     constructor(properties: any) {
@@ -52,7 +52,7 @@ if (Runner.networkIsSandbox()) {
     ],
   ]);
 
-  runner.test('View state', async (test, {contract, ali}) => {
+  workspace.test('View state', async (test, {contract, ali}) => {
     await ali.call(contract, 'set_status', {message: 'hello'});
 
     const state = await contract.viewState();
@@ -72,7 +72,7 @@ if (Runner.networkIsSandbox()) {
     );
   });
 
-  runner.test('Patch state', async (test, {contract, ali}) => {
+  workspace.test('Patch state', async (test, {contract, ali}) => {
     // Contract must have some state for viewState & patchState to work
     await ali.call(contract, 'set_status', {message: 'hello'});
     // Get state
@@ -98,7 +98,7 @@ if (Runner.networkIsSandbox()) {
     test.is(result, 'hello world');
   });
 
-  runner.test('Patch Account', async (test, {root, ali, contract}) => {
+  workspace.test('Patch Account', async (test, {root, ali, contract}) => {
     const bob = root.getFullAccount('bob');
     const public_key = await bob.setKey();
     const {code_hash} = await contract.accountView();
@@ -126,5 +126,5 @@ if (Runner.networkIsSandbox()) {
     test.is(result, 'hello');
   });
 } else {
-  runner.test('skipping; not on sandbox');
+  workspace.test('skipping; not on sandbox');
 }
