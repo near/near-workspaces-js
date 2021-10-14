@@ -27,12 +27,14 @@ async function findAccountsWithPrefix(
   const accounts = await keyStore.getAccounts(network);
   debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
   const paths = accounts.filter(f => f.startsWith(prefix));
-  debug(`Found:\n  ${paths.join('\n  ')}`);
   if (paths.length > 0) {
+    debug(`Found:\n  ${paths.join('\n  ')}`);
     return paths;
   }
 
-  return [timeSuffix(prefix, 9_999_999)];
+  const newAccount = timeSuffix(prefix, 9_999_999);
+  debug(`Creating account: ${newAccount}`);
+  return [newAccount];
 }
 
 export abstract class AccountManager implements NearAccountManager {
@@ -75,12 +77,11 @@ export abstract class AccountManager implements NearAccountManager {
   async deleteKey(
     account_id: string,
   ): Promise<void> {
-    debug(`About to delete key for ${account_id}`);
     try {
       await this.keyStore.removeKey(this.networkId, account_id);
       debug(`deleted Key for ${account_id}`);
     } catch {
-      debug('failed to delete key');
+      debug(`Failed to delete key for ${account_id}`);
     }
   }
 
@@ -124,7 +125,7 @@ export abstract class AccountManager implements NearAccountManager {
   async setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair> {
     const key = keyPair ?? KeyPairEd25519.fromRandom();
     await this.keyStore.setKey(this.networkId, accountId, key);
-    debug(`setting keys for ${accountId}`);
+    debug(`Setting keys for ${accountId}`);
     return (await this.getKey(accountId))!;
   }
 
@@ -137,7 +138,7 @@ export abstract class AccountManager implements NearAccountManager {
       return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
     } catch (error: unknown) {
       if (keyPair) {
-        debug(`failed to delete ${accountId} with different keyPair`);
+        debug(`Failed to delete ${accountId} with different keyPair`);
         return this.deleteAccount(accountId, beneficiaryId);
       }
 

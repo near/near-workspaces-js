@@ -27,7 +27,6 @@ const contract_state_1 = require("../contract-state");
 const jsonrpc_1 = require("../jsonrpc");
 const utils_1 = require("../utils");
 const transaction_result_1 = require("../transaction-result");
-const internal_utils_1 = require("../internal-utils");
 const record_1 = require("../record");
 class Account {
     constructor(_accountId, manager) {
@@ -180,7 +179,6 @@ class Account {
             .signAndSend(keyPair);
         if (result.succeeded && await this.getKey() !== null) {
             await this.manager.deleteKey(this.accountId);
-            (0, internal_utils_1.debug)(`Deleting key for ${this.accountId} after deletion and it still exists`);
         }
         return result;
     }
