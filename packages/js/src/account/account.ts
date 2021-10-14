@@ -123,6 +123,13 @@ export class Account implements NearAccount {
 
     await account.sandbox_patch_state(records);
 
+    if (!await this.provider.accountExists(refContract)) {
+      await account.sandbox_patch_state(records);
+      if (!await this.provider.accountExists(refContract)) {
+        throw new Error(`Account ${refContract} does not exist after trying to patch into sandbox.`);
+      }
+    }
+
     if (withData) {
       const rawData = await rpc.viewStateRaw(account.accountId, '', blockQuery);
       const data = rawData.map(({key, value}) => ({
