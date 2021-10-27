@@ -28,9 +28,10 @@ export function tGas(x: string | number) {
   return String(x) + '0'.repeat(12);
 }
 
-// Create random number with at least 7 digits by default
-export function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9_999_999 - 1_000_000)) + 1_000_000)}`): string {
-  return `${prefix}${Date.now()}${suffix}`;
+// Create random account with at least 33 digits by default
+export function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14): string {
+  const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
+  return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
 }
 
 export function asId(id: string | NamedAccount): string {
@@ -100,7 +101,7 @@ export const EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
  * @returns network to connect to. Default 'sandbox'
  */
 export function getNetworkFromEnv(): 'sandbox' | 'testnet' {
-  const network = process.env.NEAR_RUNNER_NETWORK;
+  const network = process.env.NEAR_WORKSPACES_NETWORK;
   switch (network) {
     case 'sandbox':
     case 'testnet':
@@ -109,7 +110,7 @@ export function getNetworkFromEnv(): 'sandbox' | 'testnet' {
       return 'sandbox';
     default:
       throw new Error(
-        `environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+        `environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
         + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)',
       );
   }
@@ -119,4 +120,8 @@ export function homeKeyStore(): KeyStore {
   return new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
     path.join(os.homedir(), '.near-credentials'),
   );
+}
+
+export function timeSuffix(prefix: string, length = 6): string {
+  return `${prefix}${Date.now() % (10 ** length)}`;
 }

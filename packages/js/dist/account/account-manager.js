@@ -33,9 +33,6 @@ const jsonrpc_1 = require("../jsonrpc");
 const transaction_result_1 = require("../transaction-result");
 const account_1 = require("./account");
 const utils_2 = require("./utils");
-function timeSuffix(prefix, length = 99999) {
-    return `${prefix}${Date.now() % length}`;
-}
 async function findAccountsWithPrefix(prefix, keyStore, network) {
     const accounts = await keyStore.getAccounts(network);
     (0, internal_utils_1.debug)(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
@@ -44,7 +41,7 @@ async function findAccountsWithPrefix(prefix, keyStore, network) {
         (0, internal_utils_1.debug)(`Found:\n  ${paths.join('\n  ')}`);
         return paths;
     }
-    const newAccount = timeSuffix(prefix, 9999999);
+    const newAccount = (0, utils_1.timeSuffix)(prefix, 13);
     (0, internal_utils_1.debug)(`Creating account: ${newAccount}`);
     return [newAccount];
 }
@@ -298,7 +295,7 @@ class TestnetManager extends AccountManager {
             const hash = (0, utils_2.sanitize)((0, utils_2.hashPathBase64)(fileName));
             const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
             TestnetManager.numRootAccounts++;
-            const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
+            const name = `r${currentRootNumber}${hash.slice(0, 19)}`;
             const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
             const accountId = accounts.shift();
             this.config.rootAccount = accountId;
