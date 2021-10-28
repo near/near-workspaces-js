@@ -115,7 +115,7 @@ exports.EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
  * @returns network to connect to. Default 'sandbox'
  */
 function getNetworkFromEnv() {
-    const network = process.env.NEAR_RUNNER_NETWORK;
+    const network = process.env.NEAR_WORKSPACES_NETWORK;
     switch (network) {
         case 'sandbox':
         case 'testnet':
@@ -123,7 +123,7 @@ function getNetworkFromEnv() {
         case undefined:
             return 'sandbox';
         default:
-            throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+            throw new Error(`environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
                 + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)');
     }
 }
