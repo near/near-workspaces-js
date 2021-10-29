@@ -58,5 +58,5 @@ export function hashPathBase64(s: string): string {
 }
 
 export function sanitize(s: string): string {
-  return s.toLowerCase();
+  return s.toLowerCase().replace('__', '_0');
 }

@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.homeKeyStore = exports.getNetworkFromEnv = exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.timeSuffix = exports.homeKeyStore = exports.getNetworkFromEnv = exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
 const buffer_1 = require("buffer");
 const process = __importStar(require("process"));
 const os = __importStar(require("os"));
@@ -47,9 +47,10 @@ function tGas(x) {
     return String(x) + '0'.repeat(12);
 }
 exports.tGas = tGas;
-// Create random number with at least 7 digits by default
-function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9999999 - 1000000)) + 1000000)}`) {
-    return `${prefix}${Date.now()}${suffix}`;
+// Create random account with at least 33 digits by default
+function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14) {
+    const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
+    return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
 }
 exports.randomAccountId = randomAccountId;
 function asId(id) {
@@ -115,7 +116,7 @@ exports.EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
  * @returns network to connect to. Default 'sandbox'
  */
 function getNetworkFromEnv() {
-    const network = process.env.NEAR_RUNNER_NETWORK;
+    const network = process.env.NEAR_WORKSPACES_NETWORK;
     switch (network) {
         case 'sandbox':
         case 'testnet':
@@ -123,7 +124,7 @@ function getNetworkFromEnv() {
         case undefined:
             return 'sandbox';
         default:
-            throw new Error(`environment variable NEAR_RUNNER_NETWORK=${network} invalid; `
+            throw new Error(`environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
                 + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)');
     }
 }
@@ -132,4 +133,8 @@ function homeKeyStore() {
     return new nearAPI.keyStores.UnencryptedFileSystemKeyStore(path.join(os.homedir(), '.near-credentials'));
 }
 exports.homeKeyStore = homeKeyStore;
+function timeSuffix(prefix, length = 6) {
+    return `${prefix}${Date.now() % (10 ** length)}`;
+}
+exports.timeSuffix = timeSuffix;
 //# sourceMappingURL=utils.js.map

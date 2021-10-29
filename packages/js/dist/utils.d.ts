@@ -6,7 +6,7 @@ export declare const ONE_NEAR: BN;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
 export declare function tGas(x: string | number): string;
-export declare function randomAccountId(prefix?: string, suffix?: string): string;
+export declare function randomAccountId(prefix?: string, dateLength?: number, suffixLength?: number): string;
 export declare function asId(id: string | NamedAccount): string;
 export declare const NO_DEPOSIT: BN;
 export declare function captureError(fn: () => Promise<any>): Promise<string>;
@@ -27,4 +27,5 @@ export declare const EMPTY_CONTRACT_HASH = "11111111111111111111111111111111";
  */
 export declare function getNetworkFromEnv(): 'sandbox' | 'testnet';
 export declare function homeKeyStore(): KeyStore;
+export declare function timeSuffix(prefix: string, length?: number): string;
 //# sourceMappingURL=utils.d.ts.map

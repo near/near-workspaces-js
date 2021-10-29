@@ -71,7 +71,7 @@ function hashPathBase64(s) {
 }
 exports.hashPathBase64 = hashPathBase64;
 function sanitize(s) {
-    return s.toLowerCase();
+    return s.toLowerCase().replace('__', '_0');
 }
 exports.sanitize = sanitize;
 //# sourceMappingURL=utils.js.map
