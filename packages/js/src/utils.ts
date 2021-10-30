@@ -28,9 +28,10 @@ export function tGas(x: string | number) {
   return String(x) + '0'.repeat(12);
 }
 
-// Create random number with at least 7 digits by default
-export function randomAccountId(prefix = 'dev-', suffix = `-${(Math.floor(Math.random() * (9_999_999 - 1_000_000)) + 1_000_000)}`): string {
-  return `${prefix}${Date.now()}${suffix}`;
+// Create random account with at least 33 digits by default
+export function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14): string {
+  const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
+  return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
 }
 
 export function asId(id: string | NamedAccount): string {
@@ -119,4 +120,8 @@ export function homeKeyStore(): KeyStore {
   return new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
     path.join(os.homedir(), '.near-credentials'),
   );
+}
+
+export function timeSuffix(prefix: string, length = 6): string {
+  return `${prefix}${Date.now() % (10 ** length)}`;
 }

@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {NEAR} from 'near-units';
-import {asId, isTopLevelAccount, randomAccountId} from '../utils';
+import {asId, isTopLevelAccount, randomAccountId, timeSuffix} from '../utils';
 import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
@@ -14,10 +14,6 @@ import {Account} from './account';
 import {NearAccount} from './near-account';
 import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
 import {NearAccountManager} from './near-account-manager';
-
-function timeSuffix(prefix: string, length = 99_999): string {
-  return `${prefix}${Date.now() % length}`;
-}
 
 async function findAccountsWithPrefix(
   prefix: string,
@@ -32,7 +28,7 @@ async function findAccountsWithPrefix(
     return paths;
   }
 
-  const newAccount = timeSuffix(prefix, 9_999_999);
+  const newAccount = timeSuffix(prefix, 13);
   debug(`Creating account: ${newAccount}`);
   return [newAccount];
 }
@@ -350,7 +346,7 @@ export class TestnetManager extends AccountManager {
       const hash: string = sanitize(hashPathBase64(fileName));
       const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
       TestnetManager.numRootAccounts++;
-      const name = `r${currentRootNumber}${hash.slice(0, 6)}`;
+      const name = `r${currentRootNumber}${hash.slice(0, 19)}`;
 
       const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
       const accountId = accounts.shift()!;
