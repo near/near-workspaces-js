@@ -50,7 +50,7 @@ exports.tGas = tGas;
 // Create random account with at least 33 digits by default
 function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14) {
     const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
-    return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
+    return `${timeSuffix(prefix, dateLength)}-${suffix}`;
 }
 exports.randomAccountId = randomAccountId;
 function asId(id) {

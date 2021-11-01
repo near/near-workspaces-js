@@ -31,7 +31,7 @@ export function tGas(x: string | number) {
 // Create random account with at least 33 digits by default
 export function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14): string {
   const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
-  return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
+  return `${timeSuffix(prefix, dateLength)}-${suffix}`;
 }
 
 export function asId(id: string | NamedAccount): string {
