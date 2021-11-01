@@ -1,4 +1,4 @@
-name: near-runner-init
+name: near-workspaces-init
 on: push
 jobs:
   test:
