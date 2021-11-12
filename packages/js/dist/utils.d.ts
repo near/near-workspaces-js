@@ -1,14 +1,14 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
-import BN from 'bn.js';
+import { NEAR } from 'near-units';
 import { NamedAccount, KeyPair, ClientConfig, KeyStore } from './types';
-export declare const ONE_NEAR: BN;
+export declare const ONE_NEAR: NEAR;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
 export declare function tGas(x: string | number): string;
 export declare function randomAccountId(prefix?: string, dateLength?: number, suffixLength?: number): string;
 export declare function asId(id: string | NamedAccount): string;
-export declare const NO_DEPOSIT: BN;
+export declare const NO_DEPOSIT: NEAR;
 export declare function captureError(fn: () => Promise<any>): Promise<string>;
 export declare function isTopLevelAccount(accountId: string): boolean;
 export declare function urlConfigFromNetwork(network: string | {

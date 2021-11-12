@@ -27,13 +27,13 @@ const buffer_1 = require("buffer");
 const process = __importStar(require("process"));
 const os = __importStar(require("os"));
 const path = __importStar(require("path"));
-const bn_js_1 = __importDefault(require("bn.js"));
+const near_units_1 = require("near-units");
 const nearAPI = __importStar(require("near-api-js"));
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const bs58_1 = __importDefault(require("bs58"));
-exports.ONE_NEAR = new bn_js_1.default('1' + '0'.repeat(24));
+exports.ONE_NEAR = near_units_1.NEAR.parse('1N');
 function toYocto(amount) {
-    return nearAPI.utils.format.parseNearAmount(amount);
+    return near_units_1.NEAR.parse(`${amount}N`).toString();
 }
 exports.toYocto = toYocto;
 function createKeyPair() {
@@ -48,7 +48,7 @@ function tGas(x) {
 }
 exports.tGas = tGas;
 // Create random account with at least 33 digits by default
-function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14) {
+function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 15) {
     const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
     return `${timeSuffix(prefix, dateLength)}-${suffix}`;
 }
@@ -57,7 +57,7 @@ function asId(id) {
     return typeof id === 'string' ? id : id.accountId;
 }
 exports.asId = asId;
-exports.NO_DEPOSIT = new bn_js_1.default('0');
+exports.NO_DEPOSIT = near_units_1.NEAR.from(0);
 async function captureError(fn) {
     try {
         await fn();
@@ -71,7 +71,7 @@ async function captureError(fn) {
 }
 exports.captureError = captureError;
 function isTopLevelAccount(accountId) {
-    return accountId.includes('.');
+    return !accountId.includes('.');
 }
 exports.isTopLevelAccount = isTopLevelAccount;
 function configFromDomain(network) {
