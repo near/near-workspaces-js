@@ -163,7 +163,7 @@ class AccountManager {
         try {
             const start = Date.now();
             // @ts-expect-error access shouldn't be protected
-            const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions, returnError: false });
+            const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions, returnError: true });
             const end = Date.now();
             if (oldKey) {
                 await this.setKey(account.accountId, oldKey);
