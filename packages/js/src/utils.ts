@@ -2,11 +2,11 @@ import {Buffer} from 'buffer';
 import * as process from 'process';
 import * as os from 'os';
 import * as path from 'path';
-import {NEAR} from 'near-units';
 import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
 import bs58 from 'bs58';
-import {NamedAccount, KeyPair, ClientConfig, KeyStore} from './types';
+import {Gas, NEAR} from 'near-units';
+import {NamedAccount, KeyPair, ClientConfig, KeyStore, BN} from './types';
 
 export const ONE_NEAR = NEAR.parse('1N');
 
@@ -124,4 +124,24 @@ export function homeKeyStore(): KeyStore {
 
 export function timeSuffix(prefix: string, length = 6): string {
   return `${prefix}${Date.now() % (10 ** length)}`;
+}
+
+const NOT_NUMBER_OR_UNDERLINE = /[^\d_]/;
+
+export function parseGas(s: string | BN): Gas {
+  if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
+    return Gas.parse(s);
+  }
+
+  return Gas.from(s);
+}
+
+// One difference with `NEAR.parse` is that here strings of just numbers are considered `yN`
+// And not `N`
+export function parseNEAR(s: string | BN): NEAR {
+  if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
+    return NEAR.parse(s);
+  }
+
+  return NEAR.from(s);
 }

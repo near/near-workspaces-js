@@ -15,7 +15,7 @@
  */
 import {Workspace, BN, NearAccount, captureError} from 'near-workspaces-ava';
 
-const STORAGE_BYTE_COST = '10000000000000000000';
+const STORAGE_BYTE_COST = '1.5 mN';
 
 async function init_ft(
   ft: NearAccount,
@@ -40,8 +40,14 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
     'storage_deposit',
     {account_id: user},
     // Deposit pulled from ported sim test
-    {attachedDeposit: new BN(STORAGE_BYTE_COST).mul(new BN(125))},
+    {attachedDeposit: STORAGE_BYTE_COST},
   );
+}
+
+async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<BN> {
+  return new BN(await ft.view('ft_balance_of', {
+    account_id: user,
+  }));
 }
 
 const workspace = Workspace.init(async ({root}) => ({
@@ -81,12 +87,9 @@ workspace.test('Simple transfer', async (test, {ft, ali, root}) => {
     {attachedDeposit: '1'},
   );
 
-  const rootBalance: string = await ft.view('ft_balance_of', {
-    account_id: root,
-  });
-  const aliBalance: string = await ft.view('ft_balance_of', {
-    account_id: ali,
-  });
+  const rootBalance = await ft_balance_of(ft, root);
+  const aliBalance = await ft_balance_of(ft, ali);
+
   test.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
   test.deepEqual(new BN(aliBalance), transferAmount);
 });
@@ -143,12 +146,12 @@ workspace.test('Transfer call with burned amount', async (test, {ft, defi, root}
         amount: transferAmount,
         msg: burnAmount,
       },
-      {attachedDeposit: '1', gas: '150000000000000'},
+      {attachedDeposit: '1', gas: '150 Tgas'},
     )
     .functionCall(
       'storage_unregister',
       {force: true},
-      {attachedDeposit: '1', gas: '150000000000000'},
+      {attachedDeposit: '1', gas: '150 Tgas'},
     )
     .signAndSend();
 
@@ -170,15 +173,13 @@ workspace.test('Transfer call with burned amount', async (test, {ft, defi, root}
   const callbackOutcome = result.receipts_outcomes[5];
 
   test.is(callbackOutcome.parseResult(), transferAmount.toString());
-  const expectedAmount = transferAmount.sub(burnAmount).toString();
+  const expectedAmount = transferAmount.sub(burnAmount);
 
   const totalSupply: string = await ft.view('ft_total_supply');
-  test.is(totalSupply, expectedAmount);
+  test.is(totalSupply, expectedAmount.toString());
 
-  const defiBalance: string = await ft.view('ft_balance_of', {
-    account_id: defi,
-  });
-  test.is(defiBalance, expectedAmount);
+  const defiBalance = await ft_balance_of(ft, defi);
+  test.deepEqual(defiBalance, expectedAmount);
 });
 
 workspace.test('Transfer call immediate return no refund', async (test, {ft, defi, root}) => {
@@ -198,17 +199,14 @@ workspace.test('Transfer call immediate return no refund', async (test, {ft, def
       memo: null,
       msg: 'take-my-money',
     },
-    {attachedDeposit: '1', gas: '150000000000000'},
+    {attachedDeposit: '1', gas: '150 Tgas'},
   );
 
-  const rootBalance: string = await ft.view('ft_balance_of', {
-    account_id: root,
-  });
-  const defiBalance: string = await ft.view('ft_balance_of', {
-    account_id: defi,
-  });
-  test.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-  test.deepEqual(new BN(defiBalance), transferAmount);
+  const rootBalance = await ft_balance_of(ft, root);
+  const defiBalance = await ft_balance_of(ft, defi);
+
+  test.deepEqual(rootBalance, initialAmount.sub(transferAmount));
+  test.deepEqual(defiBalance, transferAmount);
 });
 
 workspace.test('Transfer call promise panics for a full refund', async (test, {ft, defi, root}) => {
@@ -228,16 +226,13 @@ workspace.test('Transfer call promise panics for a full refund', async (test, {f
       memo: null,
       msg: 'this won\'t parse as an integer',
     },
-    {attachedDeposit: '1', gas: '150000000000000'},
+    {attachedDeposit: '1', gas: '150 Tgas'},
   );
   test.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
 
-  const rootBalance: string = await ft.view('ft_balance_of', {
-    account_id: root,
-  });
-  const defiBalance: string = await ft.view('ft_balance_of', {
-    account_id: defi,
-  });
-  test.deepEqual(new BN(rootBalance), initialAmount);
-  test.deepEqual(new BN(defiBalance), new BN(0));
+  const rootBalance = await ft_balance_of(ft, root);
+  const defiBalance = await ft_balance_of(ft, defi);
+
+  test.deepEqual(rootBalance, initialAmount);
+  test.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
 });

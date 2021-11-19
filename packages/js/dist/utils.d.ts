@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
-import { NEAR } from 'near-units';
-import { NamedAccount, KeyPair, ClientConfig, KeyStore } from './types';
+import { Gas, NEAR } from 'near-units';
+import { NamedAccount, KeyPair, ClientConfig, KeyStore, BN } from './types';
 export declare const ONE_NEAR: NEAR;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
@@ -28,4 +28,6 @@ export declare const EMPTY_CONTRACT_HASH = "11111111111111111111111111111111";
 export declare function getNetworkFromEnv(): 'sandbox' | 'testnet';
 export declare function homeKeyStore(): KeyStore;
 export declare function timeSuffix(prefix: string, length?: number): string;
+export declare function parseGas(s: string | BN): Gas;
+export declare function parseNEAR(s: string | BN): NEAR;
 //# sourceMappingURL=utils.d.ts.map

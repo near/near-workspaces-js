@@ -22,7 +22,7 @@ import {
   NamedAccount,
 } from './types';
 import {findFile, isPathLike} from './internal-utils';
-import {NO_DEPOSIT} from './utils';
+import {NO_DEPOSIT, parseGas, parseNEAR} from './utils';
 
 export abstract class Transaction {
   readonly receiverId: string;
@@ -85,7 +85,7 @@ export abstract class Transaction {
     }: {gas?: BN | string; attachedDeposit?: BN | string} = {},
   ): this {
     this.actions.push(
-      functionCall(methodName, args, new BN(gas.toString()), new BN(attachedDeposit.toString())),
+      functionCall(methodName, args, parseGas(gas), parseNEAR(attachedDeposit)),
     );
     return this;
   }
@@ -96,8 +96,8 @@ export abstract class Transaction {
   }
 
   transfer(amount: string | BN): this {
-    this._transferAmount = NEAR.from(amount);
-    this.actions.push(transfer(new BN(amount.toString())));
+    this._transferAmount = parseNEAR(amount);
+    this.actions.push(transfer(this._transferAmount));
     return this;
   }
 

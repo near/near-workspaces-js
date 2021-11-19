@@ -85,6 +85,7 @@ export interface NearAccount {
      * @param accountId Name of contract to deploy
      * @param wasm path or data of contract binary
      * @param options If any method is passed it will be added to the transaction so that contract will be initialized
+     *                `gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
      */
     createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, options?: {
         args?: Record<string, unknown> | Uint8Array;
@@ -98,8 +99,12 @@ export interface NearAccount {
     /**
      * Call a NEAR contract and return full results with raw receipts, etc. Example:
      *
-     *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
+     *     await call('lol.testnet', 'set_status', { message: 'hello' }, {gas: new BN(30 * 10**12), attachedDeposit: new BN(10**24)})
      *
+     *     //`gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
+     *
+     *     await call('lol.testnet', 'set_status', { message: 'hello' }, {gas:"10 Tgas", attachedDeposit: "1 N"})
+  
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
     call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, options?: {
@@ -175,7 +180,8 @@ export interface NearAccount {
      */
     toJSON(): string;
     /**
-    * Transfer yoctoNear to another account
+    * Transfer yoctoNear to another account.
+    * If amount is string it can be either numbers, e.g. `"1_000_000_000_000_000_000_000_000"` or have units, `"1 N"`
     */
     transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
     /**
