@@ -2,16 +2,16 @@ import {Buffer} from 'buffer';
 import * as process from 'process';
 import * as os from 'os';
 import * as path from 'path';
-import BN from 'bn.js';
+import {NEAR} from 'near-units';
 import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
 import bs58 from 'bs58';
 import {NamedAccount, KeyPair, ClientConfig, KeyStore} from './types';
 
-export const ONE_NEAR = new BN('1' + '0'.repeat(24));
+export const ONE_NEAR = NEAR.parse('1N');
 
 export function toYocto(amount: string): string {
-  return nearAPI.utils.format.parseNearAmount(amount)!;
+  return NEAR.parse(`${amount}N`).toString();
 }
 
 export function createKeyPair(): KeyPair {
@@ -29,16 +29,16 @@ export function tGas(x: string | number) {
 }
 
 // Create random account with at least 33 digits by default
-export function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 14): string {
+export function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 15): string {
   const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
-  return `${timeSuffix(prefix, dateLength)}-${suffix}}`;
+  return `${timeSuffix(prefix, dateLength)}-${suffix}`;
 }
 
 export function asId(id: string | NamedAccount): string {
   return typeof id === 'string' ? id : id.accountId;
 }
 
-export const NO_DEPOSIT = new BN('0');
+export const NO_DEPOSIT = NEAR.from(0);
 
 export async function captureError(fn: () => Promise<any>): Promise<string> {
   try {
@@ -53,7 +53,7 @@ export async function captureError(fn: () => Promise<any>): Promise<string> {
 }
 
 export function isTopLevelAccount(accountId: string): boolean {
-  return accountId.includes('.');
+  return !accountId.includes('.');
 }
 
 function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
