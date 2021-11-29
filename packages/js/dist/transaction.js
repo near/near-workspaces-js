@@ -64,7 +64,7 @@ class Transaction {
         return this;
     }
     functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
-        this.actions.push((0, types_1.functionCall)(methodName, args, new types_1.BN(gas.toString()), new types_1.BN(attachedDeposit.toString())));
+        this.actions.push((0, types_1.functionCall)(methodName, args, (0, utils_1.parseGas)(gas), (0, utils_1.parseNEAR)(attachedDeposit)));
         return this;
     }
     stake(amount, publicKey) {
@@ -72,8 +72,8 @@ class Transaction {
         return this;
     }
     transfer(amount) {
-        this._transferAmount = near_units_1.NEAR.from(amount);
-        this.actions.push((0, types_1.transfer)(new types_1.BN(amount.toString())));
+        this._transferAmount = (0, utils_1.parseNEAR)(amount);
+        this.actions.push((0, types_1.transfer)(this._transferAmount));
         return this;
     }
     get accountCreated() {

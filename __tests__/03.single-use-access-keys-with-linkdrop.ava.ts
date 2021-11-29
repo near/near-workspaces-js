@@ -11,7 +11,7 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import {Workspace, createKeyPair, Gas, NEAR} from 'near-workspaces-ava';
+import {Workspace, createKeyPair, NEAR} from 'near-workspaces-ava';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -36,7 +36,7 @@ workspace.test('Use `create_account_and_claim` to create a new account', async (
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
-  const attachedDeposit = NEAR.parse('2');
+  const attachedDeposit = '2 N';
 
   // This adds the key as a function access key on `create_account_and_claim`
   await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
@@ -54,7 +54,7 @@ workspace.test('Use `create_account_and_claim` to create a new account', async (
     },
     {
       signWithKey: senderKey,
-      gas: Gas.parse('50 TGas'),
+      gas: '50 TGas',
     },
   );
   const bob = root.getAccount(new_account_id);
@@ -73,7 +73,7 @@ workspace.test('Use `claim` to transfer to an existing account', async (test, {r
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
-  const attachedDeposit = NEAR.parse('2');
+  const attachedDeposit = '2 N';
 
   // This adds the key as a function access key on `create_account_and_claim`
   await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
@@ -87,7 +87,7 @@ workspace.test('Use `claim` to transfer to an existing account', async (test, {r
     },
     {
       signWithKey: senderKey,
-      gas: Gas.parse('50 TGas'),
+      gas: '50 TGas',
     },
   );
 
