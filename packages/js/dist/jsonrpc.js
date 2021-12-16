@@ -19,7 +19,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
     static from(config) {
         const url = typeof config === 'string' ? config : config.rpcAddr;
         if (!this.providers.has(url)) {
-            this.providers.set(url, new JsonRpcProvider(url));
+            this.providers.set(url, new JsonRpcProvider({ url }));
         }
         return this.providers.get(url);
     }
