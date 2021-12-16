@@ -20,7 +20,7 @@ export class JsonRpcProvider extends JSONRpc {
   static from(config: string | {rpcAddr: string}): JsonRpcProvider {
     const url = typeof config === 'string' ? config : config.rpcAddr;
     if (!this.providers.has(url)) {
-      this.providers.set(url, new JsonRpcProvider(url));
+      this.providers.set(url, new JsonRpcProvider({url}));
     }
 
     return this.providers.get(url)!;
