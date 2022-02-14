@@ -96,6 +96,6 @@ export declare class Workspace extends RawWorkspace {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Workspace class, which is used to run tests.
      */
-    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Workspace;
+    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
 }
 //# sourceMappingURL=index.d.ts.map

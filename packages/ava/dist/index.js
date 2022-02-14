@@ -72,8 +72,8 @@ class Workspace extends near_workspaces_1.Workspace {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Workspace class, which is used to run tests.
      */
-    static init(configOrFunction = async () => ({}), f) {
-        const workspace = near_workspaces_1.Workspace.init(configOrFunction, f);
+    static async init(configOrFunction = async () => ({}), f) {
+        const workspace = await near_workspaces_1.Workspace.init(configOrFunction, f);
         workspace.test = (description, fn = DEFAULT_TEST_FN) => {
             (0, ava_1.default)(description, async (t) => {
                 await workspace.fork(async (args, workspace) => fn(t, args, workspace));

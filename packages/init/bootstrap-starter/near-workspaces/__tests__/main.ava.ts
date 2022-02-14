@@ -39,7 +39,7 @@ import {Workspace} from 'near-workspaces-ava';
  *   - Execute any actions passed to the function
  *   - Shut down the newly created blockchain, but *save the data*
  */
-const workspace = Workspace.init(async ({root}) => {
+const workspacePromise = Workspace.init(async ({root}) => {
   // Create a subaccount of the root account, like `alice.sandbox`
   // (the actual account name is not guaranteed; you can get it with `alice.accountId`)
   const alice = await root.createAccount('alice');
@@ -99,62 +99,64 @@ const workspace = Workspace.init(async ({root}) => {
  * saving an indentation level and avoiding one extra `await`.
  * (Extra credit: try rewriting this test using the "sugar-free" syntax.)
 */
-workspace.test('root sets status', async (test, {contract, root}) => {
-  // Don't forget to `await` your calls!
-  await root.call(contract, 'set_status', {message: 'lol'});
+void workspacePromise.then(workspace => {
+  workspace.test('root sets status', async (test, {contract, root}) => {
+    // Don't forget to `await` your calls!
+    await root.call(contract, 'set_status', {message: 'lol'});
 
-  // Assert that two things are identical using `test.is`
-  test.is(
-    // Note that Root called the contract with `root.call(contract, ...)`, but
-    // you view the contract with `contract.view`, since the account doing the
-    // viewing is irrelevant.
-    await contract.view('get_status', {account_id: root}),
-    'lol',
-  );
-});
-
-workspace.test('statuses initialized in Workspace.init', async (test, {alice, contract, root}) => {
-  // If you want to store a `view` in a local variable, you can inform
-  // TypeScript what sort of return value you expect.
-  const aliceStatus: string = await contract.view('get_status', {account_id: alice});
-  const rootStatus: null = await contract.view('get_status', {account_id: root});
-
-  test.is(aliceStatus, 'hello');
-
-  // Note that the test above sets a status for `root`, but here it's still
-  // null! This is because tests run concurrently in isolated environments.
-  test.is(rootStatus, null);
-});
-
-workspace.test('extra goodies', async (test, {alice, contract, root}) => {
-  /**
-   * AVA's `test` object has all sorts of handy functions. For example: `test.log`.
-   * This is better than `console.log` in a couple ways:
-   *
-   *   - The log output only shows up if you pass `--verbose` or if the test fails.
-   *   - The output is nicely-formatted, right below the rest of the test output.
-   *
-   * Try it out using `npm run test -- --verbose` (with yarn: `yarn test --verbose`),
-   * or by adding `--verbose` to the `test` script in package.json
-   */
-  test.log({
-    alice: alice.accountId,
-    contract: contract.accountId,
-    root: root.accountId,
+    // Assert that two things are identical using `test.is`
+    test.is(
+      // Note that Root called the contract with `root.call(contract, ...)`, but
+      // you view the contract with `contract.view`, since the account doing the
+      // viewing is irrelevant.
+      await contract.view('get_status', {account_id: root}),
+      'lol',
+    );
   });
 
-  /**
-   * The Account class from near-workspaces overrides `toJSON` so that removing
-   * `.accountId` from the lines above gives the same behavior.
-   * (This explains something about the example `contract.view` calls above:
-   * you may have noticed that they use things like `{account_id: root}`
-   * instead of `{account_id: root.accountId}`.)
-   * Here's a test to prove it; try updating the `test.log` above to see it.
-   */
-  test.is(
-    JSON.stringify({alice}), // This is JS shorthand for `{ alice: alice }`
-    JSON.stringify({alice: alice.accountId}),
-  );
+  workspace.test('statuses initialized in Workspace.init', async (test, {alice, contract, root}) => {
+    // If you want to store a `view` in a local variable, you can inform
+    // TypeScript what sort of return value you expect.
+    const aliceStatus: string = await contract.view('get_status', {account_id: alice});
+    const rootStatus: null = await contract.view('get_status', {account_id: root});
+
+    test.is(aliceStatus, 'hello');
+
+    // Note that the test above sets a status for `root`, but here it's still
+    // null! This is because tests run concurrently in isolated environments.
+    test.is(rootStatus, null);
+  });
+
+  workspace.test('extra goodies', async (test, {alice, contract, root}) => {
+    /**
+     * AVA's `test` object has all sorts of handy functions. For example: `test.log`.
+     * This is better than `console.log` in a couple ways:
+     *
+     *   - The log output only shows up if you pass `--verbose` or if the test fails.
+     *   - The output is nicely-formatted, right below the rest of the test output.
+     *
+     * Try it out using `npm run test -- --verbose` (with yarn: `yarn test --verbose`),
+     * or by adding `--verbose` to the `test` script in package.json
+     */
+    test.log({
+      alice: alice.accountId,
+      contract: contract.accountId,
+      root: root.accountId,
+    });
+
+    /**
+     * The Account class from near-workspaces overrides `toJSON` so that removing
+     * `.accountId` from the lines above gives the same behavior.
+     * (This explains something about the example `contract.view` calls above:
+     * you may have noticed that they use things like `{account_id: root}`
+     * instead of `{account_id: root.accountId}`.)
+     * Here's a test to prove it; try updating the `test.log` above to see it.
+     */
+    test.is(
+      JSON.stringify({alice}), // This is JS shorthand for `{ alice: alice }`
+      JSON.stringify({alice: alice.accountId}),
+    );
+  });
 });
 
 // For more example tests, see:

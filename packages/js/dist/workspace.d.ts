@@ -61,9 +61,8 @@ import { Config, WorkspaceFn, InitWorkspaceFn } from './interfaces';
  * });
  */
 export declare class Workspace {
-    private container?;
-    private readonly ready;
-    protected constructor(workspaceContainerPromise: Promise<WorkspaceContainer>);
+    private readonly container;
+    protected constructor(workspaceContainer: WorkspaceContainer);
     /**
      * Initialize a new workspace. In local sandbox mode, this will:
      *
@@ -80,7 +79,7 @@ export declare class Workspace {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
-    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Workspace;
+    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
     static networkIsTestnet(): boolean;
     static networkIsSandbox(): boolean;
     static getNetworkFromEnv(): 'sandbox' | 'testnet';
@@ -96,7 +95,6 @@ export declare class Workspace {
     static open(config: Partial<Config> & {
         rootAccount: string;
     }, fn: WorkspaceFn): Promise<void>;
-    startWaiting(container: Promise<WorkspaceContainer>): Promise<void>;
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
      * In local sandbox mode, each `workspace.fork` will:

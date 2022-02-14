@@ -84,8 +84,8 @@ const utils_1 = require("./utils");
  * });
  */
 class Workspace {
-    constructor(workspaceContainerPromise) {
-        this.ready = this.startWaiting(workspaceContainerPromise);
+    constructor(workspaceContainer) {
+        this.container = workspaceContainer;
     }
     /**
      * Initialize a new workspace. In local sandbox mode, this will:
@@ -103,9 +103,10 @@ class Workspace {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
-    static init(configOrFunction = async () => ({}), f) {
+    static async init(configOrFunction = async () => ({}), f) {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
-        return new Workspace(container_1.WorkspaceContainer.create(config, fn));
+        const workspaceContainer = await container_1.WorkspaceContainer.create(config, fn);
+        return new Workspace(workspaceContainer);
     }
     static networkIsTestnet() {
         return this.getNetworkFromEnv() === 'testnet';
@@ -135,9 +136,6 @@ class Workspace {
         };
         return (await container_1.WorkspaceContainer.create(innerConfig)).fork(fn);
     }
-    async startWaiting(container) {
-        this.container = await container;
-    }
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
      * In local sandbox mode, each `workspace.fork` will:
@@ -154,7 +152,6 @@ class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
     async fork(fn) {
-        await this.ready;
         const container = await this.container.createFrom();
         await container.fork(fn);
         return container;
@@ -165,7 +162,6 @@ class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
      */
     async forkSandbox(fn) {
-        await this.ready;
         if (this.container.config.network === 'sandbox') {
             return this.fork(fn);
         }

@@ -9,7 +9,7 @@
  */
 import {Workspace} from 'near-workspaces-ava';
 
-const workspace = Workspace.init(async ({root}) => ({
+const workspacePromise = Workspace.init(async ({root}) => ({
   contract: await root.createAndDeploy(
     'status-message',
     '__tests__/build/debug/status_message.wasm',
@@ -17,30 +17,32 @@ const workspace = Workspace.init(async ({root}) => ({
   ali: await root.createAccount('ali'),
 }));
 
-workspace.test('Root gets null status', async (test, {contract, root}) => {
-  const result: null = await contract.view('get_status', {
-    account_id: root,
+void workspacePromise.then(workspace => {
+  workspace.test('Root gets null status', async (test, {contract, root}) => {
+    const result: null = await contract.view('get_status', {
+      account_id: root,
+    });
+    test.is(result, null);
   });
-  test.is(result, null);
-});
 
-workspace.test('Ali sets then gets status', async (test, {contract, ali}) => {
-  await ali.call(contract, 'set_status', {message: 'hello'});
-  const result: string = await contract.view('get_status', {
-    account_id: ali,
+  workspace.test('Ali sets then gets status', async (test, {contract, ali}) => {
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    const result: string = await contract.view('get_status', {
+      account_id: ali,
+    });
+    test.is(result, 'hello');
   });
-  test.is(result, 'hello');
-});
 
-workspace.test('Root and Ali have different statuses', async (test, {contract, root, ali}) => {
-  await root.call(contract, 'set_status', {message: 'world'});
-  const rootStatus: string = await contract.view('get_status', {
-    account_id: root,
-  });
-  test.is(rootStatus, 'world');
+  workspace.test('Root and Ali have different statuses', async (test, {contract, root, ali}) => {
+    await root.call(contract, 'set_status', {message: 'world'});
+    const rootStatus: string = await contract.view('get_status', {
+      account_id: root,
+    });
+    test.is(rootStatus, 'world');
 
-  const aliStatus: null = await contract.view('get_status', {
-    account_id: ali,
+    const aliStatus: null = await contract.view('get_status', {
+      account_id: ali,
+    });
+    test.is(aliStatus, null);
   });
-  test.is(aliStatus, null);
 });

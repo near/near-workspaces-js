@@ -100,11 +100,11 @@ export class Workspace extends RawWorkspace {
    * @param f If configOrFunction is a config object, this must be a function to run
    * @returns an instance of the Workspace class, which is used to run tests.
    */
-  static init(
+  static async init(
     configOrFunction: InitWorkspaceFn | Partial<Config> = async () => ({}),
     f?: InitWorkspaceFn,
-  ): Workspace {
-    const workspace = RawWorkspace.init(configOrFunction, f);
+  ): Promise<Workspace> {
+    const workspace = await RawWorkspace.init(configOrFunction, f);
 
     (workspace as Workspace).test = (description: string, fn: AvaWorkspaceFn = DEFAULT_TEST_FN): void => {
       test(description, async t => {

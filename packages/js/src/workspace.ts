@@ -64,11 +64,10 @@ import {getNetworkFromEnv, homeKeyStore} from './utils';
  * });
  */
 export class Workspace {
-  private container?: WorkspaceContainer;
-  private readonly ready: Promise<void>;
-  protected constructor(workspaceContainerPromise: Promise<WorkspaceContainer>,
+  private readonly container: WorkspaceContainer;
+  protected constructor(workspaceContainer: WorkspaceContainer,
   ) {
-    this.ready = this.startWaiting(workspaceContainerPromise);
+    this.container = workspaceContainer;
   }
 
   /**
@@ -87,12 +86,13 @@ export class Workspace {
    * @param f If configOrFunction is a config object, this must be a function to run
    * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
    */
-  static init(
+  static async init(
     configOrFunction: InitWorkspaceFn | Partial<Config> = async () => ({}),
     f?: InitWorkspaceFn,
-  ): Workspace {
+  ): Promise<Workspace> {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
-    return new Workspace(WorkspaceContainer.create(config, fn));
+    const workspaceContainer = await WorkspaceContainer.create(config, fn);
+    return new Workspace(workspaceContainer);
   }
 
   static networkIsTestnet(): boolean {
@@ -127,10 +127,6 @@ export class Workspace {
     return (await WorkspaceContainer.create(innerConfig)).fork(fn);
   }
 
-  async startWaiting(container: Promise<WorkspaceContainer>): Promise<void> {
-    this.container = await container;
-  }
-
   /**
    * Run code in the context of a workspace initialized with `Workspace.init`.
    * In local sandbox mode, each `workspace.fork` will:
@@ -147,8 +143,7 @@ export class Workspace {
    * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
    */
   async fork(fn: WorkspaceFn): Promise<WorkspaceContainer> {
-    await this.ready;
-    const container = await this.container!.createFrom();
+    const container = await this.container.createFrom();
     await container.fork(fn);
     return container;
   }
@@ -159,8 +154,7 @@ export class Workspace {
    * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
    */
   async forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null> {
-    await this.ready;
-    if (this.container!.config.network === 'sandbox') {
+    if (this.container.config.network === 'sandbox') {
       return this.fork(fn);
     }
 
