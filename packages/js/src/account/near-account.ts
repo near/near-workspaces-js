@@ -122,7 +122,7 @@ export interface NearAccount {
   call_raw(
     contractId: NearAccount | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     options?: {
       gas?: string | BN;
       attachedDeposit?: string | BN;
@@ -140,7 +140,7 @@ export interface NearAccount {
   call<T>(
     contractId: NearAccount | string,
     methodName: string,
-    args: Record<string, unknown>,
+    args: Record<string, unknown> | Uint8Array,
     options?: {
       gas?: string | BN;
       attachedDeposit?: string | BN;

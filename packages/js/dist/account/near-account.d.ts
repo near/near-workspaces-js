@@ -107,7 +107,7 @@ export interface NearAccount {
   
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, options?: {
+    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, options?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -119,7 +119,7 @@ export interface NearAccount {
      *
      * @returns any parsed return value, or throws with an error if call failed
      */
-    call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown>, options?: {
+    call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, options?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
