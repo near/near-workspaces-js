@@ -4,6 +4,7 @@ exports.MainnetRpc = exports.TestnetRpc = exports.JsonRpcProvider = void 0;
 // eslint-disable unicorn/no-object-as-default-parameter
 const buffer_1 = require("buffer");
 const near_units_1 = require("near-units");
+const transaction_1 = require("near-api-js/lib/transaction");
 const types_1 = require("./types");
 const OPTIMISTIC = { finality: 'optimistic' };
 /**
@@ -96,7 +97,8 @@ class JsonRpcProvider extends types_1.JSONRpc {
         };
     }
     async view_call(account_id, method_name, args, blockQuery) {
-        return this.view_call_raw(account_id, method_name, buffer_1.Buffer.from(JSON.stringify(args)).toString('base64'), blockQuery);
+        const args_buffer = (0, transaction_1.stringifyJsonOrBytes)(args);
+        return this.view_call_raw(account_id, method_name, args_buffer.toString('base64'), blockQuery);
     }
     /**
      *

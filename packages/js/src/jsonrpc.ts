@@ -1,6 +1,7 @@
 // eslint-disable unicorn/no-object-as-default-parameter
 import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
+import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
 import {Records} from './record';
 import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network} from './types';
 
@@ -105,8 +106,9 @@ export class JsonRpcProvider extends JSONRpc {
     };
   }
 
-  async view_call(account_id: string, method_name: string, args: Record<string, unknown>, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<CodeResult> {
-    return this.view_call_raw(account_id, method_name, Buffer.from(JSON.stringify(args)).toString('base64'), blockQuery);
+  async view_call(account_id: string, method_name: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<CodeResult> {
+    const args_buffer = stringifyJsonOrBytes(args);
+    return this.view_call_raw(account_id, method_name, args_buffer.toString('base64'), blockQuery);
   }
 
   /**

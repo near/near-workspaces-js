@@ -15,7 +15,7 @@ export { DEFAULT_FUNCTION_CALL_GAS } from 'near-api-js/lib/constants';
 export declare class BN extends _BN {
     toJSON(): string;
 }
-export declare type Args = Record<string, any>;
+export declare type Args = Record<string, any> | Uint8Array;
 export interface NamedAccount {
     accountId: string;
 }
