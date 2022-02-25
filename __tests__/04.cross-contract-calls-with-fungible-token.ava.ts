@@ -13,7 +13,8 @@
  *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `createTransaction` below.
  */
-import {Workspace, BN, NearAccount, captureError} from 'near-workspaces-ava';
+import {Workspace, NearAccount, captureError} from 'near-workspaces-ava';
+import {BN} from 'near-workspaces';
 
 const STORAGE_BYTE_COST = '1.5 mN';
 
