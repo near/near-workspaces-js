@@ -1,6 +1,14 @@
 {
-  "extends": "near-workspaces-ava/tsconfig.ava.json",
   "compilerOptions": {
+    "target": "ES2019",
+    "module": "commonjs",
+    "lib": [
+      "es2020",
+      "ESNext"
+    ],
+    "allowJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "declaration": true,
     "sourceMap": true,

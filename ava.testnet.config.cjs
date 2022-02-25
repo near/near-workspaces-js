@@ -1,6 +1,9 @@
 module.exports = {
-  ...require('near-workspaces-ava/ava.testnet.config.cjs'),
   ...require('./ava.config.cjs'),
+};
+
+module.exports.environmentVariables = {
+  NEAR_WORKSPACES_NETWORK: 'testnet',
 };
 
 module.exports.files.push(

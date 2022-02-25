@@ -1,7 +1,14 @@
-module.exports = require('near-workspaces-ava/ava.config.cjs');
+require('util').inspect.defaultOptions.depth = 5; // Increase AVA's printing depth
 
-module.exports.files.push(
-  '!packages/init/bootstrap-starter/**/*',
-  '!test-near-workspaces-init/**/*',
-  '!packages/init/__tests__/install.ava.ts',
-);
+module.exports = {
+  timeout: '300000',
+  files: ['**/*.ava.ts', '**/*.ava.js'],
+  failWithoutAssertions: false,
+  extensions: [
+    'ts',
+    'js',
+  ],
+  require: [
+    'ts-node/register',
+  ],
+};

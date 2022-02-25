@@ -13,18 +13,23 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import * as borsh from 'borsh';
-import {Workspace, NEAR} from 'near-workspaces-ava';
+import {Workspace, getNetworkFromEnv} from 'near-workspaces';
+import {NEAR} from 'near-units';
+import anyTest, {TestFn} from 'ava';
 
-const workspacePromise = Workspace.init(async ({root}) => {
-  const contract = await root.createAndDeploy(
-    'status-message',
-    '__tests__/build/debug/status_message.wasm',
-  );
-  const ali = await root.createAccount('ali');
-  return {contract, ali};
-});
+if(getNetworkFromEnv() == 'sandbox') {
+  const test = anyTest as TestFn<{workspace: Workspace}>;
+  test.before(async t => {
+    t.context.workspace = await Workspace.init(async ({root}) => {
+      const contract = await root.createAndDeploy(
+        'status-message',
+        '__tests__/build/debug/status_message.wasm',
+      );
+      const ali = await root.createAccount('ali');
+      return {contract, ali};
+    })
+  });
 
-if (Workspace.networkIsSandbox()) {
   class Assignable {
     [key: string]: any;
     constructor(properties: any) {
@@ -51,11 +56,9 @@ if (Workspace.networkIsSandbox()) {
       },
     ],
   ]);
-
-  // eslint plugin bug, this is not inside an async that cannot use await
-  // eslint-disable-next-line promise/prefer-await-to-then
-  void workspacePromise.then(workspace => {
-    workspace.test('View state', async (test, {contract, ali}) => {
+  
+  test('View state', async t => {
+    await t.context.workspace.fork(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
 
       const state = await contract.viewState();
@@ -70,13 +73,15 @@ if (Workspace.networkIsSandbox()) {
         data,
       );
 
-      test.deepEqual(statusMessage.records[0],
+      t.deepEqual(statusMessage.records[0],
         new Record({k: ali.accountId, v: 'hello'}),
       );
     });
+  });
 
-    workspace.test('Patch state', async (test, {contract, ali}) => {
-      // Contract must have some state for viewState & patchState to work
+  test('Patch state', async t => {
+    await t.context.workspace.fork(async ({contract, ali}) => {
+        // Contract must have some state for viewState & patchState to work
       await ali.call(contract, 'set_status', {message: 'hello'});
       // Get state
       const state = await contract.viewState();
@@ -98,10 +103,12 @@ if (Workspace.networkIsSandbox()) {
       const result = await contract.view('get_status', {
         account_id: 'alice.near',
       });
-      test.is(result, 'hello world');
+      t.is(result, 'hello world');
     });
+  });
 
-    workspace.test('Patch Account', async (test, {root, ali, contract}) => {
+  test('Patch Account', async t => {
+    await t.context.workspace.fork(async ({root, contract, ali}) => {
       const bob = root.getFullAccount('bob');
       const public_key = await bob.setKey();
       const {code_hash} = await contract.accountView();
@@ -121,17 +128,12 @@ if (Workspace.networkIsSandbox()) {
       await bob.updateContract(await contract.viewCode());
 
       const balance = await bob.availableBalance();
-      test.deepEqual(balance, BOB_BALANCE);
+      t.deepEqual(balance, BOB_BALANCE);
       await ali.call(bob, 'set_status', {message: 'hello'});
       const result = await bob.view('get_status', {
         account_id: ali.accountId,
       });
-      test.is(result, 'hello');
-    });
-  });
-} else {
-  // eslint-disable-next-line promise/prefer-await-to-then
-  void workspacePromise.then(workspace => {
-    workspace.test('skipping; not on sandbox');
+      t.is(result, 'hello');
+    })
   });
 }
