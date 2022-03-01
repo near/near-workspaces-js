@@ -99,8 +99,7 @@ test('Use `claim` to transfer to an existing account', async t => {
     );
 
     const newBalance = await bob.availableBalance();
-    // TO DO: lt cannot be found. we plan to drop near-units, so will be use raw bn to test
-    // t.assert(originalBalance.lt(newBalance));
+    t.assert(originalBalance.lt(newBalance));
 
     t.log(
       `${bob.accountId} claimed ${newBalance
