@@ -4,7 +4,7 @@ import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {NEAR} from 'near-units';
 import {asId, isTopLevelAccount, randomAccountId, timeSuffix} from '../utils';
-import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView, ServerError} from '../types';
+import {KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JsonRpcProvider} from '../jsonrpc';
@@ -369,39 +369,6 @@ export class TestnetManager extends AccountManager {
 
   async cleanup(): Promise<void> {
     return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId) as unknown as void;
-  }
-
-  async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
-    if (tx.accountCreated) {
-      // Delete new account if it exists
-      if (await this.exists(tx.receiverId)) {
-        await this.deleteAccount(tx.receiverId, tx.senderId, await this.getKey(tx.senderId) ?? keyPair);
-      }
-
-      // Add root's key as a full access key to new account so that it can delete account if needed
-      tx.addKey((await this.getPublicKey(tx.senderId))!);
-    }
-
-    const amount = tx.transferAmount;
-    // Add funds to root account sender if needed.
-    if (await this.needsFunds(tx.senderId, amount.ushln(4))
-        // Check a second time to be sure.  This is a really bad solution.
-        && !await this.canCoverBalance(tx.senderId, amount)) {
-      await this.addFunds(tx.senderId, amount);
-    }
-
-    try {
-      return await super.executeTransaction(tx, keyPair);
-    } catch (error: unknown) {
-      if (error instanceof ServerError && error.type === 'NotEnoughBalance'
-         && this.isRootOrTLAccount(tx.senderId)) {
-        console.log('trying again ' + tx.senderId);
-        await this.addFunds(tx.senderId, amount);
-        return this.executeTransaction(tx, keyPair);
-      }
-
-      throw error;
-    }
   }
 
   async needsFunds(accountId: string, amount: BN): Promise<boolean> {
