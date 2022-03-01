@@ -18,7 +18,8 @@
  * contracts can give you a huge confidence boost that your contracts will work
  * as expected once actually deployed.
  */
-import {Gas, NEAR, NearAccount, Workspace, captureError} from 'near-workspaces-ava';
+import {Gas, NEAR, NearAccount, Workspace, captureError} from 'near-workspaces';
+import anyTest, {TestFn} from 'ava';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
@@ -26,11 +27,14 @@ const DEFAULT_BLOCK_HEIGHT = 45_800_000;
 
 const INIT_SHARES_SUPPLY = '1000000000000000000000000';
 
-const workspacePromise = Workspace.init();
+const test = anyTest as TestFn<{workspace: Workspace}>;
+test.before(async t => {
+  t.context.workspace = await Workspace.init();
+});
 
-void workspacePromise.then(workspace => {
-  workspace.test('using `withData` for contracts > 50kB fails', async (test, {root}) => {
-    test.regex(
+test('using `withData` for contracts > 50kB fails', async t => {
+  await t.context.workspace.fork(async ({root}) => {
+    t.regex(
       await captureError(async () => {
         await root.createAccountFrom({
           mainnetContract: REF_FINANCE_ACCOUNT,
@@ -41,19 +45,22 @@ void workspacePromise.then(workspace => {
       new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
     );
   });
+});
 
-  workspace.test('if skipping `withData`, fetches only contract Wasm bytes', async (test, {root}) => {
+test('if skipping `withData`, fetches only contract Wasm bytes', async t => {
+  await t.context.workspace.fork(async ({root}) => {
     const refFinance = await root.createAccountFrom({
       mainnetContract: REF_FINANCE_ACCOUNT,
       block_id: DEFAULT_BLOCK_HEIGHT,
     });
-    test.regex(
+    t.regex(
       await captureError(async () => refFinance.view('version')),
       /The contract is not initialized/,
     );
   });
+});
 
-  /**
+/**
      * This test copies logic from the Ref.Finance source code:
      * https://github.com/ref-finance/ref-contracts/blob/e96a6b5e3b403a3ba5271b6a03843a50b3e54a4f/ref-exchange/src/lib.rs#L454-L501
      *
@@ -67,7 +74,8 @@ void workspacePromise.then(workspace => {
      *     confidence that your contracts work as expected with deployed contracts
      *     on testnet or mainnet.
      */
-  workspace.test('integrate own FT with Ref.Finance', async (test, {root}) => {
+test('integrate own FT with Ref.Finance', async t => {
+  await t.context.workspace.fork(async ({root}) => {
     const [ft, refFinance, wNEAR] = await Promise.all([
       root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
         method: 'new_default_meta',
@@ -88,27 +96,27 @@ void workspacePromise.then(workspace => {
       [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
     });
     await depositTokens(root, refFinance, {});
-    test.is(
+    t.is(
       await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
       NEAR.parse('100 N').toJSON(),
     );
-    test.is(
+    t.is(
       await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
       NEAR.parse('100 N').toJSON(),
     );
-    test.is(
+    t.is(
       await refFinance.view('get_pool_total_shares', {pool_id}),
       INIT_SHARES_SUPPLY,
     );
 
     // Get price from pool :0 1 -> 2 tokens.
-    const expectedOut = await refFinance.view('get_return', {
+    const expectedOut: string = await refFinance.view('get_return', {
       pool_id,
       token_in: ft,
       amount_in: NEAR.parse('1 N'),
       token_out: wNEAR,
     });
-    test.is(expectedOut, '1662497915624478906119726');
+    t.is(expectedOut, '1662497915624478906119726');
     const amountOut: string = await root.call(refFinance, 'swap', {actions: [{
       pool_id,
       token_in: ft,
@@ -118,102 +126,103 @@ void workspacePromise.then(workspace => {
     }]}, {
       attachedDeposit: '1',
     });
-    test.is(amountOut, expectedOut);
-    test.is(
+    t.is(amountOut, expectedOut);
+    t.is(
       await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
       NEAR.parse('99 N').toJSON(),
     );
   });
+});
 
-  // Contract: https://github.com/near/core-contracts/blob/master/w-near
-  async function createWNEAR(
-    creator: NearAccount,
-    block_id = DEFAULT_BLOCK_HEIGHT,
-  ): Promise<NearAccount> {
-    const wNEAR = await creator.createAccountFrom({
-      mainnetContract: 'wrap.near',
-      block_id,
-    });
-    await creator.call(wNEAR, 'new', {
+// Contract: https://github.com/near/core-contracts/blob/master/w-near
+async function createWNEAR(
+  creator: NearAccount,
+  block_id = DEFAULT_BLOCK_HEIGHT,
+): Promise<NearAccount> {
+  const wNEAR = await creator.createAccountFrom({
+    mainnetContract: 'wrap.near',
+    block_id,
+  });
+  await creator.call(wNEAR, 'new', {
+    owner_id: creator,
+    total_supply: NEAR.parse('1,000,000,000 N'),
+  });
+  await creator.call(wNEAR, 'storage_deposit', {}, {
+    attachedDeposit: NEAR.parse('0.008 N'),
+  });
+  await creator.call(wNEAR, 'near_deposit', {}, {
+    attachedDeposit: NEAR.parse('200 N'),
+  });
+  return wNEAR;
+}
+
+// Contract: https://github.com/ref-finance/ref-contracts/
+async function createRef(
+  creator: NearAccount,
+  block_id = DEFAULT_BLOCK_HEIGHT,
+): Promise<NearAccount> {
+  const refFinance = await creator.createAccountFrom({
+    mainnetContract: REF_FINANCE_ACCOUNT,
+    block_id,
+    initialBalance: NEAR.parse('1000 N').toJSON(),
+  });
+  await creator.call(
+    refFinance,
+    'new',
+    {
       owner_id: creator,
-      total_supply: NEAR.parse('1,000,000,000 N'),
-    });
-    await creator.call(wNEAR, 'storage_deposit', {}, {
-      attachedDeposit: NEAR.parse('0.008 N'),
-    });
-    await creator.call(wNEAR, 'near_deposit', {}, {
-      attachedDeposit: NEAR.parse('200 N'),
-    });
-    return wNEAR;
-  }
-
-  // Contract: https://github.com/ref-finance/ref-contracts/
-  async function createRef(
-    creator: NearAccount,
-    block_id = DEFAULT_BLOCK_HEIGHT,
-  ): Promise<NearAccount> {
-    const refFinance = await creator.createAccountFrom({
-      mainnetContract: REF_FINANCE_ACCOUNT,
-      block_id,
-      initialBalance: NEAR.parse('1000 N').toJSON(),
-    });
-    await creator.call(
-      refFinance,
-      'new',
-      {
-        owner_id: creator,
-        exchange_fee: 4,
-        referral_fee: 1,
-      },
-    );
-    await creator.call(refFinance, 'storage_deposit', {}, {
-      attachedDeposit: NEAR.parse('30 mN'),
-    });
-    return refFinance;
-  }
+      exchange_fee: 4,
+      referral_fee: 1,
+    },
+  );
+  await creator.call(refFinance, 'storage_deposit', {}, {
+    attachedDeposit: NEAR.parse('30 mN'),
+  });
+  return refFinance;
+}
 
   type AccountID = string;
 
-  async function createPoolWithLiquidity(
-    root: NearAccount,
-    refFinance: NearAccount,
-    tokenAmounts: Record<AccountID, string>,
-  ): Promise<string> {
-    const tokens = Object.keys(tokenAmounts);
-    await root.call(refFinance, 'extend_whitelisted_tokens', {tokens});
-    const pool_id: string = await root.call(refFinance, 'add_simple_pool', {tokens, fee: 25}, {
-      attachedDeposit: NEAR.parse('3mN'),
-    });
-    await root.call(refFinance, 'register_tokens', {token_ids: tokens}, {
-      attachedDeposit: '1',
-    });
-    await depositTokens(root, refFinance, tokenAmounts);
-    await root.call(refFinance, 'add_liquidity', {
-      pool_id,
-      amounts: Object.values(tokenAmounts),
-    }, {
+async function createPoolWithLiquidity(
+  root: NearAccount,
+  refFinance: NearAccount,
+  tokenAmounts: Record<AccountID, string>,
+): Promise<string> {
+  const tokens = Object.keys(tokenAmounts);
+  await root.call(refFinance, 'extend_whitelisted_tokens', {tokens});
+  const pool_id: string = await root.call(refFinance, 'add_simple_pool', {tokens, fee: 25}, {
+    attachedDeposit: NEAR.parse('3mN'),
+  });
+  await root.call(refFinance, 'register_tokens', {token_ids: tokens}, {
+    attachedDeposit: '1',
+  });
+  await depositTokens(root, refFinance, tokenAmounts);
+  await root.call(refFinance, 'add_liquidity', {
+    pool_id,
+    amounts: Object.values(tokenAmounts),
+  }, {
+    attachedDeposit: NEAR.parse('1N'),
+  });
+  return pool_id;
+}
+
+async function depositTokens(
+  root: NearAccount,
+  refFinance: NearAccount,
+  tokenAmounts: Record<AccountID, string>,
+): Promise<void> {
+  await Promise.all(Object.entries(tokenAmounts).map(async ([accountId, amount]) => {
+    await refFinance.call(accountId, 'storage_deposit', {registration_only: true}, {
       attachedDeposit: NEAR.parse('1N'),
     });
-    return pool_id;
-  }
+    await root.call(accountId, 'ft_transfer_call', {
+      receiver_id: refFinance,
+      amount,
+      msg: '',
+    }, {
+      attachedDeposit: '1',
+      gas: Gas.parse('200Tgas'),
+    });
+  }));
+}
 
-  async function depositTokens(
-    root: NearAccount,
-    refFinance: NearAccount,
-    tokenAmounts: Record<AccountID, string>,
-  ): Promise<void> {
-    await Promise.all(Object.entries(tokenAmounts).map(async ([accountId, amount]) => {
-      await refFinance.call(accountId, 'storage_deposit', {registration_only: true}, {
-        attachedDeposit: NEAR.parse('1N'),
-      });
-      await root.call(accountId, 'ft_transfer_call', {
-        receiver_id: refFinance,
-        amount,
-        msg: '',
-      }, {
-        attachedDeposit: '1',
-        gas: Gas.parse('200Tgas'),
-      });
-    }));
-  }
-});

@@ -17,7 +17,7 @@ import {Workspace, getNetworkFromEnv} from 'near-workspaces';
 import {NEAR} from 'near-units';
 import anyTest, {TestFn} from 'ava';
 
-if(getNetworkFromEnv() == 'sandbox') {
+if (getNetworkFromEnv() === 'sandbox') {
   const test = anyTest as TestFn<{workspace: Workspace}>;
   test.before(async t => {
     t.context.workspace = await Workspace.init(async ({root}) => {
@@ -27,7 +27,7 @@ if(getNetworkFromEnv() == 'sandbox') {
       );
       const ali = await root.createAccount('ali');
       return {contract, ali};
-    })
+    });
   });
 
   class Assignable {
@@ -56,7 +56,7 @@ if(getNetworkFromEnv() == 'sandbox') {
       },
     ],
   ]);
-  
+
   test('View state', async t => {
     await t.context.workspace.fork(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
@@ -81,7 +81,7 @@ if(getNetworkFromEnv() == 'sandbox') {
 
   test('Patch state', async t => {
     await t.context.workspace.fork(async ({contract, ali}) => {
-        // Contract must have some state for viewState & patchState to work
+      // Contract must have some state for viewState & patchState to work
       await ali.call(contract, 'set_status', {message: 'hello'});
       // Get state
       const state = await contract.viewState();
@@ -134,6 +134,6 @@ if(getNetworkFromEnv() == 'sandbox') {
         account_id: ali.accountId,
       });
       t.is(result, 'hello');
-    })
+    });
   });
 }

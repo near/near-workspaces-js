@@ -1,8 +1,10 @@
 import path from 'path';
+import anyTest, {TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {ava as test} from '../../ava';
 import {Workspace} from '..';
 import {RecordBuilder} from '../dist/record';
+
+const test = anyTest as TestFn<{workspace: Workspace}>;
 
 if (Workspace.networkIsSandbox()) {
   const workspacePromise = Workspace.init(async ({root}) => {

@@ -11,8 +11,8 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
- import {Workspace, createKeyPair, NEAR} from 'near-workspaces';
- import anyTest, {TestFn} from 'ava';
+import {Workspace, createKeyPair, NEAR} from 'near-workspaces';
+import anyTest, {TestFn} from 'ava';
 
 /* Contract API for reference
 impl Linkdrop {
@@ -70,7 +70,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
     t.log(
       `Account ${new_account_id} claim and has ${balance.toHuman()} available`,
     );
-  })
+  });
 });
 
 test('Use `claim` to transfer to an existing account', async t => {
@@ -99,7 +99,7 @@ test('Use `claim` to transfer to an existing account', async t => {
     );
 
     const newBalance = await bob.availableBalance();
-    // TODO: lt cannot be found. we plan to drop near-units, so will be use raw bn to test
+    // TO DO: lt cannot be found. we plan to drop near-units, so will be use raw bn to test
     // t.assert(originalBalance.lt(newBalance));
 
     t.log(

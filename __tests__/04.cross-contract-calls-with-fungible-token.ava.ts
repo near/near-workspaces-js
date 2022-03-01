@@ -13,8 +13,8 @@
  *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `createTransaction` below.
  */
-import {Workspace, NearAccount, captureError} from 'near-workspaces-ava';
-import {BN} from 'near-workspaces';
+import {Workspace, NearAccount, captureError, BN} from 'near-workspaces';
+import anyTest, {TestFn} from 'ava';
 
 const STORAGE_BYTE_COST = '1.5 mN';
 
@@ -51,27 +51,32 @@ async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<BN> {
   }));
 }
 
-const workspacePromise = Workspace.init(async ({root}) => ({
-  ft: await root.createAndDeploy(
-    'fungible-token',
-    '__tests__/build/debug/fungible_token.wasm',
-  ),
-  defi: await root.createAndDeploy(
-    'defi',
-    '__tests__/build/debug/defi.wasm',
-  ),
-  ali: await root.createAccount('ali'),
-}));
+const test = anyTest as TestFn<{workspace: Workspace}>;
+test.before(async t => {
+  t.context.workspace = await Workspace.init(async ({root}) => ({
+    ft: await root.createAndDeploy(
+      'fungible-token',
+      '__tests__/build/debug/fungible_token.wasm',
+    ),
+    defi: await root.createAndDeploy(
+      'defi',
+      '__tests__/build/debug/defi.wasm',
+    ),
+    ali: await root.createAccount('ali'),
+  }));
+});
 
-void workspacePromise.then(workspace => {
-  workspace.test('Total supply', async (test, {ft, ali}) => {
+test('Total supply', async t => {
+  await t.context.workspace.fork(async ({ft, ali}) => {
     await init_ft(ft, ali, '1000');
 
     const totalSupply: string = await ft.view('ft_total_supply');
-    test.is(totalSupply, '1000');
+    t.is(totalSupply, '1000');
   });
+});
 
-  workspace.test('Simple transfer', async (test, {ft, ali, root}) => {
+test('Simple transfer', async t => {
+  await t.context.workspace.fork(async ({ft, ali, root}) => {
     const initialAmount = new BN('10000');
     const transferAmount = new BN('100');
     await init_ft(ft, root, initialAmount);
@@ -92,11 +97,13 @@ void workspacePromise.then(workspace => {
     const rootBalance = await ft_balance_of(ft, root);
     const aliBalance = await ft_balance_of(ft, ali);
 
-    test.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-    test.deepEqual(new BN(aliBalance), transferAmount);
+    t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
+    t.deepEqual(new BN(aliBalance), transferAmount);
   });
+});
 
-  workspace.test('Can close empty balance account', async (test, {ft, ali, root}) => {
+test('Can close empty balance account', async t => {
+  await t.context.workspace.fork(async ({ft, ali, root}) => {
     await init_ft(ft, root);
 
     await registerUser(ft, ali);
@@ -108,15 +115,17 @@ void workspacePromise.then(workspace => {
       {attachedDeposit: '1'},
     );
 
-    test.is(result, true);
+    t.is(result, true);
   });
+});
 
-  workspace.test('Can force close non-empty balance account', async (test, {ft, root}) => {
+test('Can force close non-empty balance account', async t => {
+  await t.context.workspace.fork(async ({ft, root}) => {
     await init_ft(ft, root, '100');
     const errorString = await captureError(async () =>
       root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
 
-    test.regex(errorString, /Can't unregister the account with the positive balance without force/);
+    t.regex(errorString, /Can't unregister the account with the positive balance without force/);
 
     const result = await root.call_raw(
       ft,
@@ -125,12 +134,14 @@ void workspacePromise.then(workspace => {
       {attachedDeposit: '1'},
     );
 
-    test.is(result.logs[0],
+    t.is(result.logs[0],
       `Closed @${root.accountId} with 100`,
     );
   });
+});
 
-  workspace.test('Transfer call with burned amount', async (test, {ft, defi, root}) => {
+test('Transfer call with burned amount', async t => {
+  await t.context.workspace.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     const burnAmount = new BN(10);
@@ -157,34 +168,36 @@ void workspacePromise.then(workspace => {
       )
       .signAndSend();
 
-    test.true(result.logs.includes(
+    t.true(result.logs.includes(
       `Closed @${root.accountId} with ${
         (initialAmount.sub(transferAmount)).toString()}`,
     ));
 
-    test.is(result.parseResult(), true);
+    t.is(result.parseResult(), true);
 
-    test.true(result.logs.includes(
+    t.true(result.logs.includes(
       'The account of the sender was deleted',
     ));
-    test.true(result.logs.includes(
+    t.true(result.logs.includes(
       `Account @${root.accountId} burned ${burnAmount.toString()}`,
     ));
 
     // Help: this index is diff from sim, we have 10 len when they have 4
     const callbackOutcome = result.receipts_outcomes[5];
 
-    test.is(callbackOutcome.parseResult(), transferAmount.toString());
+    t.is(callbackOutcome.parseResult(), transferAmount.toString());
     const expectedAmount = transferAmount.sub(burnAmount);
 
     const totalSupply: string = await ft.view('ft_total_supply');
-    test.is(totalSupply, expectedAmount.toString());
+    t.is(totalSupply, expectedAmount.toString());
 
     const defiBalance = await ft_balance_of(ft, defi);
-    test.deepEqual(defiBalance, expectedAmount);
+    t.deepEqual(defiBalance, expectedAmount);
   });
+});
 
-  workspace.test('Transfer call immediate return no refund', async (test, {ft, defi, root}) => {
+test('Transfer call immediate return no refund', async t => {
+  await t.context.workspace.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     await init_ft(ft, root, initialAmount);
@@ -207,11 +220,13 @@ void workspacePromise.then(workspace => {
     const rootBalance = await ft_balance_of(ft, root);
     const defiBalance = await ft_balance_of(ft, defi);
 
-    test.deepEqual(rootBalance, initialAmount.sub(transferAmount));
-    test.deepEqual(defiBalance, transferAmount);
+    t.deepEqual(rootBalance, initialAmount.sub(transferAmount));
+    t.deepEqual(defiBalance, transferAmount);
   });
+});
 
-  workspace.test('Transfer call promise panics for a full refund', async (test, {ft, defi, root}) => {
+test('Transfer call promise panics for a full refund', async t => {
+  await t.context.workspace.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     await init_ft(ft, root, initialAmount);
@@ -230,12 +245,12 @@ void workspacePromise.then(workspace => {
       },
       {attachedDeposit: '1', gas: '150 Tgas'},
     );
-    test.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
+    t.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
 
     const rootBalance = await ft_balance_of(ft, root);
     const defiBalance = await ft_balance_of(ft, defi);
 
-    test.deepEqual(rootBalance, initialAmount);
-    test.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
+    t.deepEqual(rootBalance, initialAmount);
+    t.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
   });
 });
