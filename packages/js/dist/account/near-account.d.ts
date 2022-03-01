@@ -129,13 +129,13 @@ export interface NearAccount {
      * @param method contract method
      * @param args args to pass to method if required
      */
-    view_raw(method: string, args?: Record<string, unknown>): Promise<CodeResult>;
+    view_raw(method: string, args?: Record<string, unknown> | Uint8Array): Promise<CodeResult>;
     /**
      * Get the parsed result returned by view method
      * @param method contract method
      * @param args args to pass to method if required
      */
-    view<T>(method: string, args?: Record<string, unknown>): Promise<T>;
+    view<T>(method: string, args?: Record<string, unknown> | Uint8Array): Promise<T>;
     /**
      * Download contract code from provider
      */

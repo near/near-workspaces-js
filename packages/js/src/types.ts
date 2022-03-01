@@ -33,7 +33,7 @@ export class BN extends _BN {
   }
 }
 
-export type Args = Record<string, any>;
+export type Args = Record<string, any> | Uint8Array;
 
 export interface NamedAccount {
   accountId: string;
