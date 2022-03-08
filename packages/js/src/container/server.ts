@@ -55,7 +55,7 @@ async function pingServer(port: number): Promise<boolean> {
   });
 }
 
-async function sandboxStarted(port: number, timeout = 20_000): Promise<void> {
+async function sandboxStarted(port: number, timeout = 60_000): Promise<void> {
   const checkUntil = Date.now() + timeout + 250;
   do {
     if (await pingServer(port)) { // eslint-disable-line no-await-in-loop
