@@ -66,7 +66,7 @@ async function pingServer(port) {
         request.end();
     });
 }
-async function sandboxStarted(port, timeout = 20000) {
+async function sandboxStarted(port, timeout = 60000) {
     const checkUntil = Date.now() + timeout + 250;
     do {
         if (await pingServer(port)) { // eslint-disable-line no-await-in-loop
