@@ -1,6 +1,6 @@
 {
   "name": "near-workspaces-init",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Quickly bootstrap a project with near-workspaces-ava",
   "repository": {
     "type": "git",
