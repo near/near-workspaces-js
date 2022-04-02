@@ -64,7 +64,6 @@ export declare class TestnetManager extends AccountManager {
     initRootAccount(): Promise<void>;
     createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;
-    executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     needsFunds(accountId: string, amount: BN): Promise<boolean>;
     isRootOrTLAccount(accountId: string): boolean;
 }
