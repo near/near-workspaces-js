@@ -14,14 +14,14 @@
 
 Quick Start (without testing frameworks)
 ===========
-To get started with `Near Workspaces` you only need to do two things:
+To get started with `Near Workspaces` you need to do only two things:
 
 1. Initialize a `Workspace`.
 
     This will be used as the starting point for more workspaces soon.
 
    ```ts
-   const workspaces = await Workspace.init(async ({root}) => {
+   const workspace = await Workspace.init(async ({root}) => {
      const alice = await root.createAccount('alice');
      const contract = await root.createAndDeploy(
        'contract-account-name',
@@ -44,7 +44,7 @@ To get started with `Near Workspaces` you only need to do two things:
 
 2. Writing tests.
 
-   near-workspaces is designed for concurrency (which is why it's a great fit for AVA, which runs tests concurrently by default). Here's a simple way to get concurrent runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/blob/master/tests-ava/__tests__/main.ava.ts)):
+   `near-workspaces` is designed for concurrency. Here's a simple way to get concurrent runs using plain JS:
 
    ```ts
    import {strict as assert} from 'assert';
@@ -67,9 +67,9 @@ To get started with `Near Workspaces` you only need to do two things:
          'some_view_function',
          {account_id: alice}
        );
-       // Note that we expect the value returned from `some_view_function` to be
-       // a default here, because this `fork` runs *at the same time* as the
-       // previous, in a separate local blockchain
+       /* Note that we expect the value returned from `some_view_function` to be
+       a default here, because this `fork` runs *at the same time* as the
+       previous, in a separate local blockchain */
        assert.equal(result, 'some default');
      });
    ]);
@@ -87,41 +87,42 @@ See the [tests](https://github.com/near/workspaces-js/tree/main/__tests__) direc
 
 Quick Start with AVA
 ===========
-To use`NEAR Workspaces` with AVA:
+Since `near-workspaces` is designed for concurrency, AVA is a great fit, because it runs tests concurrently by default. To use`NEAR Workspaces` with AVA:
  1. Start with the basic setup described [here](https://github.com/avajs/ava).
  2. Add custom script for running tests on Testnet (if needed). Check instructions in `Running on Testnet` section.
  3. Add your tests following these example:
+
   ```ts
-     import {Workspace} from 'near-workspaces';
-     import anyTest, {TestFn} from 'ava';
+  import {Workspace} from 'near-workspaces';
+  import anyTest, {TestFn} from 'ava'
 
-     const test = anyTest as TestFn<{workspace: Workspace}>;
-     test.before(async t => {
-       t.context.workspace = await Workspace.init(async ({root}) => ({
-         contract: await root.createAndDeploy(
-           /* AccountId of your newly created contract */
-           'status-message',
-           /* Contract you want to test */
-           '__tests__/build/debug/status_message.wasm',
-         ),
-         /* Account that you will be able to use in your tests */
-         ali: await root.createAccount('ali'),
-       }));
-     });
+  const test = anyTest as TestFn<{workspace: Workspace}>;
+  test.before(async t => {
+    t.context.workspace = await Workspace.init(async ({root}) => ({
+      contract: await root.createAndDeploy(
+        'account-id-for-contract',
+        'path/to/contract/file.wasm',
+      ),
+      /* Account that you will be able to use in your tests */
+      ali: await root.createAccount('ali'),
+    }));
+  })
 
-     test('Ali sets then gets status', async t => {
-       /* Each test is making a "fork" or a copy of the
-       workspace that was created in "before" function.
-       It allows to isolate each test. */
-       await t.context.workspace.fork(async ({contract, ali}) => {
-         await ali.call(contract, 'set_status', {message: 'hello'});
-         const result: string = await contract.view('get_status', {
-           account_id: ali,
-         });
-         t.is(result, 'hello');
-       });
-     });
+  test('Test name', async t => {
+    /* Each test is making a "fork", a copy of the
+    workspace, that was created in "before" function.
+    It allows you to isolate each test and run them concurrently */
+    await t.context.workspace.fork(async ({contract, ali}) => {
+      await ali.call(contract, 'set_status', {message: 'hello'});
+      const result: string = await contract.view('get_status', {
+        account_id: ali,
+      });
+      t.is(result, 'hello');
+    });
+  });
   ```
+
+  For a working example, see [near-examples/rust-status-message/tests-ava](https://github.com/near-examples/rust-status-message/blob/master/tests-ava/__tests__/main.ava.ts).
 
 "Spooning" Contracts from Testnet and Mainnet
 =============================================
@@ -203,7 +204,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
 1. Create a `Workspace`.
 
    ```ts
-   const workspaces = Workspace.init(async ({root}) => {
+   const workspace = await Workspace.init(async ({root}) => {
      await root.createAccount('alice');
      await root.createAndDeploy(
        'contract-account-name',
