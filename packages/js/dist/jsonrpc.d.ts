@@ -62,7 +62,7 @@ export declare class JsonRpcProvider extends JSONRpc {
     } | {
         finality: Finality;
     }): Promise<AccountBalance>;
-    view_call(account_id: string, method_name: string, args: Record<string, unknown>, blockQuery?: {
+    view_call(account_id: string, method_name: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {
         block_id: BlockId;
     } | {
         finality: Finality;

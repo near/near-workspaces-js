@@ -313,36 +313,6 @@ class TestnetManager extends AccountManager {
     async cleanup() {
         return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId);
     }
-    async executeTransaction(tx, keyPair) {
-        var _a;
-        if (tx.accountCreated) {
-            // Delete new account if it exists
-            if (await this.exists(tx.receiverId)) {
-                await this.deleteAccount(tx.receiverId, tx.senderId, (_a = await this.getKey(tx.senderId)) !== null && _a !== void 0 ? _a : keyPair);
-            }
-            // Add root's key as a full access key to new account so that it can delete account if needed
-            tx.addKey((await this.getPublicKey(tx.senderId)));
-        }
-        const amount = tx.transferAmount;
-        // Add funds to root account sender if needed.
-        if (await this.needsFunds(tx.senderId, amount.ushln(4))
-            // Check a second time to be sure.  This is a really bad solution.
-            && !await this.canCoverBalance(tx.senderId, amount)) {
-            await this.addFunds(tx.senderId, amount);
-        }
-        try {
-            return await super.executeTransaction(tx, keyPair);
-        }
-        catch (error) {
-            if (error instanceof types_1.ServerError && error.type === 'NotEnoughBalance'
-                && this.isRootOrTLAccount(tx.senderId)) {
-                console.log('trying again ' + tx.senderId);
-                await this.addFunds(tx.senderId, amount);
-                return this.executeTransaction(tx, keyPair);
-            }
-            throw error;
-        }
-    }
     async needsFunds(accountId, amount) {
         return !amount.isZero() && this.isRootOrTLAccount(accountId)
             && (!await this.canCoverBalance(accountId, amount));
