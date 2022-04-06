@@ -88,7 +88,41 @@ See the [tests](https://github.com/near/workspaces-js/tree/main/__tests__) direc
 
 Quick Start with AVA
 ===========
-TODO:
+To use`NEAR Workspaces` with AVA:
+ 1. Start with the basic setup described [here](https://github.com/avajs/ava).
+ 2. Add custom script for running tests on Testnet (if needed). Check instructions in `Running on Testnet` section.
+ 3. Add your tests following these example:
+  ```ts
+     import {Workspace} from 'near-workspaces';
+     import anyTest, {TestFn} from 'ava';
+
+     const test = anyTest as TestFn<{workspace: Workspace}>;
+     test.before(async t => {
+       t.context.workspace = await Workspace.init(async ({root}) => ({
+         contract: await root.createAndDeploy(
+           /* AccountId of your newly created contract */
+           'status-message',
+           /* Contract you want to test */
+           '__tests__/build/debug/status_message.wasm',
+         ),
+         /* Account that you will be able to use in your tests */
+         ali: await root.createAccount('ali'),
+       }));
+     });
+
+     test('Ali sets then gets status', async t => {
+       /* Each test is making a "fork" or a copy of the
+       workspace that was created in "before" function.
+       It allows to isolate each test. */
+       await t.context.workspace.fork(async ({contract, ali}) => {
+         await ali.call(contract, 'set_status', {message: 'hello'});
+         const result: string = await contract.view('get_status', {
+           account_id: ali,
+         });
+         t.is(result, 'hello');
+       });
+     });
+  ```
 
 "Spooning" Contracts from Testnet and Mainnet
 =============================================
