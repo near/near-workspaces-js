@@ -7,40 +7,50 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import {Workspace} from 'near-workspaces-ava';
+import {Workspace} from 'near-workspaces';
+import anyTest, {TestFn} from 'ava';
 
-const workspace = Workspace.init(async ({root}) => ({
-  contract: await root.createAndDeploy(
-    'status-message',
-    '__tests__/build/debug/status_message.wasm',
-  ),
-  ali: await root.createAccount('ali'),
-}));
-
-workspace.test('Root gets null status', async (test, {contract, root}) => {
-  const result: null = await contract.view('get_status', {
-    account_id: root,
-  });
-  test.is(result, null);
+const test = anyTest as TestFn<{workspace: Workspace}>;
+test.before(async t => {
+  t.context.workspace = await Workspace.init(async ({root}) => ({
+    contract: await root.createAndDeploy(
+      'status-message',
+      '__tests__/build/debug/status_message.wasm',
+    ),
+    ali: await root.createAccount('ali'),
+  }));
 });
 
-workspace.test('Ali sets then gets status', async (test, {contract, ali}) => {
-  await ali.call(contract, 'set_status', {message: 'hello'});
-  const result: string = await contract.view('get_status', {
-    account_id: ali,
+test('Root gets null status', async t => {
+  await t.context.workspace.fork(async ({contract, root}) => {
+    const result: null = await contract.view('get_status', {
+      account_id: root,
+    });
+    t.is(result, null);
   });
-  test.is(result, 'hello');
 });
 
-workspace.test('Root and Ali have different statuses', async (test, {contract, root, ali}) => {
-  await root.call(contract, 'set_status', {message: 'world'});
-  const rootStatus: string = await contract.view('get_status', {
-    account_id: root,
+test('Ali sets then gets status', async t => {
+  await t.context.workspace.fork(async ({contract, ali}) => {
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    const result: string = await contract.view('get_status', {
+      account_id: ali,
+    });
+    t.is(result, 'hello');
   });
-  test.is(rootStatus, 'world');
+});
 
-  const aliStatus: null = await contract.view('get_status', {
-    account_id: ali,
+test('Root and Ali have different statuses', async t => {
+  await t.context.workspace.fork(async ({contract, root, ali}) => {
+    await root.call(contract, 'set_status', {message: 'world'});
+    const rootStatus: string = await contract.view('get_status', {
+      account_id: root,
+    });
+    t.is(rootStatus, 'world');
+
+    const aliStatus: null = await contract.view('get_status', {
+      account_id: ali,
+    });
+    t.is(aliStatus, null);
   });
-  test.is(aliStatus, null);
 });

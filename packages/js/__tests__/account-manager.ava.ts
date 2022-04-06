@@ -1,5 +1,7 @@
-import {ava as test} from '../../ava';
+import anyTest, {TestFn} from 'ava';
 import {AccountManager, TestnetRuntime, Workspace, TestnetManager} from '..';
+
+const test = anyTest as TestFn<{workspace: Workspace}>;
 
 if (Workspace.networkIsTestnet()) {
   test('should create a new account', async t => {
