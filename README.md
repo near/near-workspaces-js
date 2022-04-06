@@ -1,10 +1,7 @@
+TODO: double check examles, without testing frameworks
 <div align="center">
 
-  <h1>NEAR Workspaces (TypeScript/JavaScript)</h1>
-
-  <p>
-    <strong>TS/JS library for automating workflows and writing tests for NEAR smart contracts. This software is in early alpha (use at your own risk)</strong>
-  </p>
+  <h1>NEAR Workspaces (TypeScript/JavaScript Edition)</h1>
 
   [![Project license](https://img.shields.io/badge/license-Apache2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
   [![Project license](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -14,19 +11,18 @@
 
 </div>
 
-Quick Start
+`NEAR Workspaces` is a library for automating workflows and writing tests for NEAR smart contracts. You can use it as is or integrate with test runner of your choise. We suggest you to use AVA.
+
+Quick Start (without testing frameworks)
 ===========
-TODO:
+To get started with `Near Workspaces` you only need to do two things:
 
-How It Works
-============
+1. Initialize a `Workspace`.
 
-Let's look at some code that focuses on near-workspaces itself, without any AVA or other testing logic.
-
-1. Initializing a `Workspace`. This will be used as the starting point for more workspaces soon.
+    This will be used as the starting point for more workspaces soon.
 
    ```ts
-   const workspaces = Workspace.init(async ({root}) => {
+   const workspaces = await Workspace.init(async ({root}) => {
      const alice = await root.createAccount('alice');
      const contract = await root.createAndDeploy(
        'contract-account-name',
@@ -49,7 +45,7 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
 
 2. Writing tests.
 
-   near-workspaces is designed for concurrency (which is why it's a great fit for AVA, which runs tests concurrently by default). Here's a simple way to get concurrent runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/pull/68)):
+   near-workspaces is designed for concurrency (which is why it's a great fit for AVA, which runs tests concurrently by default). Here's a simple way to get concurrent runs using plain JS (for a working example, see [near-examples/rust-status-message](https://github.com/near-examples/rust-status-message/blob/master/tests-ava/__tests__/main.ava.ts)):
 
    ```ts
    import {strict as assert} from 'assert';
@@ -88,7 +84,11 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
    4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
 
-See the [\_\_tests__](./__tests__) directory in this project for more examples.
+See the [tests](https://github.com/near/workspaces-js/tree/main/__tests__) directory in this project for more examples.
+
+Quick Start with AVA
+===========
+TODO:
 
 "Spooning" Contracts from Testnet and Mainnet
 =============================================
@@ -109,8 +109,7 @@ This would copy the Wasm bytes and contract state from [v2.ref-finance.near](htt
 
 Gotcha: `withData` will only work out-of-the-box if the contract's data is 50kB or less. This is due to the default configuration of RPC servers; see [the "Heads Up" note here](https://docs.near.org/docs/api/rpc/contracts#view-contract-state). Some teams at NEAR are hard at work giving you an easy way to run your own RPC server, at which point you can point tests at your custom RPC endpoint and get around the 50kB limit.
 
-See an example of spooning contracts at [__tests__/05.spoon-contract-to-sandbox.ava.ts](./__tests__/05.spoon-contract-to-sandbox.ava.ts).
-
+See an [example of spooning](https://github.com/near/workspaces-js/blob/main/__tests__/05.spoon-contract-to-sandbox.ava.ts)  contracts.
 
 Running on Testnet
 ==================
@@ -120,14 +119,13 @@ near-workspaces is set up so that you can write tests once and run them against 
 * Gives higher confidence that your contracts work as expected
 * You can test against deployed testnet contracts
 * If something seems off in Sandbox mode, you can compare it to testnet
-* Until we have a full-featured dev environment that includes Explorer, Wallet, etc, you can write full end-to-end tests using a tool like [Cypress](https://www.cypress.io/)
 
 You can run in testnet mode in three ways.
 
 1. When creating your Workspace, pass a config object as the first argument:
 
    ```ts
-   const workspaces = Workspace.init(
+   const workspaces = await Workspace.init(
      {network: 'testnet'},
      async ({root}) => { … }
    )
@@ -141,25 +139,25 @@ You can run in testnet mode in three ways.
 
    If you set this environment variable and pass `{network: 'testnet'}` to `Workspace.init`, the config object takes precedence.
 
-3. If using `near-workspaces-ava`, you can use a custom config file. Other test runners allow similar config files; adjust the following instructions for your situation.
+3. If using `near-workspaces` with AVA, you can use a custom config file. Other test runners allow similar config files; adjust the following instructions for your situation.
 
    Create a file in the same directory as your `package.json` called `ava.testnet.config.cjs` with the following contents:
 
    ```js
    module.exports = {
-     ...require('near-workspaces-ava/ava.testnet.config.cjs'),
+     ...require('near-workspaces/ava.testnet.config.cjs'),
      ...require('./ava.config.cjs'),
    };
    ```
 
-   The [near-workspaces-ava/ava.testnet.config.cjs](../ava/ava.testnet.config.cjs) import sets the `NEAR_WORKSPACES_NETWORK` environment variable for you. A benefit of this approach is that you can then easily ignore files that should only run in Sandbox mode. See [this project's testnet config](../../ava.testnet.config.cjs) for an example.
+   The [near-workspaces/ava.testnet.config.cjs](https://github.com/near/workspaces-js/blob/main/ava.testnet.config.cjs) import sets the `NEAR_WORKSPACES_NETWORK` environment variable for you. A benefit of this approach is that you can then easily ignore files that should only run in Sandbox mode.
 
    Now you'll also want to add a `test:testnet` script to your `package.json`'s `scripts` section:
 
    ```diff
     "scripts": {
-      "test": "near-workspaces-ava",
-   +  "test:testnet": "near-workspaces-ava --config ./ava.testnet.config.cjs"
+      "test": "ava",
+   +  "test:testnet": "ava --config ./ava.testnet.config.cjs"
     }
     ```
 
@@ -266,31 +264,23 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
 
 3. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
 
-
 Patch State on the Fly
 ======================
 
-In Sandbox-mode tests, you can add or modify any contract state, contract code, account or access key with `patchState`.
+In Sandbox-mode, you can add or modify any contract state, contract code, account or access key with `patchState`.
 
 You cannot perform arbitrary mutation on contract state with transactions since transactions can only include contract calls that mutate state in a contract-programmed way. For example, with an NFT contract, you can perform some operation with NFTs you have ownership of, but you cannot manipulate NFTs that are owned by other accounts since the smart contract is coded with checks to reject that. This is the expected behavior of the NFT contract. However, you may want to change another person's NFT for a test setup. This is called "arbitrary mutation on contract state" and can be done with `patchState`. Alternatively you can stop the node, dump state at genesis, edit genesis, and restart the node. The later approach is more complicated to do and also cannot be performed without restarting the node.
 
 It is true that you can alter contract code, accounts, and access keys using normal transactions via the `DeployContract`, `CreateAccount`, and `AddKey` [actions](https://nomicon.io/RuntimeSpec/Actions.html?highlight=actions#actions). But this limits you to altering your own account or sub-account. `patchState` allows you to perform these operations on any account.
 
-To see an example of how to do this, see the [patch-state test](../../__tests__/02.patch-state.spec.ts).
-
-near-workspaces will support expanded patchState-based functionality in the future:
-
-* [Allow bootstrapping sandbox environment from testnet/mainnet contracts & state](#39)
-* [Allow replaying all transactions from testnet/mainnet](#40)
-* [Support time-travel / fast-forwarding](#1)
-
+To see an example of how to do this, see the [patch-state test](https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts).
 
 Pro Tips
 ========
 
 * `NEAR_WORKSPACES_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
 
-* `Workspace.init` [config](https://github.com/near/workspaces/blob/9ab25a74ba47740a1064aebea02b642b51bb50d4/src/runtime/runtime.ts#L11-L20) – you can pass a config object as the first argument to `Workspace.init`. This lets you do things like:
+* `Workspace.init` [config](https://github.com/near/workspaces-js/blob/main/packages/js/src/interfaces.ts) – you can pass a config object as the first argument to `Workspace.init`. This lets you do things like:
 
   * skip initialization if specified data directory already exists
 
