@@ -4,21 +4,6 @@ near-workspaces for TypeScript/JavaScript
 Controlled, concurrent workspaces in local [NEAR Sandbox](https://github.com/near/sandbox) blockchains or on [NEAR TestNet](https://docs.near.org/docs/concepts/networks). Fun, deterministic testing and powerful scripting for NEAR.
 
 
-Quick Start with AVA
-====================
-
-[near-workspaces-ava](../ava) is a thin wrapper around near-workspaces-js designed to get you up and running as quickly as possible, with minimal configuration and power-boosts like [TypeScript](https://www.typescriptlang.org/). You can install it with one command. You will need [NodeJS](https://nodejs.dev/) installed. Then:
-
-    npx near-workspaces-init
-
-This command will:
-
-* Add a `near-workspaces` directory to the folder where you ran the command. This directory contains all the configuration needed to get you started with near-workspaces-ava, and a `__tests__` subfolder with a well-commented example test file.
-* Create `test.sh` and `test.bat` scripts in the folder where you ran the command. These can be used to quickly run the tests in `near-workspaces`. Feel free to integrate test-running into your project in a way that makes more sense for you, and then remove these scripts.
-* Install NPM dependencies using `npm install`. Most of the output you see when running the command comes from this step. You can skip this: `npx near-workspaces-init --no-install`.
-
-If you want to install near-workspaces-ava manually, see [its README](../ava).
-
 How It Works
 ============
 
@@ -27,7 +12,7 @@ Let's look at some code that focuses on near-workspaces itself, without any AVA 
 1. Initializing a `Workspace`. This will be used as the starting point for more workspaces soon.
 
    ```ts
-   const workspaces = Workspace.init(async ({root}) => {
+   const workspaces = await Workspace.init(async ({root}) => {
      const alice = await root.createAccount('alice');
      const contract = await root.createAndDeploy(
        'contract-account-name',
@@ -128,7 +113,7 @@ You can run in testnet mode in three ways.
 1. When creating your Workspace, pass a config object as the first argument:
 
    ```ts
-   const workspaces = Workspace.init(
+   const workspaces = await Workspace.init(
      {network: 'testnet'},
      async ({root}) => { … }
    )
@@ -173,7 +158,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
 1. Create a `Workspace`.
 
    ```ts
-   const workspaces = Workspace.init(async ({root}) => {
+   const workspaces = await Workspace.init(async ({root}) => {
      await root.createAccount('alice');
      await root.createAndDeploy(
        'contract-account-name',
@@ -249,7 +234,7 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
 2. `Workspace.networkIsSandbox`: You can also skip entire sections of your files by checking `Workspace.networkIsSandbox` (`Workspace.networkIsTestnet` and `Workspace.getNetworkFromEnv` are also available).
 
    ```ts
-   let workspaces = Workspace.init(async ({root}) => ({ // note the implicit return
+   let workspaces = await Workspace.init(async ({root}) => ({ // note the implicit return
      contract: await root.createAndDeploy(
        'contract-account-name',
        'path/to/compiled.wasm'
@@ -296,7 +281,7 @@ Pro Tips
   * skip initialization if specified data directory already exists
 
     ```ts
-    Workspace.init(
+    await Workspace.init(
       { init: false, homeDir: './test-data/alice-owns-an-nft' },
       async ({root}) => { … }
     )
