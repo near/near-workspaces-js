@@ -10,7 +10,7 @@
 
 </div>
 
-`NEAR Workspaces` is a library for automating workflows and writing tests for NEAR smart contracts. You can use it as is or integrate with test runner of your choise. We suggest you to use AVA.
+`NEAR Workspaces` is a library for automating workflows and writing tests for NEAR smart contracts. You can use it as is or integrate with test runner of your choise (AVA, Jest, Mocha, etc.). If you don't have a preference, we suggest you to use AVA.
 
 Quick Start (without testing frameworks)
 ===========
