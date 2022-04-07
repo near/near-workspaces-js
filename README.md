@@ -122,7 +122,6 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
   });
   ```
 
-  For a working example, see [near-examples/rust-status-message/tests-ava](https://github.com/near-examples/rust-status-message/blob/master/tests-ava/__tests__/main.ava.ts).
 
 "Spooning" Contracts from Testnet and Mainnet
 =============================================
