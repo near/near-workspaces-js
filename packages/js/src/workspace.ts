@@ -1,7 +1,6 @@
-import * as os from 'os';
 import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
-import {getNetworkFromEnv, homeKeyStore} from './utils';
+import {getNetworkFromEnv} from './utils';
 
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -21,14 +20,6 @@ import {getNetworkFromEnv, homeKeyStore} from './utils';
  *   }),
  * ]);
  *
- * @example
- * // Alternative syntax for the above
- * Workspace.open({network: 'testnet', rootAccount: 'me.testnet'}, async ({root}) => {
- *   await Promise.all([
- *     root.call('some-contract.testnet', 'some_method', { a: 1, b: 2 }),
- *     root.call('some-other-contract.testnet', 'some_method', { a: 2, b: 3 }),
- *   ]);
- * });
  *
  * @example
  * const {Workspace, NEAR} from 'near-workspaces';
@@ -105,26 +96,6 @@ export class Workspace {
 
   static getNetworkFromEnv(): 'sandbox' | 'testnet' {
     return getNetworkFromEnv();
-  }
-
-  /**
-   * Sets up a connection to a network and executes the provided function.
-   * Unlike `fork`, this will run the function once and not clean up after itself.
-   * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
-   * It also defaults to use your home directory's key store.
-   *
-   * @param config Config with the rootAccount argument required.
-   * @param fn Function to run when connected.
-   */
-  static async open(config: Partial<Config> & {rootAccount: string}, fn: WorkspaceFn): Promise<void> {
-    const innerConfig = {
-      init: false,
-      rm: false,
-      homeDir: os.homedir(),
-      keyStore: homeKeyStore(),
-      ...config,
-    };
-    return (await WorkspaceContainer.create(innerConfig)).fork(fn);
   }
 
   /**
