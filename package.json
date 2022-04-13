@@ -66,6 +66,5 @@
   "private": true,
   "workspaces": [
     "packages/js"
-  ],
-  "dependencies": {}
+  ]
 }
