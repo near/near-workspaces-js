@@ -24,7 +24,12 @@ export declare class Account implements NearAccount {
     createTransaction(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;
     setKey(keyPair?: KeyPair): Promise<PublicKey>;
-    createAccount(accountId: string, { keyPair, initialBalance, isSubAccount, }?: {
+    createAccount(accountId: string, { keyPair, initialBalance, }?: {
+        keyPair?: KeyPair;
+        initialBalance?: string;
+        isSubAccount?: boolean;
+    }): Promise<NearAccount>;
+    createSubAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
         initialBalance?: string;
         isSubAccount?: boolean;
@@ -37,8 +42,8 @@ export declare class Account implements NearAccount {
         initialBalance?: string;
         block_id?: number | string;
     }): Promise<NearAccount>;
+    getSubAccount(accountId: string): NearAccount;
     getAccount(accountId: string): NearAccount;
-    getFullAccount(accountId: string): NearAccount;
     createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, isSubAccount, }?: {
         args?: Record<string, unknown> | Uint8Array;
         attachedDeposit?: string | BN;

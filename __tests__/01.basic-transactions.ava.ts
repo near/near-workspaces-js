@@ -17,7 +17,7 @@ test.before(async t => {
       'status-message',
       '__tests__/build/debug/status_message.wasm',
     ),
-    ali: await root.createAccount('ali'),
+    ali: await root.createSubAccount('ali'),
   }));
 });
 

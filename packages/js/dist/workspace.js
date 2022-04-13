@@ -55,7 +55,7 @@ const utils_1 = require("./utils");
  * // Test contracts in local sandbox mode, creating initial state for each `workspace.fork`
  * const workspace = Workspace.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.dev-account-123456.testnet`
- *   const alice = root.createAccount('alice');
+ *   const alice = root.createSubAccount('alice');
  *   // Create a subaccount of `root`, deploy a contract to it, and call a method on that contract
  *   const contract = root.createAndDeploy('contract-account-name', '../path/to/contract.wasm', {
  *     method: 'init',
