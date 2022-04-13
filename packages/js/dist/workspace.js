@@ -156,17 +156,6 @@ class Workspace {
         await container.fork(fn);
         return container;
     }
-    /**
-     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-     *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-     */
-    async forkSandbox(fn) {
-        if (this.container.config.network === 'sandbox') {
-            return this.fork(fn);
-        }
-        return null;
-    }
 }
 exports.Workspace = Workspace;
 function getConfigAndFn(configOrFunction, f) {

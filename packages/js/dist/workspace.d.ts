@@ -111,11 +111,5 @@ export declare class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
     fork(fn: WorkspaceFn): Promise<WorkspaceContainer>;
-    /**
-     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-     *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-     */
-    forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null>;
 }
 //# sourceMappingURL=workspace.d.ts.map

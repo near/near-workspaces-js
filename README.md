@@ -261,22 +261,9 @@ Note: Since the testnet accounts are cached, if account creation rate limits are
 Skipping Sandbox-specific tests
 -------------------------------
 
-If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in a few ways:
+If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in two ways:
 
-1. `runSandbox`: Instead of `workspace.fork`, you can use `workspace.forkSandbox`:
-
-   ```ts
-   await Promise.all([
-     workspace.fork(async ({…}) => {
-       // runs on any network, sandbox or testnet
-     }),
-     workspace.runSandbox(async ({…}) => {
-       // only runs on sandbox network
-     });
-   ]);
-   ```
-
-2. `Workspace.networkIsSandbox`: You can also skip entire sections of your files by checking `Workspace.networkIsSandbox` (`Workspace.networkIsTestnet` and `Workspace.getNetworkFromEnv` are also available).
+1. `Workspace.networkIsSandbox`: You can also skip entire sections of your files by checking `Workspace.networkIsSandbox` (`Workspace.networkIsTestnet` and `Workspace.getNetworkFromEnv` are also available).
 
    ```ts
    let workspaces = Workspace.init(async ({root}) => ({ // note the implicit return
@@ -295,7 +282,7 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
    }
    ```
 
-3. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
+2. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
 
 Patch State on the Fly
 ======================
