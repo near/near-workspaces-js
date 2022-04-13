@@ -258,12 +258,12 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
 Note: Since the testnet accounts are cached, if account creation rate limits are reached simply wait a little while and try again.
 
-Skipping Sandbox-specific tests
+Running tests only in Sandbox
 -------------------------------
 
 If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in two ways:
 
-1. `Workspace.networkIsSandbox`: You can also skip entire sections of your files by checking `Workspace.networkIsSandbox` (`Workspace.networkIsTestnet` and `Workspace.getNetworkFromEnv` are also available).
+1. You can skip entire sections of your files by checking `getNetworkFromEnv() === 'sandbox'`.
 
    ```ts
    let workspaces = Workspace.init(async ({root}) => ({ // note the implicit return
@@ -275,7 +275,7 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
    workspace.fork('thing that makes sense on any network', async ({…}) => {
      // logic using basic contract & account interactions
    });
-   if (Workspace.networkIsSandbox) {
+   if (getNetworkFromEnv() === 'sandbox') {
      workspace.fork('thing that only makes sense with sandbox', async ({…}) => {
        // logic using patch-state, fast-forwarding, etc
      });

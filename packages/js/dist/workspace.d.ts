@@ -80,9 +80,6 @@ export declare class Workspace {
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
-    static networkIsTestnet(): boolean;
-    static networkIsSandbox(): boolean;
-    static getNetworkFromEnv(): 'sandbox' | 'testnet';
     /**
      * Sets up a connection to a network and executes the provided function.
      * Unlike `fork`, this will run the function once and not clean up after itself.

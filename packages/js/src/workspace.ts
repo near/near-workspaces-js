@@ -1,7 +1,7 @@
 import * as os from 'os';
 import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
-import {getNetworkFromEnv, homeKeyStore} from './utils';
+import {homeKeyStore} from './utils';
 
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -93,18 +93,6 @@ export class Workspace {
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     const workspaceContainer = await WorkspaceContainer.create(config, fn);
     return new Workspace(workspaceContainer);
-  }
-
-  static networkIsTestnet(): boolean {
-    return this.getNetworkFromEnv() === 'testnet';
-  }
-
-  static networkIsSandbox(): boolean {
-    return this.getNetworkFromEnv() === 'sandbox';
-  }
-
-  static getNetworkFromEnv(): 'sandbox' | 'testnet' {
-    return getNetworkFromEnv();
   }
 
   /**
