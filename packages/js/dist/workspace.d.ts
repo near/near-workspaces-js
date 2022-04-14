@@ -24,7 +24,7 @@ import { Config, WorkspaceFn, InitWorkspaceFn } from './interfaces';
  * // Test contracts in local sandbox mode, creating initial state for each `workspace.fork`
  * const workspace = Workspace.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.dev-account-123456.testnet`
- *   const alice = root.createAccount('alice');
+ *   const alice = root.createSubAccount('alice');
  *   // Create a subaccount of `root`, deploy a contract to it, and call a method on that contract
  *   const contract = root.createAndDeploy('contract-account-name', '../path/to/contract.wasm', {
  *     method: 'init',
@@ -72,9 +72,6 @@ export declare class Workspace {
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
-    static networkIsTestnet(): boolean;
-    static networkIsSandbox(): boolean;
-    static getNetworkFromEnv(): 'sandbox' | 'testnet';
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
      * In local sandbox mode, each `workspace.fork` will:
@@ -91,11 +88,5 @@ export declare class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
     fork(fn: WorkspaceFn): Promise<WorkspaceContainer>;
-    /**
-     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-     *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-     */
-    forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null>;
 }
 //# sourceMappingURL=workspace.d.ts.map

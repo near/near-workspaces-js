@@ -22,7 +22,7 @@ To get started with `Near Workspaces` you need to do only two things:
 
    ```ts
    const workspace = await Workspace.init(async ({root}) => {
-     const alice = await root.createAccount('alice');
+     const alice = await root.createSubAccount('alice');
      const contract = await root.createAndDeploy(
        'contract-account-name',
        'path/to/compiled.wasm'
@@ -35,7 +35,7 @@ To get started with `Near Workspaces` you need to do only two things:
 
    1. `Workspace.init` initializes a new [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox) node/instance. This is essentially a mini-NEAR blockchain created just for this test. Each of these Sandbox instances gets its own data directory and port, so that tests can run in parallel.
    2. This blockchain also has a `root` user. Mainnet has `*.near`, testnet has `*.testnet`, and these tests have `*.${root.accountId}`. This account name is not currently `sandbox` but might be in the future. Since it doesn't matter, you can think of it as being called `sandbox` while you're still figuring things out.
-   3. `root.createAccount` creates a new subaccount of `root` with the given name, for example `alice.sandbox`.
+   3. `root.createSubAccount` creates a new subaccount of `root` with the given name, for example `alice.sandbox`.
    4. `root.createAndDeploy` creates a new subaccount with the given name, `contract-account-name.sandbox`, then deploys the specified Wasm file to it.
    5. `path/to/compiled.wasm` will resolve relative to your project root. That is, the nearest directory with a `package.json` file, or your current working directory if no `package.json` is found. To construct a path relative to your test file, you can use `path.join(__dirname, '../etc/etc.wasm')` ([more info](https://nodejs.org/api/path.html#path_path_join_paths)).
    6. After `Workspace.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
@@ -80,7 +80,7 @@ To get started with `Near Workspaces` you need to do only two things:
    1. Like the earlier call to `Workspace.init`, each call to `workspace.fork` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
    2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
-   4. Gotcha: the full account names may or may not match the strings passed to `createAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
+   4. Gotcha: the full account names does not match the strings passed to `createSubAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
 
 See the [tests](https://github.com/near/workspaces-js/tree/main/__tests__) directory in this project for more examples.
@@ -104,7 +104,7 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
         'path/to/contract/file.wasm',
       ),
       /* Account that you will be able to use in your tests */
-      ali: await root.createAccount('ali'),
+      ali: await root.createSubAccount('ali'),
     }));
   })
 
@@ -204,7 +204,7 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
    ```ts
    const workspace = await Workspace.init(async ({root}) => {
-     await root.createAccount('alice');
+     await root.createSubAccount('alice');
      await root.createAndDeploy(
        'contract-account-name',
        'path/to/compiled.wasm'
@@ -250,25 +250,12 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
 Note: Since the testnet accounts are cached, if account creation rate limits are reached simply wait a little while and try again.
 
-Skipping Sandbox-specific tests
+Running tests only in Sandbox
 -------------------------------
 
-If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in a few ways:
+If some of your runs take advantage of Sandbox-specific features, you can skip these on testnet in two ways:
 
-1. `runSandbox`: Instead of `workspace.fork`, you can use `workspace.forkSandbox`:
-
-   ```ts
-   await Promise.all([
-     workspace.fork(async ({…}) => {
-       // runs on any network, sandbox or testnet
-     }),
-     workspace.runSandbox(async ({…}) => {
-       // only runs on sandbox network
-     });
-   ]);
-   ```
-
-2. `Workspace.networkIsSandbox`: You can also skip entire sections of your files by checking `Workspace.networkIsSandbox` (`Workspace.networkIsTestnet` and `Workspace.getNetworkFromEnv` are also available).
+1. You can skip entire sections of your files by checking `getNetworkFromEnv() === 'sandbox'`.
 
    ```ts
    let workspaces = Workspace.init(async ({root}) => ({ // note the implicit return
@@ -280,14 +267,14 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
    workspace.fork('thing that makes sense on any network', async ({…}) => {
      // logic using basic contract & account interactions
    });
-   if (Workspace.networkIsSandbox) {
+   if (getNetworkFromEnv() === 'sandbox') {
      workspace.fork('thing that only makes sense with sandbox', async ({…}) => {
        // logic using patch-state, fast-forwarding, etc
      });
    }
    ```
 
-3. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
+2. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
 
 Patch State on the Fly
 ======================

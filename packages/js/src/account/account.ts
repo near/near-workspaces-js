@@ -70,16 +70,31 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-      isSubAccount,
     }: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean} = {},
   ): Promise<NearAccount> {
     const tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,
-      isSubAccount,
+      isSubAccount: false,
     });
     await tx.signAndSend();
     return this.getAccount(accountId);
+  }
+
+  async createSubAccount(
+    accountId: string,
+    {
+      keyPair,
+      initialBalance,
+    }: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean} = {},
+  ): Promise<NearAccount> {
+    const tx = await this.internalCreateAccount(accountId, {
+      keyPair,
+      initialBalance,
+      isSubAccount: true,
+    });
+    await tx.signAndSend();
+    return this.getSubAccount(accountId);
   }
 
   async createAccountFrom({
@@ -106,7 +121,7 @@ export class Account implements NearAccount {
 
     const rpc = JsonRpcProvider.fromNetwork(network);
     const blockQuery = block_id ? {block_id} : undefined;
-    const account = this.getFullAccount(refContract) as Account;
+    const account = this.getAccount(refContract) as Account;
 
     // Get account view of account on reference network
     const accountView = await rpc.viewAccount(refContract, blockQuery);
@@ -143,12 +158,12 @@ export class Account implements NearAccount {
     return account;
   }
 
-  getAccount(accountId: string): NearAccount {
+  getSubAccount(accountId: string): NearAccount {
     const id = this.makeSubAccount(accountId);
-    return this.getFullAccount(id);
+    return this.getAccount(id);
   }
 
-  getFullAccount(accountId: string): NearAccount {
+  getAccount(accountId: string): NearAccount {
     return new Account(accountId, this.manager);
   }
 
@@ -290,13 +305,6 @@ export class Account implements NearAccount {
   }
 
   makeSubAccount(accountId: string): string {
-    if (
-      this.subAccountOf(accountId)
-      || this.manager.root.subAccountOf(accountId)
-    ) {
-      return accountId;
-    }
-
     return `${accountId}.${this.accountId}`;
   }
 
@@ -338,7 +346,7 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-      isSubAccount = true,
+      isSubAccount,
     }: {keyPair?: KeyPair; initialBalance?: string | BN; isSubAccount?: boolean} = {},
   ): Promise<Transaction> {
     const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;

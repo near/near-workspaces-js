@@ -1,6 +1,5 @@
 import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
-import {getNetworkFromEnv} from './utils';
 
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -26,7 +25,7 @@ import {getNetworkFromEnv} from './utils';
  * // Test contracts in local sandbox mode, creating initial state for each `workspace.fork`
  * const workspace = Workspace.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.dev-account-123456.testnet`
- *   const alice = root.createAccount('alice');
+ *   const alice = root.createSubAccount('alice');
  *   // Create a subaccount of `root`, deploy a contract to it, and call a method on that contract
  *   const contract = root.createAndDeploy('contract-account-name', '../path/to/contract.wasm', {
  *     method: 'init',
@@ -86,18 +85,6 @@ export class Workspace {
     return new Workspace(workspaceContainer);
   }
 
-  static networkIsTestnet(): boolean {
-    return this.getNetworkFromEnv() === 'testnet';
-  }
-
-  static networkIsSandbox(): boolean {
-    return this.getNetworkFromEnv() === 'sandbox';
-  }
-
-  static getNetworkFromEnv(): 'sandbox' | 'testnet' {
-    return getNetworkFromEnv();
-  }
-
   /**
    * Run code in the context of a workspace initialized with `Workspace.init`.
    * In local sandbox mode, each `workspace.fork` will:
@@ -117,19 +104,6 @@ export class Workspace {
     const container = await this.container.createFrom();
     await container.fork(fn);
     return container;
-  }
-
-  /**
-   * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-   *
-   * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-   */
-  async forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null> {
-    if (this.container.config.network === 'sandbox') {
-      return this.fork(fn);
-    }
-
-    return null;
   }
 }
 

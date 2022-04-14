@@ -60,14 +60,23 @@ class Account {
     async setKey(keyPair) {
         return (await this.manager.setKey(this.accountId, keyPair)).getPublicKey();
     }
-    async createAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
+    async createAccount(accountId, { keyPair, initialBalance, } = {}) {
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
-            isSubAccount,
+            isSubAccount: false,
         });
         await tx.signAndSend();
         return this.getAccount(accountId);
+    }
+    async createSubAccount(accountId, { keyPair, initialBalance, } = {}) {
+        const tx = await this.internalCreateAccount(accountId, {
+            keyPair,
+            initialBalance,
+            isSubAccount: true,
+        });
+        await tx.signAndSend();
+        return this.getSubAccount(accountId);
     }
     async createAccountFrom({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
@@ -77,7 +86,7 @@ class Account {
         const refContract = (mainnetContract !== null && mainnetContract !== void 0 ? mainnetContract : testnetContract);
         const rpc = jsonrpc_1.JsonRpcProvider.fromNetwork(network);
         const blockQuery = block_id ? { block_id } : undefined;
-        const account = this.getFullAccount(refContract);
+        const account = this.getAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);
         accountView.amount = initialBalance !== null && initialBalance !== void 0 ? initialBalance : accountView.amount;
@@ -107,11 +116,11 @@ class Account {
         }
         return account;
     }
-    getAccount(accountId) {
+    getSubAccount(accountId) {
         const id = this.makeSubAccount(accountId);
-        return this.getFullAccount(id);
+        return this.getAccount(id);
     }
-    getFullAccount(accountId) {
+    getAccount(accountId) {
         return new Account(accountId, this.manager);
     }
     async createAndDeploy(accountId, wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
@@ -189,10 +198,6 @@ class Account {
         return result;
     }
     makeSubAccount(accountId) {
-        if (this.subAccountOf(accountId)
-            || this.manager.root.subAccountOf(accountId)) {
-            return accountId;
-        }
         return `${accountId}.${this.accountId}`;
     }
     subAccountOf(accountId) {
@@ -221,7 +226,7 @@ class Account {
     async transfer(accountId, amount) {
         return this.createTransaction(accountId).transfer(amount).signAndSend();
     }
-    async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount = true, } = {}) {
+    async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
         const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
         const amount = (initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance).toString();

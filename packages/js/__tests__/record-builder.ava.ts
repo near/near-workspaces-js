@@ -1,18 +1,18 @@
 import path from 'path';
 import anyTest, {TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {Workspace} from '..';
+import {getNetworkFromEnv, Workspace} from '..';
 import {RecordBuilder} from '../dist/record';
 
 const test = anyTest as TestFn<{workspace: Workspace}>;
 
-if (Workspace.networkIsSandbox()) {
+if (getNetworkFromEnv() === 'sandbox') {
   const workspacePromise = Workspace.init(async ({root}) => {
     const contract = await root.createAndDeploy(
       'status-message',
       path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
     );
-    const ali = await root.createAccount('ali');
+    const ali = await root.createSubAccount('ali');
     return {contract, ali};
   });
 
@@ -20,7 +20,7 @@ if (Workspace.networkIsSandbox()) {
   void workspacePromise.then(workspace => {
     test('Patch Account', async t => {
       await workspace.fork(async ({root, ali, contract}) => {
-        const bob = root.getFullAccount('bob');
+        const bob = root.getAccount('bob');
         const public_key = await bob.setKey();
         const {code_hash} = await contract.accountView();
         const BOB_BALANCE = NEAR.parse('100 N');
