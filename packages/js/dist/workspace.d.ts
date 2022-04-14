@@ -18,14 +18,6 @@ import { Config, WorkspaceFn, InitWorkspaceFn } from './interfaces';
  *   }),
  * ]);
  *
- * @example
- * // Alternative syntax for the above
- * Workspace.open({network: 'testnet', rootAccount: 'me.testnet'}, async ({root}) => {
- *   await Promise.all([
- *     root.call('some-contract.testnet', 'some_method', { a: 1, b: 2 }),
- *     root.call('some-other-contract.testnet', 'some_method', { a: 2, b: 3 }),
- *   ]);
- * });
  *
  * @example
  * const {Workspace, NEAR} from 'near-workspaces';
@@ -80,18 +72,6 @@ export declare class Workspace {
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
-    /**
-     * Sets up a connection to a network and executes the provided function.
-     * Unlike `fork`, this will run the function once and not clean up after itself.
-     * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
-     * It also defaults to use your home directory's key store.
-     *
-     * @param config Config with the rootAccount argument required.
-     * @param fn Function to run when connected.
-     */
-    static open(config: Partial<Config> & {
-        rootAccount: string;
-    }, fn: WorkspaceFn): Promise<void>;
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
      * In local sandbox mode, each `workspace.fork` will:

@@ -214,14 +214,6 @@ Let's revisit a shortened version of the example from How It Works above, descri
 
    `Workspace.init` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `workspace.fork`. This matches the semantics of the sandbox that all subsequent calls to `fork` have the same starting point, however, testnet requires that each forkd workspace has its own root account. In fact `Workspace.init` creates a unique testnet account and each test is a unique sub-account.
 
-   If you want to run a single script on Testnet, you can use `Workspace.open`:
-
-   ```ts
-   Workspace.open(async ({root}) => {
-     // Anything here will run right away, rather than needing a subsequent `workspace.fork`
-   })
-   ```
-
 2. Write tests.
 
    ```ts
