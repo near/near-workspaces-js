@@ -1,9 +1,15 @@
 import anyTest, {TestFn} from 'ava';
-import {AccountManager, TestnetRuntime, Workspace, TestnetManager} from '..';
+import {
+  AccountManager,
+  TestnetRuntime,
+  Workspace,
+  TestnetManager,
+  getNetworkFromEnv,
+} from '..';
 
 const test = anyTest as TestFn<{workspace: Workspace}>;
 
-if (Workspace.networkIsTestnet()) {
+if (getNetworkFromEnv() === 'testnet') {
   test('should create a new account', async t => {
     const accountManager = AccountManager.create(TestnetRuntime.defaultConfig);
     await accountManager.init();
@@ -21,7 +27,7 @@ if (Workspace.networkIsTestnet()) {
     t.true(balance.lt(newBalance));
   });
 } else {
-  test('skipping on ' + Workspace.getNetworkFromEnv(), t => {
+  test('skipping on ' + getNetworkFromEnv(), t => {
     t.true(true);
   });
 }

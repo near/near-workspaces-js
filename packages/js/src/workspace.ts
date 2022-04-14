@@ -1,7 +1,7 @@
 import * as os from 'os';
 import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
-import {getNetworkFromEnv, homeKeyStore} from './utils';
+import {homeKeyStore} from './utils';
 
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -95,18 +95,6 @@ export class Workspace {
     return new Workspace(workspaceContainer);
   }
 
-  static networkIsTestnet(): boolean {
-    return this.getNetworkFromEnv() === 'testnet';
-  }
-
-  static networkIsSandbox(): boolean {
-    return this.getNetworkFromEnv() === 'sandbox';
-  }
-
-  static getNetworkFromEnv(): 'sandbox' | 'testnet' {
-    return getNetworkFromEnv();
-  }
-
   /**
    * Sets up a connection to a network and executes the provided function.
    * Unlike `fork`, this will run the function once and not clean up after itself.
@@ -146,19 +134,6 @@ export class Workspace {
     const container = await this.container.createFrom();
     await container.fork(fn);
     return container;
-  }
-
-  /**
-   * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-   *
-   * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-   */
-  async forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null> {
-    if (this.container.config.network === 'sandbox') {
-      return this.fork(fn);
-    }
-
-    return null;
   }
 }
 

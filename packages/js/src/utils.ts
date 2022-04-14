@@ -111,7 +111,7 @@ export function getNetworkFromEnv(): 'sandbox' | 'testnet' {
     default:
       throw new Error(
         `environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
-        + 'use \'testnet\', \'mainnet\', or \'sandbox\' (the default)',
+        + 'use \'testnet\', or \'sandbox\' (the default)',
       );
   }
 }

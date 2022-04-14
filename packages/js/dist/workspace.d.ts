@@ -80,9 +80,6 @@ export declare class Workspace {
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Workspace>;
-    static networkIsTestnet(): boolean;
-    static networkIsSandbox(): boolean;
-    static getNetworkFromEnv(): 'sandbox' | 'testnet';
     /**
      * Sets up a connection to a network and executes the provided function.
      * Unlike `fork`, this will run the function once and not clean up after itself.
@@ -111,11 +108,5 @@ export declare class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
     fork(fn: WorkspaceFn): Promise<WorkspaceContainer>;
-    /**
-     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-     *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-     */
-    forkSandbox(fn: WorkspaceFn): Promise<WorkspaceContainer | null>;
 }
 //# sourceMappingURL=workspace.d.ts.map

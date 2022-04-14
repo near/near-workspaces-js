@@ -108,15 +108,6 @@ class Workspace {
         const workspaceContainer = await container_1.WorkspaceContainer.create(config, fn);
         return new Workspace(workspaceContainer);
     }
-    static networkIsTestnet() {
-        return this.getNetworkFromEnv() === 'testnet';
-    }
-    static networkIsSandbox() {
-        return this.getNetworkFromEnv() === 'sandbox';
-    }
-    static getNetworkFromEnv() {
-        return (0, utils_1.getNetworkFromEnv)();
-    }
     /**
      * Sets up a connection to a network and executes the provided function.
      * Unlike `fork`, this will run the function once and not clean up after itself.
@@ -155,17 +146,6 @@ class Workspace {
         const container = await this.container.createFrom();
         await container.fork(fn);
         return container;
-    }
-    /**
-     * Like `fork`, but only runs when in local sandbox mode, not on testnet or mainnet. See `fork` docs for more info.
-     *
-     * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.forkSandbox(async ({root, alice, bob}) => {...})`
-     */
-    async forkSandbox(fn) {
-        if (this.container.config.network === 'sandbox') {
-            return this.fork(fn);
-        }
-        return null;
     }
 }
 exports.Workspace = Workspace;

@@ -1,12 +1,12 @@
 import path from 'path';
 import anyTest, {TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {Workspace} from '..';
+import {getNetworkFromEnv, Workspace} from '..';
 import {RecordBuilder} from '../dist/record';
 
 const test = anyTest as TestFn<{workspace: Workspace}>;
 
-if (Workspace.networkIsSandbox()) {
+if (getNetworkFromEnv() === 'sandbox') {
   const workspacePromise = Workspace.init(async ({root}) => {
     const contract = await root.createAndDeploy(
       'status-message',

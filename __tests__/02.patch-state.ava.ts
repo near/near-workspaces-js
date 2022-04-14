@@ -8,7 +8,7 @@
  * created within the testing environment, `alice.near`.
  *
  * patchState is a Sandbox-specific feature, so these tests can't be run on
- * testnet. That's why they're wrapped with `if (Workspace.networkIsSandbox())`.
+ * testnet. That's why they're wrapped with `if (getNetworkFromEnv() === 'sandbox')`.
  */
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */

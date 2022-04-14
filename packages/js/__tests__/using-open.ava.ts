@@ -1,7 +1,7 @@
 import test from 'ava';
-import {Workspace} from '..';
+import {getNetworkFromEnv, Workspace} from '..';
 
-if (Workspace.networkIsTestnet()) {
+if (getNetworkFromEnv() === 'sandbox') {
   test('Inspecting an account on testnet', async t => {
     await Workspace.open({network: 'testnet', rootAccount: 'meta'}, async ({root}) => {
       t.is(root.accountId, 'meta');
@@ -9,7 +9,7 @@ if (Workspace.networkIsTestnet()) {
     });
   });
 } else {
-  test('skipping on ' + Workspace.getNetworkFromEnv(), t => {
+  test('skipping on ' + getNetworkFromEnv(), t => {
     t.true(true);
   });
 }
