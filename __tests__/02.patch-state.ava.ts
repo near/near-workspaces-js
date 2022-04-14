@@ -25,7 +25,7 @@ if (getNetworkFromEnv() === 'sandbox') {
         'status-message',
         '__tests__/build/debug/status_message.wasm',
       );
-      const ali = await root.createAccount('ali');
+      const ali = await root.createSubAccount('ali');
       return {contract, ali};
     });
   });
@@ -109,7 +109,7 @@ if (getNetworkFromEnv() === 'sandbox') {
 
   test('Patch Account', async t => {
     await t.context.workspace.fork(async ({root, contract, ali}) => {
-      const bob = root.getFullAccount('bob');
+      const bob = root.getAccount('bob');
       const public_key = await bob.setKey();
       const {code_hash} = await contract.accountView();
       const BOB_BALANCE = NEAR.parse('100 N');

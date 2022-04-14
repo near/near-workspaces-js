@@ -75,7 +75,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
 
 test('Use `claim` to transfer to an existing account', async t => {
   await t.context.workspace.fork(async ({root, linkdrop}) => {
-    const bob = await root.createAccount('bob');
+    const bob = await root.createSubAccount('bob');
     const originalBalance = await bob.availableBalance();
     // Create temporary keys for access key on linkdrop
     const senderKey = createKeyPair();

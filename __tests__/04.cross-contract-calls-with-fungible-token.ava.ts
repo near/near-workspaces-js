@@ -62,7 +62,7 @@ test.before(async t => {
       'defi',
       '__tests__/build/debug/defi.wasm',
     ),
-    ali: await root.createAccount('ali'),
+    ali: await root.createSubAccount('ali'),
   }));
 });
 

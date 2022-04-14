@@ -48,13 +48,24 @@ export interface NearAccount {
 
   /**
    * Create a subaccount from this account
-   * @param accountId either prefix for new account or full accountId with current contract as suffix.
+   * @param accountId full accountId with current account name as suffix.
    * @param options `keyPair` is key to be added to keystore, otherwise random one will be added.
    *                `initialBalance` how much yoctoNear to transfer to new account.
    */
   createAccount(
     accountId: string,
-    options?: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean},
+    options?: {keyPair?: KeyPair; initialBalance?: string},
+  ): Promise<NearAccount>;
+
+  /**
+   * Create a subaccount from this account
+   * @param accountId prefix of accountId with current account name as suffix.
+   * @param options `keyPair` is key to be added to keystore, otherwise random one will be added.
+   *                `initialBalance` how much yoctoNear to transfer to new account.
+   */
+  createSubAccount(
+    accountId: string,
+    options?: {keyPair?: KeyPair; initialBalance?: string},
   ): Promise<NearAccount>;
 
   /**
@@ -79,11 +90,12 @@ export interface NearAccount {
     isSubAccount?: boolean;
   }): Promise<NearAccount>;
 
-  /** Adds suffix to accountId if account isn't sub account or have full including top level account */
+  /** Adds suffix to accountIdPrefix and get that account */
+  getSubAccount(accountIdPrefix: string): NearAccount;
+
+  /** Get the account with given full accountId */
   getAccount(accountId: string): NearAccount;
 
-  /** Does not attempt to make account a subaccount of current account. */
-  getFullAccount(accountId: string): NearAccount;
   /**
    * Creates an account for a contract and then deploys a Wasm binary to its account.
    * If method arguments are provided a function call to `method` will be added to the transaction so that
