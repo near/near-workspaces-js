@@ -13,7 +13,7 @@
  *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `createTransaction` below.
  */
-import {Workspace, NearAccount, captureError, BN} from 'near-workspaces';
+import {Workspace, NearAccount, captureError, BN, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
 const STORAGE_BYTE_COST = '1.5 mN';
@@ -55,14 +55,16 @@ const test = anyTest as TestFn<{workspace: Workspace}>;
 test.before(async t => {
   t.context.workspace = await Workspace.init(async ({root}) => ({
     ft: await root.createAndDeploy(
-      'fungible-token',
+      root.getSubAccount('fungible-token').accountId,
       '__tests__/build/debug/fungible_token.wasm',
+      {initialBalance: NEAR.parse('3 N').toJSON()},
     ),
     defi: await root.createAndDeploy(
-      'defi',
+      root.getSubAccount('defi').accountId,
       '__tests__/build/debug/defi.wasm',
+      {initialBalance: NEAR.parse('3 N').toJSON()},
     ),
-    ali: await root.createSubAccount('ali'),
+    ali: await root.createSubAccount('ali', {initialBalance: NEAR.parse('1 N').toJSON()}),
   }));
 });
 
