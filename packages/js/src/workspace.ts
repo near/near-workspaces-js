@@ -1,5 +1,6 @@
 import {WorkspaceContainer} from './container';
 import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
+import {debug} from './internal-utils';
 
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
@@ -57,6 +58,7 @@ export class Workspace {
   private readonly container: WorkspaceContainer;
   protected constructor(workspaceContainer: WorkspaceContainer,
   ) {
+    debug('Lifecycle.Workspace.cuntructor', 'workspaceContainer:', workspaceContainer);
     this.container = workspaceContainer;
   }
 
@@ -80,6 +82,7 @@ export class Workspace {
     configOrFunction: InitWorkspaceFn | Partial<Config> = async () => ({}),
     f?: InitWorkspaceFn,
   ): Promise<Workspace> {
+    debug('Lifecycle.Workspace.init()', 'params:', configOrFunction, f);
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     const workspaceContainer = await WorkspaceContainer.create(config, fn);
     return new Workspace(workspaceContainer);
@@ -101,6 +104,7 @@ export class Workspace {
    * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
    */
   async fork(fn: WorkspaceFn): Promise<WorkspaceContainer> {
+    debug('Lifecycle.Workspace.fork()', 'fn:', fn);
     const container = await this.container.createFrom();
     await container.fork(fn);
     return container;

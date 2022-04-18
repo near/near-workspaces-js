@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Workspace = void 0;
 const container_1 = require("./container");
+const internal_utils_1 = require("./internal-utils");
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
  *
@@ -56,6 +57,7 @@ const container_1 = require("./container");
  */
 class Workspace {
     constructor(workspaceContainer) {
+        (0, internal_utils_1.debug)('Lifecycle.Workspace.cuntructor', 'workspaceContainer:', workspaceContainer);
         this.container = workspaceContainer;
     }
     /**
@@ -75,6 +77,7 @@ class Workspace {
      * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
      */
     static async init(configOrFunction = async () => ({}), f) {
+        (0, internal_utils_1.debug)('Lifecycle.Workspace.init()', 'params:', configOrFunction, f);
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         const workspaceContainer = await container_1.WorkspaceContainer.create(config, fn);
         return new Workspace(workspaceContainer);
@@ -95,6 +98,7 @@ class Workspace {
      * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
      */
     async fork(fn) {
+        (0, internal_utils_1.debug)('Lifecycle.Workspace.fork()', 'fn:', fn);
         const container = await this.container.createFrom();
         await container.fork(fn);
         return container;

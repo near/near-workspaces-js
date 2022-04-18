@@ -84,6 +84,7 @@ function initialPort() {
 class SandboxServer {
     constructor(config) {
         this.readyToDie = false;
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.constructor', 'config:', config);
         this.config = config;
     }
     static async nextPort() {
@@ -94,6 +95,7 @@ class SandboxServer {
         return (0, path_1.join)(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
     }
     static async init(config) {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.init()', 'config:', config);
         this.binPath = await (0, internal_utils_1.ensureBinary)();
         const server = new SandboxServer(config);
         if (server.config.refDir) {
@@ -122,6 +124,7 @@ class SandboxServer {
         return `http://localhost:${this.port}`;
     }
     async start() {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.start()');
         const args = [
             '--home',
             this.homeDir,
@@ -157,6 +160,7 @@ class SandboxServer {
     }
     async close() {
         var _a;
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.close()');
         this.readyToDie = true;
         if (!this.subprocess.kill('SIGINT')) {
             console.error(`Failed to kill child process with PID: ${(_a = this.subprocess.pid) !== null && _a !== void 0 ? _a : 'undefined'}`);
@@ -169,6 +173,7 @@ class SandboxServer {
         return `0.0.0.0:${this.port}`;
     }
     async spawn(command) {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.spawn()');
         return (0, internal_utils_1.asyncSpawn)(SandboxServer.binPath, '--home', this.homeDir, command);
     }
 }
