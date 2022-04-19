@@ -1,28 +1,7 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Workspace = void 0;
-const os = __importStar(require("os"));
 const container_1 = require("./container");
-const utils_1 = require("./utils");
 /**
  * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
  *
@@ -41,14 +20,6 @@ const utils_1 = require("./utils");
  *   }),
  * ]);
  *
- * @example
- * // Alternative syntax for the above
- * Workspace.open({network: 'testnet', rootAccount: 'me.testnet'}, async ({root}) => {
- *   await Promise.all([
- *     root.call('some-contract.testnet', 'some_method', { a: 1, b: 2 }),
- *     root.call('some-other-contract.testnet', 'some_method', { a: 2, b: 3 }),
- *   ]);
- * });
  *
  * @example
  * const {Workspace, NEAR} from 'near-workspaces';
@@ -107,25 +78,6 @@ class Workspace {
         const { config, fn } = getConfigAndFn(configOrFunction, f);
         const workspaceContainer = await container_1.WorkspaceContainer.create(config, fn);
         return new Workspace(workspaceContainer);
-    }
-    /**
-     * Sets up a connection to a network and executes the provided function.
-     * Unlike `fork`, this will run the function once and not clean up after itself.
-     * A rootAccount is required and if on testnet, will try to create account if it doesn't exist.
-     * It also defaults to use your home directory's key store.
-     *
-     * @param config Config with the rootAccount argument required.
-     * @param fn Function to run when connected.
-     */
-    static async open(config, fn) {
-        const innerConfig = {
-            init: false,
-            rm: false,
-            homeDir: os.homedir(),
-            keyStore: (0, utils_1.homeKeyStore)(),
-            ...config,
-        };
-        return (await container_1.WorkspaceContainer.create(innerConfig)).fork(fn);
     }
     /**
      * Run code in the context of a workspace initialized with `Workspace.init`.
