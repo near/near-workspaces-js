@@ -30,8 +30,9 @@ const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
   t.context.worker = await Worker.init(async ({root}) => ({
     linkdrop: await root.createAndDeploy(
-      'linkdrop',
+      root.getSubAccount('linkdrop').accountId,
       '__tests__/build/debug/linkdrop.wasm',
+      {initialBalance: NEAR.parse('3 N').toJSON()},
     ),
   }));
 });
@@ -75,7 +76,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
 
 test('Use `claim` to transfer to an existing account', async t => {
   await t.context.worker.fork(async ({root, linkdrop}) => {
-    const bob = await root.createSubAccount('bob');
+    const bob = await root.createSubAccount('bob', {initialBalance: NEAR.parse('3 N').toJSON()});
     const originalBalance = await bob.availableBalance();
     // Create temporary keys for access key on linkdrop
     const senderKey = createKeyPair();

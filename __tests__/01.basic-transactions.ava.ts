@@ -7,17 +7,18 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import {Worker} from 'near-workspaces';
+import {Worker, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
 const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
   t.context.worker = await Worker.init(async ({root}) => ({
     contract: await root.createAndDeploy(
-      'status-message',
+      root.getSubAccount('status-message').accountId,
       '__tests__/build/debug/status_message.wasm',
+      {initialBalance: NEAR.parse('3 N').toJSON()},
     ),
-    ali: await root.createSubAccount('ali'),
+    ali: await root.createSubAccount('ali', {initialBalance: NEAR.parse('3 N').toJSON()}),
   }));
 });
 

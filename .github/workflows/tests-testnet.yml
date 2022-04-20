@@ -15,11 +15,11 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ${{ workspaces.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ matrix.platform }}-modules-${{ hashFiles('**/yarn.lock') }}
       - uses: actions/cache@v2
         with:
           path: '/home/workspaces/.near-credentials/near-workspaces'
-          key: ${{ matrix.platform }}${{ workspaces.os }}-${{ hashFiles('$HOME/.near-credentials/near-workspaces/testnet/*') }}
+          key: ${{ matrix.platform }}-${{ hashFiles('$HOME/.near-credentials/near-workspaces/testnet/*') }}
       - name: Run tests
         run: yarn && (yarn test:testnet:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:testnet:ci --fail-fast --verbose --noStackTrace)
   testnet-nocache:
