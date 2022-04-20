@@ -1,5 +1,5 @@
 import {WorkspaceContainer} from './container';
-import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
+import {Config, WorkspaceFn} from './interfaces';
 import {debug} from './internal-utils';
 
 /**
@@ -78,13 +78,9 @@ export class Worker {
    * @param f If configOrFunction is a config object, this must be a function to run
    * @returns an instance of the Worker class, to be used as a starting point for forkd workspaces.
    */
-  static async init(
-    configOrFunction: InitWorkspaceFn | Partial<Config> = async () => ({}),
-    f?: InitWorkspaceFn,
-  ): Promise<Worker> {
-    debug('Lifecycle.Worker.init()', 'params:', configOrFunction, f);
-    const {config, fn} = getConfigAndFn(configOrFunction, f);
-    const workspaceContainer = await WorkspaceContainer.create(config, fn);
+  static async init(config: Partial<Config> = {}): Promise<Worker> {
+    debug('Lifecycle.Worker.init()', 'config:', config);
+    const workspaceContainer = await WorkspaceContainer.create(config);
     return new Worker(workspaceContainer);
   }
 
@@ -109,26 +105,4 @@ export class Worker {
     await container.fork(fn);
     return container;
   }
-}
-
-function getConfigAndFn(
-  configOrFunction: InitWorkspaceFn | Partial<Config>,
-  f?: InitWorkspaceFn,
-): {fn: InitWorkspaceFn; config: Partial<Config>} {
-  const type1 = typeof configOrFunction;
-  const type2 = typeof f;
-  if (type1 === 'function' && type2 === 'undefined') {
-    // @ts-expect-error Type this|that not assignable to that
-    return {config: {}, fn: configOrFunction};
-  }
-
-  if (type1 === 'object' && (type2 === 'function' || type2 === 'undefined')) {
-    // @ts-expect-error Type this|that not assignable to that
-    return {config: configOrFunction, fn: f};
-  }
-
-  throw new Error(
-    'Invalid arguments! '
-    + 'Expected `(config, runFunction)` or just `(runFunction)`',
-  );
 }

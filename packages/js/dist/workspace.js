@@ -76,10 +76,9 @@ class Worker {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Worker class, to be used as a starting point for forkd workspaces.
      */
-    static async init(configOrFunction = async () => ({}), f) {
-        (0, internal_utils_1.debug)('Lifecycle.Worker.init()', 'params:', configOrFunction, f);
-        const { config, fn } = getConfigAndFn(configOrFunction, f);
-        const workspaceContainer = await container_1.WorkspaceContainer.create(config, fn);
+    static async init(config = {}) {
+        (0, internal_utils_1.debug)('Lifecycle.Worker.init()', 'config:', config);
+        const workspaceContainer = await container_1.WorkspaceContainer.create(config);
         return new Worker(workspaceContainer);
     }
     /**
@@ -105,18 +104,4 @@ class Worker {
     }
 }
 exports.Worker = Worker;
-function getConfigAndFn(configOrFunction, f) {
-    const type1 = typeof configOrFunction;
-    const type2 = typeof f;
-    if (type1 === 'function' && type2 === 'undefined') {
-        // @ts-expect-error Type this|that not assignable to that
-        return { config: {}, fn: configOrFunction };
-    }
-    if (type1 === 'object' && (type2 === 'function' || type2 === 'undefined')) {
-        // @ts-expect-error Type this|that not assignable to that
-        return { config: configOrFunction, fn: f };
-    }
-    throw new Error('Invalid arguments! '
-        + 'Expected `(config, runFunction)` or just `(runFunction)`');
-}
 //# sourceMappingURL=workspace.js.map

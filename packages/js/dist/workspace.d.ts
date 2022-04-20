@@ -1,5 +1,5 @@
 import { WorkspaceContainer } from './container';
-import { Config, WorkspaceFn, InitWorkspaceFn } from './interfaces';
+import { Config, WorkspaceFn } from './interfaces';
 /**
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code using {@link Worker.fork}.
  *
@@ -71,7 +71,7 @@ export declare class Worker {
      * @param f If configOrFunction is a config object, this must be a function to run
      * @returns an instance of the Worker class, to be used as a starting point for forkd workspaces.
      */
-    static init(configOrFunction?: InitWorkspaceFn | Partial<Config>, f?: InitWorkspaceFn): Promise<Worker>;
+    static init(config?: Partial<Config>): Promise<Worker>;
     /**
      * Run code in the context of a worker initialized with `Worker.init`.
      * In local sandbox mode, each `worker.fork` will:

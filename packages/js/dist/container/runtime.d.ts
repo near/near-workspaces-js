@@ -10,7 +10,7 @@ export declare abstract class WorkspaceContainer {
     protected manager: NearAccountManager;
     protected createdAccounts: ReturnedAccounts;
     constructor(config: Config, accounts?: ReturnedAccounts);
-    static create(config: Partial<Config>, fn?: InitWorkspaceFn): Promise<WorkspaceContainer>;
+    static create(config: Partial<Config>): Promise<WorkspaceContainer>;
     static createAndRun(fn: WorkspaceFn, config?: Partial<Config>): Promise<void>;
     protected get accounts(): AccountArgs;
     protected get homeDir(): string;
@@ -26,7 +26,7 @@ export declare abstract class WorkspaceContainer {
     protected abstract afterRun(): Promise<void>;
 }
 export declare class TestnetRuntime extends WorkspaceContainer {
-    static create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetRuntime>;
+    static create(config: Partial<Config>): Promise<TestnetRuntime>;
     createFrom(): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
     static get clientConfig(): ClientConfig;
@@ -40,7 +40,7 @@ export declare class SandboxRuntime extends WorkspaceContainer {
     private static get BASE_ACCOUNT_ID();
     private server;
     static defaultConfig(): Promise<Config>;
-    static create(config: Partial<Config>, fn?: InitWorkspaceFn): Promise<SandboxRuntime>;
+    static create(config: Partial<Config>): Promise<SandboxRuntime>;
     createAndRun(fn: WorkspaceFn, config?: Partial<Config>): Promise<void>;
     createFrom(): Promise<SandboxRuntime>;
     get baseAccountId(): string;
