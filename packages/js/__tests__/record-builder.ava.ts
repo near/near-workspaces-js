@@ -1,13 +1,13 @@
 import path from 'path';
 import anyTest, {TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {getNetworkFromEnv, Workspace} from '..';
+import {getNetworkFromEnv, Worker} from '..';
 import {RecordBuilder} from '../dist/record';
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 
 if (getNetworkFromEnv() === 'sandbox') {
-  const workspacePromise = Workspace.init(async ({root}) => {
+  const workspacePromise = Worker.init(async ({root}) => {
     const contract = await root.createAndDeploy(
       'status-message',
       path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
@@ -17,9 +17,9 @@ if (getNetworkFromEnv() === 'sandbox') {
   });
 
   // eslint-disable-next-line promise/prefer-await-to-then
-  void workspacePromise.then(workspace => {
+  void workspacePromise.then(worker => {
     test('Patch Account', async t => {
-      await workspace.fork(async ({root, ali, contract}) => {
+      await worker.fork(async ({root, ali, contract}) => {
         const bob = root.getAccount('bob');
         const public_key = await bob.setKey();
         const {code_hash} = await contract.accountView();

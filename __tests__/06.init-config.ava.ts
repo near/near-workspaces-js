@@ -1,9 +1,9 @@
-import {Workspace} from 'near-workspaces';
+import {Worker} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
-  t.context.workspace = await Workspace.init({
+  t.context.worker = await Worker.init({
     network: 'testnet',
     rootAccount: 'meta',
   });
@@ -14,7 +14,7 @@ test.before(async t => {
 */
 test('Inspecting an account on testnet', async t => {
   /* Uncomment
-  * await t.context.workspace.fork(async ({root}) => {
+  * await t.context.worker.fork(async ({root}) => {
   *   t.is(root.accountId, 'meta');
   *   t.assert(await root.exists());
   * });

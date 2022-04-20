@@ -3,28 +3,28 @@ import {Config, WorkspaceFn, InitWorkspaceFn} from './interfaces';
 import {debug} from './internal-utils';
 
 /**
- * The main interface to near-workspaces. Create a new workspace instance with {@link Workspace.init}, then run code using {@link Workspace.fork}.
+ * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code using {@link Worker.fork}.
  *
  * @example
  * // Run multiple routines on testnet simultaneously
- * const workspace = Workspace.init({
+ * const worker = Worker.init({
  *   network: 'testnet', // Can also set the network using the NEAR_WORKSPACES_NETWORK environment variable
  *   rootAccount: 'me.testnet',
  * });
  * await Promise.all([
- *   workspace.fork(async ({root}) => {
+ *   worker.fork(async ({root}) => {
  *     await root.call('some-contract.testnet', 'some_method', { a: 1, b: 2 });
  *   }),
- *   workspace.fork(async ({root}) => {
+ *   worker.fork(async ({root}) => {
  *     await root.call('some-other-contract.testnet', 'some_method', { a: 2, b: 3 });
  *   }),
  * ]);
  *
  *
  * @example
- * const {Workspace, NEAR} from 'near-workspaces';
- * // Test contracts in local sandbox mode, creating initial state for each `workspace.fork`
- * const workspace = Workspace.init(async ({root}) => {
+ * const {Worker, NEAR} from 'near-workspaces';
+ * // Test contracts in local sandbox mode, creating initial state for each `worker.fork`
+ * const worker = Worker.init(async ({root}) => {
  *   // Create a subaccount of `root`, such as `alice.dev-account-123456.testnet`
  *   const alice = root.createSubAccount('alice');
  *   // Create a subaccount of `root`, deploy a contract to it, and call a method on that contract
@@ -32,79 +32,79 @@ import {debug} from './internal-utils';
  *     method: 'init',
  *     args: {owner_id: root}
  *   });
- *   // Everything in this Workspace.init function will happen prior to each call of `workspace.fork`
+ *   // Everything in this Worker.init function will happen prior to each call of `worker.fork`
  *   await alice.call(contract, 'some_registration_method', {}, {
  *     attachedDeposit: NEAR.parse('50 milliNEAR')
  *   });
- *   // Accounts returned from `Workspace.init` function will be available in `workspace.fork` calls
+ *   // Accounts returned from `Worker.init` function will be available in `worker.fork` calls
  *   return {alice, contract};
  * });
- * workspace.fork(async ({alice, contract, root}) => {
+ * worker.fork(async ({alice, contract, root}) => {
  *   await root.call(contract, 'some_change_method', {account_id: alice});
  *   console.log({
  *     valueForRoot: await contract.view('some_view_method', {account_id: root});
  *     valueForAlice: await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
- * workspace.fork(async ({alice, contract, root}) => {
- *   // This workspace does not call `some_change_method`
+ * worker.fork(async ({alice, contract, root}) => {
+ *   // This worker does not call `some_change_method`
  *   console.log({
  *     valueForRoot: await contract.view('some_view_method', {account_id: root});
  *     valueForAlice: await contract.view('some_view_method', {account_id: alice});
  *   });
  * });
  */
-export class Workspace {
+export class Worker {
   private readonly container: WorkspaceContainer;
   protected constructor(workspaceContainer: WorkspaceContainer,
   ) {
-    debug('Lifecycle.Workspace.cuntructor', 'workspaceContainer:', workspaceContainer);
+    debug('Lifecycle.Worker.cuntructor', 'workspaceContainer:', workspaceContainer);
     this.container = workspaceContainer;
   }
 
   /**
-   * Initialize a new workspace. In local sandbox mode, this will:
+   * Initialize a new worker. In local sandbox mode, this will:
    *
    *   - Create a new local blockchain
    *   - Create the root account for that blockchain, available as `root`:
-   *         Workspace.init(async => ({root}) => {...})
+   *         Worker.init(async => ({root}) => {...})
    *   - Execute any actions passed to the function
    *   - Shut down the newly created blockchain, but *save the data*
    *
    * In testnet mode, the same functionality is achieved via different means,
    * since all actions must occur on one blockchain instead of N.
    *
-   * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `workspace.fork` calls.
+   * @param configOrFunction Either a configuration object or a function to run. Accounts returned from this function will be passed as arguments to subsequent `worker.fork` calls.
    * @param f If configOrFunction is a config object, this must be a function to run
-   * @returns an instance of the Workspace class, to be used as a starting point for forkd workspaces.
+   * @returns an instance of the Worker class, to be used as a starting point for forkd workspaces.
    */
   static async init(
     configOrFunction: InitWorkspaceFn | Partial<Config> = async () => ({}),
     f?: InitWorkspaceFn,
-  ): Promise<Workspace> {
-    debug('Lifecycle.Workspace.init()', 'params:', configOrFunction, f);
+  ): Promise<Worker> {
+    debug('Lifecycle.Worker.init()', 'params:', configOrFunction, f);
     const {config, fn} = getConfigAndFn(configOrFunction, f);
     const workspaceContainer = await WorkspaceContainer.create(config, fn);
-    return new Workspace(workspaceContainer);
+    return new Worker(workspaceContainer);
   }
 
   /**
-   * Run code in the context of a workspace initialized with `Workspace.init`.
-   * In local sandbox mode, each `workspace.fork` will:
+   * Run code in the context of a worker initialized with `Worker.init`.
+   * In local sandbox mode, each `worker.fork` will:
    *
    *   - start a new local blockchain
-   *   - copy the state from the blockchain created in `Workspace.init`
-   *   - get access to the accounts created in `Workspace.init` using the same variable names
-   *   - keep all data isolated from other `workspace.fork` calls, so they can be run concurrently
+   *   - copy the state from the blockchain created in `Worker.init`
+   *   - get access to the accounts created in `Worker.init` using the same variable names
+   *   - keep all data isolated from other `worker.fork` calls, so they can be run concurrently
    *   - shut down at the end, forgetting all new data created
    *
    * In testnet mode, the same functionality is achieved via different means,
    * since all actions must occur on one blockchain instead of N blockchains.
    *
-   * @param fn code to run; has access to `root` and other accounts returned from function passed to `Workspace.init`. Example: `workspace.fork(async ({root, alice, bob}) => {...})`
+   * @param fn code to run; has access to `root` and other accounts returned from function passed to `Worker.init`. Example: `worker.fork(async ({root, alice, bob}) => {...})`
    */
   async fork(fn: WorkspaceFn): Promise<WorkspaceContainer> {
-    debug('Lifecycle.Workspace.fork()', 'fn:', fn);
+    debug('Lifecycle.Worker.fork()', 'fn:', fn);
     const container = await this.container.createFrom();
     await container.fork(fn);
     return container;

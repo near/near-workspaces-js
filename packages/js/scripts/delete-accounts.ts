@@ -2,9 +2,9 @@ import * as process from 'process';
 import * as fs from 'fs/promises';
 import {join, parse} from 'path';
 
-import {KeyPair, NearAccount, Workspace, TransactionResult} from '..';
+import {KeyPair, NearAccount, Worker, TransactionResult} from '..';
 
-const workspace = Workspace.init({network: 'testnet'});
+const worker = Worker.init({network: 'testnet'});
 
 const pattern = new RegExp(process.argv.length > 2 ? process.argv[2] : '');
 
@@ -40,7 +40,7 @@ async function pMap<I, O=I>(array: I[], fn: (i: I) => Promise<O>): Promise<O[]> 
   return Promise.all(array.map(fn));
 }
 
-workspace.fork(async ({root}) => {
+worker.fork(async ({root}) => {
   const accounts = (await fs.readdir(join(process.cwd(), '.near-credentials', 'workspaces', 'testnet')))
     .map(s => parse(s).name);
   const originalMap: Map<string, string[]> = new Map();

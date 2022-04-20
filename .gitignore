@@ -4,4 +4,3 @@ node_modules/
 coverage
 **/dist/tsconfig.tsbuildinfo
 lerna-debug.log
-test-near-workspaces-init
