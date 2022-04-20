@@ -77,7 +77,7 @@ export class Account implements NearAccount {
       initialBalance,
       isSubAccount: false,
     });
-    await tx.signAndSend();
+    await tx.transact();
     return this.getAccount(accountId);
   }
 
@@ -93,11 +93,11 @@ export class Account implements NearAccount {
       initialBalance,
       isSubAccount: true,
     });
-    await tx.signAndSend();
+    await tx.transact();
     return this.getSubAccount(accountId);
   }
 
-  async createAccountFrom({
+  async importAccount({
     testnetContract,
     mainnetContract,
     withData = false,
@@ -198,7 +198,7 @@ export class Account implements NearAccount {
       tx.functionCall(method, args, {gas, attachedDeposit});
     }
 
-    await tx.signAndSend();
+    await tx.transact();
     return this.getAccount(accountId);
   }
 
@@ -218,7 +218,7 @@ export class Account implements NearAccount {
   ): Promise<TransactionResult> {
     return this.createTransaction(contractId)
       .functionCall(methodName, args, {gas, attachedDeposit})
-      .signAndSend(signWithKey);
+      .transact(signWithKey);
   }
 
   async call<T>(
@@ -296,7 +296,7 @@ export class Account implements NearAccount {
   async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
     const result = await this.createTransaction(this)
       .deleteAccount(beneficiaryId)
-      .signAndSend(keyPair);
+      .transact(keyPair);
     if (result.succeeded && await this.getKey() !== null) {
       await this.manager.deleteKey(this.accountId);
     }
@@ -338,7 +338,7 @@ export class Account implements NearAccount {
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
-    return this.createTransaction(accountId).transfer(amount).signAndSend();
+    return this.createTransaction(accountId).transfer(amount).transact();
   }
 
   protected async internalCreateAccount(
