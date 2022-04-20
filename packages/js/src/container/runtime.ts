@@ -141,7 +141,7 @@ export class TestnetRuntime extends WorkspaceContainer {
     debug('Lifecycle.TestnetRuntime.create()', 'config:', config, 'initFn:', initFn);
     // Add better error handling
     const fullConfig = {...this.defaultConfig, initFn, ...config};
-    debug('Skipping initialization function for testnet; will run before each `workspace.fork`');
+    debug('Skipping initialization function for testnet; will run before each `worker.fork`');
     const runtime = new TestnetRuntime(fullConfig);
     await runtime.manager.init();
     return runtime;

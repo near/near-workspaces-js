@@ -2,12 +2,12 @@ import anyTest, {TestFn} from 'ava';
 import {
   AccountManager,
   TestnetRuntime,
-  Workspace,
+  Worker,
   TestnetManager,
   getNetworkFromEnv,
 } from '..';
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 
 if (getNetworkFromEnv() === 'testnet') {
   test('should create a new account', async t => {

@@ -13,14 +13,14 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import * as borsh from 'borsh';
-import {Workspace, getNetworkFromEnv} from 'near-workspaces';
+import {Worker, getNetworkFromEnv} from 'near-workspaces';
 import {NEAR} from 'near-units';
 import anyTest, {TestFn} from 'ava';
 
 if (getNetworkFromEnv() === 'sandbox') {
-  const test = anyTest as TestFn<{workspace: Workspace}>;
+  const test = anyTest as TestFn<{worker: Worker}>;
   test.before(async t => {
-    t.context.workspace = await Workspace.init(async ({root}) => {
+    t.context.worker = await Worker.init(async ({root}) => {
       const contract = await root.createAndDeploy(
         'status-message',
         '__tests__/build/debug/status_message.wasm',
@@ -58,7 +58,7 @@ if (getNetworkFromEnv() === 'sandbox') {
   ]);
 
   test('View state', async t => {
-    await t.context.workspace.fork(async ({contract, ali}) => {
+    await t.context.worker.fork(async ({contract, ali}) => {
       await ali.call(contract, 'set_status', {message: 'hello'});
 
       const state = await contract.viewState();
@@ -80,7 +80,7 @@ if (getNetworkFromEnv() === 'sandbox') {
   });
 
   test('Patch state', async t => {
-    await t.context.workspace.fork(async ({contract, ali}) => {
+    await t.context.worker.fork(async ({contract, ali}) => {
       // Contract must have some state for viewState & patchState to work
       await ali.call(contract, 'set_status', {message: 'hello'});
       // Get state
@@ -108,7 +108,7 @@ if (getNetworkFromEnv() === 'sandbox') {
   });
 
   test('Patch Account', async t => {
-    await t.context.workspace.fork(async ({root, contract, ali}) => {
+    await t.context.worker.fork(async ({root, contract, ali}) => {
       const bob = root.getAccount('bob');
       const public_key = await bob.setKey();
       const {code_hash} = await contract.accountView();

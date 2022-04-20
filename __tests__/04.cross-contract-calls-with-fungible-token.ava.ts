@@ -13,7 +13,7 @@
  *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `createTransaction` below.
  */
-import {Workspace, NearAccount, captureError, BN} from 'near-workspaces';
+import {Worker, NearAccount, captureError, BN} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
 const STORAGE_BYTE_COST = '1.5 mN';
@@ -51,9 +51,9 @@ async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<BN> {
   }));
 }
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
-  t.context.workspace = await Workspace.init(async ({root}) => ({
+  t.context.worker = await Worker.init(async ({root}) => ({
     ft: await root.createAndDeploy(
       'fungible-token',
       '__tests__/build/debug/fungible_token.wasm',
@@ -67,7 +67,7 @@ test.before(async t => {
 });
 
 test('Total supply', async t => {
-  await t.context.workspace.fork(async ({ft, ali}) => {
+  await t.context.worker.fork(async ({ft, ali}) => {
     await init_ft(ft, ali, '1000');
 
     const totalSupply: string = await ft.view('ft_total_supply');
@@ -76,7 +76,7 @@ test('Total supply', async t => {
 });
 
 test('Simple transfer', async t => {
-  await t.context.workspace.fork(async ({ft, ali, root}) => {
+  await t.context.worker.fork(async ({ft, ali, root}) => {
     const initialAmount = new BN('10000');
     const transferAmount = new BN('100');
     await init_ft(ft, root, initialAmount);
@@ -103,7 +103,7 @@ test('Simple transfer', async t => {
 });
 
 test('Can close empty balance account', async t => {
-  await t.context.workspace.fork(async ({ft, ali, root}) => {
+  await t.context.worker.fork(async ({ft, ali, root}) => {
     await init_ft(ft, root);
 
     await registerUser(ft, ali);
@@ -120,7 +120,7 @@ test('Can close empty balance account', async t => {
 });
 
 test('Can force close non-empty balance account', async t => {
-  await t.context.workspace.fork(async ({ft, root}) => {
+  await t.context.worker.fork(async ({ft, root}) => {
     await init_ft(ft, root, '100');
     const errorString = await captureError(async () =>
       root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
@@ -141,7 +141,7 @@ test('Can force close non-empty balance account', async t => {
 });
 
 test('Transfer call with burned amount', async t => {
-  await t.context.workspace.fork(async ({ft, defi, root}) => {
+  await t.context.worker.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     const burnAmount = new BN(10);
@@ -197,7 +197,7 @@ test('Transfer call with burned amount', async t => {
 });
 
 test('Transfer call immediate return no refund', async t => {
-  await t.context.workspace.fork(async ({ft, defi, root}) => {
+  await t.context.worker.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     await init_ft(ft, root, initialAmount);
@@ -226,7 +226,7 @@ test('Transfer call immediate return no refund', async t => {
 });
 
 test('Transfer call promise panics for a full refund', async t => {
-  await t.context.workspace.fork(async ({ft, defi, root}) => {
+  await t.context.worker.fork(async ({ft, defi, root}) => {
     const initialAmount = new BN(10_000);
     const transferAmount = new BN(100);
     await init_ft(ft, root, initialAmount);
