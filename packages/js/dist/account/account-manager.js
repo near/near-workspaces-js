@@ -366,7 +366,7 @@ class ManagedTransaction extends transaction_1.Transaction {
      * @param keyPair Temporary key to sign transaction
      * @returns
      */
-    async signAndSend(keyPair) {
+    async transact(keyPair) {
         const executionResult = await this.manager.executeTransaction(this, keyPair);
         if (executionResult.succeeded && this.delete) {
             await this.manager.deleteKey(this.receiverId);

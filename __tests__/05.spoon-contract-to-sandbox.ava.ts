@@ -36,7 +36,7 @@ test('using `withData` for contracts > 50kB fails', async t => {
   await t.context.worker.fork(async ({root}) => {
     t.regex(
       await captureError(async () => {
-        await root.createAccountFrom({
+        await root.importAccount({
           mainnetContract: REF_FINANCE_ACCOUNT,
           withData: true,
           block_id: 50_000_000,
@@ -49,7 +49,7 @@ test('using `withData` for contracts > 50kB fails', async t => {
 
 test('if skipping `withData`, fetches only contract Wasm bytes', async t => {
   await t.context.worker.fork(async ({root}) => {
-    const refFinance = await root.createAccountFrom({
+    const refFinance = await root.importAccount({
       mainnetContract: REF_FINANCE_ACCOUNT,
       block_id: DEFAULT_BLOCK_HEIGHT,
     });
@@ -139,7 +139,7 @@ async function createWNEAR(
   creator: NearAccount,
   block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
-  const wNEAR = await creator.createAccountFrom({
+  const wNEAR = await creator.importAccount({
     mainnetContract: 'wrap.near',
     block_id,
   });
@@ -161,7 +161,7 @@ async function createRef(
   creator: NearAccount,
   block_id = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
-  const refFinance = await creator.createAccountFrom({
+  const refFinance = await creator.importAccount({
     mainnetContract: REF_FINANCE_ACCOUNT,
     block_id,
     initialBalance: NEAR.parse('1000 N').toJSON(),

@@ -85,6 +85,6 @@ export declare class ManagedTransaction extends Transaction {
      * @param keyPair Temporary key to sign transaction
      * @returns
      */
-    signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
+    transact(keyPair?: KeyPair): Promise<TransactionResult>;
 }
 //# sourceMappingURL=account-manager.d.ts.map

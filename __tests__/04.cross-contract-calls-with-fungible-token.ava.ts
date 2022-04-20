@@ -166,7 +166,7 @@ test('Transfer call with burned amount', async t => {
         {force: true},
         {attachedDeposit: '1', gas: '150 Tgas'},
       )
-      .signAndSend();
+      .transact();
 
     t.true(result.logs.includes(
       `Closed @${root.accountId} with ${
