@@ -73,7 +73,7 @@ export interface NearAccount {
      *
      * @param options
      */
-    createAccountFrom(options: {
+    importAccount(options: {
         testnetContract?: string;
         mainnetContract?: string;
         withData?: boolean;

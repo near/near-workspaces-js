@@ -97,7 +97,7 @@ export class Account implements NearAccount {
     return this.getSubAccount(accountId);
   }
 
-  async createAccountFrom({
+  async importAccount({
     testnetContract,
     mainnetContract,
     withData = false,

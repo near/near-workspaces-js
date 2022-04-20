@@ -303,7 +303,7 @@ class TestnetManager extends AccountManager {
         }
         throw new Error(`Bad filename name passed by callsites: ${fileName}`);
     }
-    async importAccount(config) {
+    async createFrom(config) {
         const currentRunAccount = TestnetManager.numTestAccounts;
         const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
         TestnetManager.numTestAccounts += 1;
@@ -332,7 +332,7 @@ class SandboxManager extends AccountManager {
         }
         return this;
     }
-    async importAccount(config) {
+    async createFrom(config) {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {

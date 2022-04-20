@@ -78,7 +78,7 @@ class Account {
         await tx.transact();
         return this.getSubAccount(accountId);
     }
-    async createAccountFrom({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
+    async importAccount({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }

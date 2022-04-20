@@ -130,7 +130,7 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
 
 ```ts
 await workspace.fork(async ({root}) => {
-  const refFinance = await root.createAccountFrom({
+  const refFinance = await root.importAccount({
     mainnetContract: 'v2.ref-finance.near',
     blockId: 50_000_000,
     withData: true,

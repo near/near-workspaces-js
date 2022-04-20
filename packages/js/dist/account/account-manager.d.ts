@@ -39,7 +39,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     cleanup(): Promise<void>;
     get rootAccountId(): string;
     abstract get DEFAULT_INITIAL_BALANCE(): string;
-    abstract importAccount(config: Config): Promise<NearAccountManager>;
+    abstract createFrom(config: Config): Promise<NearAccountManager>;
     abstract get defaultKeyStore(): KeyStore;
     protected get keyStore(): KeyStore;
     protected get signer(): nearAPI.InMemorySigner;
@@ -62,14 +62,14 @@ export declare class TestnetManager extends AccountManager {
     createAndFundAccount(): Promise<void>;
     deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]>;
     initRootAccount(): Promise<void>;
-    importAccount(config: Config): Promise<AccountManager>;
+    createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;
     needsFunds(accountId: string, amount: BN): Promise<boolean>;
     isRootOrTLAccount(accountId: string): boolean;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;
-    importAccount(config: Config): Promise<NearAccountManager>;
+    createFrom(config: Config): Promise<NearAccountManager>;
     get DEFAULT_INITIAL_BALANCE(): string;
     get defaultKeyStore(): KeyStore;
     get keyFilePath(): string;
