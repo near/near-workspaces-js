@@ -11,7 +11,7 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import {Workspace, createKeyPair, NEAR} from 'near-workspaces';
+import {Worker, createKeyPair, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
 /* Contract API for reference
@@ -26,9 +26,9 @@ impl Linkdrop {
 }
 */
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
-  t.context.workspace = await Workspace.init(async ({root}) => ({
+  t.context.worker = await Worker.init(async ({root}) => ({
     linkdrop: await root.createAndDeploy(
       root.getSubAccount('linkdrop').accountId,
       '__tests__/build/debug/linkdrop.wasm',
@@ -38,7 +38,7 @@ test.before(async t => {
 });
 
 test('Use `create_account_and_claim` to create a new account', async t => {
-  await t.context.workspace.fork(async ({root, linkdrop}) => {
+  await t.context.worker.fork(async ({root, linkdrop}) => {
     // Create temporary keys for access key on linkdrop
     const senderKey = createKeyPair();
     const public_key = senderKey.getPublicKey().toString();
@@ -75,7 +75,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
 });
 
 test('Use `claim` to transfer to an existing account', async t => {
-  await t.context.workspace.fork(async ({root, linkdrop}) => {
+  await t.context.worker.fork(async ({root, linkdrop}) => {
     const bob = await root.createSubAccount('bob', {initialBalance: NEAR.parse('3 N').toJSON()});
     const originalBalance = await bob.availableBalance();
     // Create temporary keys for access key on linkdrop

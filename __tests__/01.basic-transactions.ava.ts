@@ -7,12 +7,12 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import {Workspace, NEAR} from 'near-workspaces';
+import {Worker, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
-const test = anyTest as TestFn<{workspace: Workspace}>;
+const test = anyTest as TestFn<{worker: Worker}>;
 test.before(async t => {
-  t.context.workspace = await Workspace.init(async ({root}) => ({
+  t.context.worker = await Worker.init(async ({root}) => ({
     contract: await root.createAndDeploy(
       root.getSubAccount('status-message').accountId,
       '__tests__/build/debug/status_message.wasm',
@@ -23,7 +23,7 @@ test.before(async t => {
 });
 
 test('Root gets null status', async t => {
-  await t.context.workspace.fork(async ({contract, root}) => {
+  await t.context.worker.fork(async ({contract, root}) => {
     const result: null = await contract.view('get_status', {
       account_id: root,
     });
@@ -32,7 +32,7 @@ test('Root gets null status', async t => {
 });
 
 test('Ali sets then gets status', async t => {
-  await t.context.workspace.fork(async ({contract, ali}) => {
+  await t.context.worker.fork(async ({contract, ali}) => {
     await ali.call(contract, 'set_status', {message: 'hello'});
     const result: string = await contract.view('get_status', {
       account_id: ali,
@@ -42,7 +42,7 @@ test('Ali sets then gets status', async t => {
 });
 
 test('Root and Ali have different statuses', async t => {
-  await t.context.workspace.fork(async ({contract, root, ali}) => {
+  await t.context.worker.fork(async ({contract, root, ali}) => {
     await root.call(contract, 'set_status', {message: 'world'});
     const rootStatus: string = await contract.view('get_status', {
       account_id: root,

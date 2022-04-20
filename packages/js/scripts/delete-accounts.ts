@@ -2,7 +2,7 @@ import * as process from 'process';
 import * as fs from 'fs/promises';
 import {join, parse} from 'path';
 
-import {KeyPair, NearAccount, Workspace, TransactionResult} from '..';
+import {KeyPair, NearAccount, Worker, TransactionResult} from '..';
 
 async function deleteAccount(accountId: string, root: NearAccount, key?: KeyPair): Promise<TransactionResult | null> {
   const account = root.getAccount(accountId);
@@ -37,11 +37,11 @@ async function pMap<I, O=I>(array: I[], fn: (i: I) => Promise<O>): Promise<O[]> 
 }
 
 async function main() {
-  const workspace = await Workspace.init({network: 'testnet'});
+  const worker = await Worker.init({network: 'testnet'});
 
   const pattern = new RegExp(process.argv.length > 2 ? process.argv[2] : '');
 
-  workspace.fork(async ({root}) => {
+  worker.fork(async ({root}) => {
     const accounts = (await fs.readdir(join(process.cwd(), '.near-credentials', 'workspaces', 'testnet')))
       .map(s => parse(s).name);
     const originalMap: Map<string, string[]> = new Map();

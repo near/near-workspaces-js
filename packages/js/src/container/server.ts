@@ -83,6 +83,7 @@ export class SandboxServer {
   private readonly config: Config;
 
   private constructor(config: Config) {
+    debug('Lifecycle.SandboxServer.constructor', 'config:', config);
     this.config = config;
   }
 
@@ -96,6 +97,7 @@ export class SandboxServer {
   }
 
   static async init(config: Config): Promise<SandboxServer> {
+    debug('Lifecycle.SandboxServer.init()', 'config:', config);
     this.binPath = await ensureBinary();
     const server = new SandboxServer(config);
     if (server.config.refDir) {
@@ -131,6 +133,7 @@ export class SandboxServer {
   }
 
   async start(): Promise<SandboxServer> {
+    debug('Lifecycle.SandboxServer.start()');
     const args = [
       '--home',
       this.homeDir,
@@ -166,6 +169,7 @@ export class SandboxServer {
   }
 
   async close(): Promise<void> {
+    debug('Lifecycle.SandboxServer.close()');
     this.readyToDie = true;
     if (!this.subprocess.kill('SIGINT')) {
       console.error(
@@ -183,6 +187,7 @@ export class SandboxServer {
   }
 
   private async spawn(command: string): ChildProcessPromise {
+    debug('Lifecycle.SandboxServer.spawn()');
     return asyncSpawn(SandboxServer.binPath, '--home', this.homeDir, command);
   }
 }

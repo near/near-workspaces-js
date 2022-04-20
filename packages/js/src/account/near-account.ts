@@ -29,7 +29,7 @@ export interface NearAccount {
    * Then once built can be signed and transmitted.
    * E.g.
    * ```ts
-   * const result = await account.createTransaction(bob).transfer(NEAR.parse("1N")).signAndSend();
+   * const result = await account.createTransaction(bob).transfer(NEAR.parse("1N")).transact();
    * ```
    * @param receiver account that the transaction is addressed to.
    */
@@ -80,7 +80,7 @@ export interface NearAccount {
    *
    * @param options
    */
-  createAccountFrom(options: {
+  importAccount(options: {
     testnetContract?: string;
     mainnetContract?: string;
     withData?: boolean;

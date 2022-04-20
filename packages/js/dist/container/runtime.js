@@ -13,6 +13,7 @@ class WorkspaceContainer {
     constructor(config, accounts) {
         this.returnedAccounts = new Map();
         this.createdAccounts = {};
+        (0, internal_utils_1.debug)('Lifecycle.WorkspaceContainer.constructor', 'config:', config, 'accounts:', accounts);
         this.config = config;
         this.manager = account_1.AccountManager.create(config);
         if (accounts) {
@@ -21,6 +22,7 @@ class WorkspaceContainer {
     }
     static async create(config, fn) {
         var _a;
+        (0, internal_utils_1.debug)('Lifecycle.WorkspaceContainer.create()', 'config:', config, 'fn:', fn);
         switch ((_a = config.network) !== null && _a !== void 0 ? _a : (0, utils_1.getNetworkFromEnv)()) {
             case 'testnet':
                 return TestnetRuntime.create(config, fn);
@@ -32,6 +34,7 @@ class WorkspaceContainer {
         }
     }
     static async createAndRun(fn, config = {}) {
+        (0, internal_utils_1.debug)('Lifecycle.WorkspaceContainer.createAndRun()', 'fn:', fn, 'config:', config);
         const runtime = await WorkspaceContainer.create(config);
         await runtime.fork(fn);
     }
@@ -57,7 +60,7 @@ class WorkspaceContainer {
         return this.config.network === 'testnet';
     }
     async fork(fn) {
-        (0, internal_utils_1.debug)('About to runtime.run with config', this.config);
+        (0, internal_utils_1.debug)('Lifecycle.WorkspaceContainer.fork()', 'fn:', fn, 'this.config:', this.config);
         try {
             await this.beforeRun();
             await fn(this.accounts, this);
@@ -83,7 +86,7 @@ class WorkspaceContainer {
         }
     }
     async createRun(fn) {
-        (0, internal_utils_1.debug)('About to runtime.createRun with config', this.config);
+        (0, internal_utils_1.debug)('Lifecycle.WorkspaceContainer.createRun()', 'fn:', fn, 'config:', this.config);
         try {
             await this.beforeRun();
             const accounts = await fn({ workspace: this, root: this.root });
@@ -108,14 +111,16 @@ class WorkspaceContainer {
 exports.WorkspaceContainer = WorkspaceContainer;
 class TestnetRuntime extends WorkspaceContainer {
     static async create(config, initFn) {
+        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.create()', 'config:', config, 'initFn:', initFn);
         // Add better error handling
         const fullConfig = { ...this.defaultConfig, initFn, ...config };
-        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `workspace.fork`');
+        (0, internal_utils_1.debug)('Skipping initialization function for testnet; will run before each `worker.fork`');
         const runtime = new TestnetRuntime(fullConfig);
         await runtime.manager.init();
         return runtime;
     }
     async createFrom() {
+        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.createFrom()');
         const runtime = new TestnetRuntime({ ...this.config, init: false, initFn: this.config.initFn }, this.createdAccounts);
         runtime.manager = await this.manager.createFrom(runtime.config);
         return runtime;
@@ -140,11 +145,13 @@ class TestnetRuntime extends WorkspaceContainer {
         return 'testnet';
     }
     async beforeRun() {
+        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.beforeRun()');
         if (this.config.initFn) {
             this.createdAccounts = await this.config.initFn({ workspace: this, root: this.root });
         }
     }
     async afterRun() {
+        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.afterRun()');
         await this.manager.cleanup();
     }
 }
@@ -167,6 +174,7 @@ class SandboxRuntime extends WorkspaceContainer {
         };
     }
     static async create(config, fn) {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.create()', 'config:', config, 'fn:', fn);
         const defaultConfig = await this.defaultConfig();
         const sandbox = new SandboxRuntime({ ...defaultConfig, ...config });
         if (fn) {
@@ -175,9 +183,11 @@ class SandboxRuntime extends WorkspaceContainer {
         return sandbox;
     }
     async createAndRun(fn, config = {}) {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.createAndRun()', 'fn:', fn, 'config:', config);
         await WorkspaceContainer.createAndRun(fn, config);
     }
     async createFrom() {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.createAndrun()');
         let config = await SandboxRuntime.defaultConfig();
         config = { ...this.config, ...config, init: false, refDir: this.homeDir };
         const runtime = new SandboxRuntime(config, this.createdAccounts);
@@ -201,6 +211,7 @@ class SandboxRuntime extends WorkspaceContainer {
         return `http://localhost:${this.config.port}`;
     }
     async beforeRun() {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.beforeRun()');
         // If (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
         //   debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
         //   await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
@@ -215,6 +226,7 @@ class SandboxRuntime extends WorkspaceContainer {
         }
     }
     async afterRun() {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.afterRun()');
         try {
             await this.server.close();
         }
