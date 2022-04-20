@@ -105,7 +105,7 @@ export class Workspace {
    */
   async fork(fn: WorkspaceFn): Promise<WorkspaceContainer> {
     debug('Lifecycle.Workspace.fork()', 'fn:', fn);
-    const container = await this.container.createFrom();
+    const container = await this.container.importAccount();
     await container.fork(fn);
     return container;
   }

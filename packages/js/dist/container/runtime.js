@@ -119,10 +119,10 @@ class TestnetRuntime extends WorkspaceContainer {
         await runtime.manager.init();
         return runtime;
     }
-    async createFrom() {
-        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.createFrom()');
+    async importAccount() {
+        (0, internal_utils_1.debug)('Lifecycle.TestnetRuntime.importAccount()');
         const runtime = new TestnetRuntime({ ...this.config, init: false, initFn: this.config.initFn }, this.createdAccounts);
-        runtime.manager = await this.manager.createFrom(runtime.config);
+        runtime.manager = await this.manager.importAccount(runtime.config);
         return runtime;
     }
     static get defaultConfig() {
@@ -186,7 +186,7 @@ class SandboxRuntime extends WorkspaceContainer {
         (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.createAndRun()', 'fn:', fn, 'config:', config);
         await WorkspaceContainer.createAndRun(fn, config);
     }
-    async createFrom() {
+    async importAccount() {
         (0, internal_utils_1.debug)('Lifecycle.SandboxRuntime.createAndrun()');
         let config = await SandboxRuntime.defaultConfig();
         config = { ...this.config, ...config, init: false, refDir: this.homeDir };

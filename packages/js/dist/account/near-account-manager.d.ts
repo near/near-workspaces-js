@@ -23,7 +23,7 @@ export interface NearAccountManager {
     /** Creates a KeyPair if one is not provided */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
     createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
-    createFrom(config: Config): Promise<NearAccountManager>;
+    importAccount(config: Config): Promise<NearAccountManager>;
     init(): Promise<NearAccountManager>;
 }
 //# sourceMappingURL=near-account-manager.d.ts.map

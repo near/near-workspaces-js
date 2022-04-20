@@ -303,7 +303,7 @@ class TestnetManager extends AccountManager {
         }
         throw new Error(`Bad filename name passed by callsites: ${fileName}`);
     }
-    async createFrom(config) {
+    async importAccount(config) {
         const currentRunAccount = TestnetManager.numTestAccounts;
         const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
         TestnetManager.numTestAccounts += 1;
@@ -332,7 +332,7 @@ class SandboxManager extends AccountManager {
         }
         return this;
     }
-    async createFrom(config) {
+    async importAccount(config) {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
@@ -366,7 +366,7 @@ class ManagedTransaction extends transaction_1.Transaction {
      * @param keyPair Temporary key to sign transaction
      * @returns
      */
-    async signAndSend(keyPair) {
+    async transact(keyPair) {
         const executionResult = await this.manager.executeTransaction(this, keyPair);
         if (executionResult.succeeded && this.delete) {
             await this.manager.deleteKey(this.receiverId);

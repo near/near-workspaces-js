@@ -109,5 +109,5 @@ export abstract class Transaction {
     return this._transferAmount ?? NEAR.from('0');
   }
 
-  abstract signAndSend(keyPair?: KeyPair): Promise<TransactionResult>;
+  abstract transact(keyPair?: KeyPair): Promise<TransactionResult>;
 }

@@ -217,7 +217,7 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   abstract get DEFAULT_INITIAL_BALANCE(): string;
-  abstract createFrom(config: Config): Promise<NearAccountManager>;
+  abstract importAccount(config: Config): Promise<NearAccountManager>;
   abstract get defaultKeyStore(): KeyStore;
 
   protected get keyStore(): KeyStore {
@@ -359,7 +359,7 @@ export class TestnetManager extends AccountManager {
     );
   }
 
-  async createFrom(config: Config): Promise<AccountManager> {
+  async importAccount(config: Config): Promise<AccountManager> {
     const currentRunAccount = TestnetManager.numTestAccounts;
     const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
     TestnetManager.numTestAccounts += 1;
@@ -390,7 +390,7 @@ export class SandboxManager extends AccountManager {
     return this;
   }
 
-  async createFrom(config: Config): Promise<NearAccountManager> {
+  async importAccount(config: Config): Promise<NearAccountManager> {
     return new SandboxManager(config);
   }
 
@@ -431,7 +431,7 @@ export class ManagedTransaction extends Transaction {
    * @param keyPair Temporary key to sign transaction
    * @returns
    */
-  async signAndSend(keyPair?: KeyPair): Promise<TransactionResult> {
+  async transact(keyPair?: KeyPair): Promise<TransactionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
     if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);

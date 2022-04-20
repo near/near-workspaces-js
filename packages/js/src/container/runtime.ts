@@ -131,7 +131,7 @@ export abstract class WorkspaceContainer {
     return fn();
   }
 
-  abstract createFrom(): Promise<WorkspaceContainer>;
+  abstract importAccount(): Promise<WorkspaceContainer>;
   protected abstract beforeRun(): Promise<void>;
   protected abstract afterRun(): Promise<void>;
 }
@@ -147,10 +147,10 @@ export class TestnetRuntime extends WorkspaceContainer {
     return runtime;
   }
 
-  async createFrom(): Promise<TestnetRuntime> {
-    debug('Lifecycle.TestnetRuntime.createFrom()');
+  async importAccount(): Promise<TestnetRuntime> {
+    debug('Lifecycle.TestnetRuntime.importAccount()');
     const runtime = new TestnetRuntime({...this.config, init: false, initFn: this.config.initFn!}, this.createdAccounts);
-    runtime.manager = await this.manager.createFrom(runtime.config);
+    runtime.manager = await this.manager.importAccount(runtime.config);
     return runtime;
   }
 
@@ -234,7 +234,7 @@ export class SandboxRuntime extends WorkspaceContainer {
     await WorkspaceContainer.createAndRun(fn, config);
   }
 
-  async createFrom(): Promise<SandboxRuntime> {
+  async importAccount(): Promise<SandboxRuntime> {
     debug('Lifecycle.SandboxRuntime.createAndrun()');
     let config = await SandboxRuntime.defaultConfig();
     config = {...this.config, ...config, init: false, refDir: this.homeDir};

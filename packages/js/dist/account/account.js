@@ -66,7 +66,7 @@ class Account {
             initialBalance,
             isSubAccount: false,
         });
-        await tx.signAndSend();
+        await tx.transact();
         return this.getAccount(accountId);
     }
     async createSubAccount(accountId, { keyPair, initialBalance, } = {}) {
@@ -75,7 +75,7 @@ class Account {
             initialBalance,
             isSubAccount: true,
         });
-        await tx.signAndSend();
+        await tx.transact();
         return this.getSubAccount(accountId);
     }
     async createAccountFrom({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
@@ -133,13 +133,13 @@ class Account {
         if (method) {
             tx.functionCall(method, args, { gas, attachedDeposit });
         }
-        await tx.signAndSend();
+        await tx.transact();
         return this.getAccount(accountId);
     }
     async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         return this.createTransaction(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
-            .signAndSend(signWithKey);
+            .transact(signWithKey);
     }
     async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const txResult = await this.call_raw(contractId, methodName, args, {
@@ -191,7 +191,7 @@ class Account {
     async delete(beneficiaryId, keyPair) {
         const result = await this.createTransaction(this)
             .deleteAccount(beneficiaryId)
-            .signAndSend(keyPair);
+            .transact(keyPair);
         if (result.succeeded && await this.getKey() !== null) {
             await this.manager.deleteKey(this.accountId);
         }
@@ -224,7 +224,7 @@ class Account {
         return this.sandbox_patch_state(this.recordBuilder().data(key_string, value_string));
     }
     async transfer(accountId, amount) {
-        return this.createTransaction(accountId).transfer(amount).signAndSend();
+        return this.createTransaction(accountId).transfer(amount).transact();
     }
     async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;

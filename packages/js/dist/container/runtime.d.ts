@@ -21,13 +21,13 @@ export declare abstract class WorkspaceContainer {
     fork(fn: WorkspaceFn): Promise<void>;
     createRun(fn: InitWorkspaceFn): Promise<ReturnedAccounts>;
     executeTransaction(fn: () => Promise<FinalExecutionOutcome>): Promise<FinalExecutionOutcome>;
-    abstract createFrom(): Promise<WorkspaceContainer>;
+    abstract importAccount(): Promise<WorkspaceContainer>;
     protected abstract beforeRun(): Promise<void>;
     protected abstract afterRun(): Promise<void>;
 }
 export declare class TestnetRuntime extends WorkspaceContainer {
     static create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetRuntime>;
-    createFrom(): Promise<TestnetRuntime>;
+    importAccount(): Promise<TestnetRuntime>;
     static get defaultConfig(): Config;
     static get clientConfig(): ClientConfig;
     static get provider(): JsonRpcProvider;
@@ -42,7 +42,7 @@ export declare class SandboxRuntime extends WorkspaceContainer {
     static defaultConfig(): Promise<Config>;
     static create(config: Partial<Config>, fn?: InitWorkspaceFn): Promise<SandboxRuntime>;
     createAndRun(fn: WorkspaceFn, config?: Partial<Config>): Promise<void>;
-    createFrom(): Promise<SandboxRuntime>;
+    importAccount(): Promise<SandboxRuntime>;
     get baseAccountId(): string;
     static get clientConfig(): ClientConfig;
     get provider(): JsonRpcProvider;
