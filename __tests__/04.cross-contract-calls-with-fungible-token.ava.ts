@@ -11,7 +11,7 @@
  *
  * - Complex transactions: to exercise certain edge cases of the FT standard,
  *   tests below initiate chains of transactions using near-workspaces's transaction
- *   builder. Search for `createTransaction` below.
+ *   builder. Search for `batch` below.
  */
 import {Worker, NearAccount, captureError, BN, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
@@ -153,7 +153,7 @@ test('Transfer call with burned amount', async t => {
     await registerUser(ft, defi);
 
     const result = await root
-      .createTransaction(ft)
+      .batch(ft)
       .functionCall(
         'ft_transfer_call',
         {

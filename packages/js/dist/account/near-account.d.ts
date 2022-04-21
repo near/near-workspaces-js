@@ -25,11 +25,11 @@ export interface NearAccount {
      * Then once built can be signed and transmitted.
      * E.g.
      * ```ts
-     * const result = await account.createTransaction(bob).transfer(NEAR.parse("1N")).transact();
+     * const result = await account.batch(bob).transfer(NEAR.parse("1N")).transact();
      * ```
      * @param receiver account that the transaction is addressed to.
      */
-    createTransaction(receiver: NearAccount | string): Transaction;
+    batch(receiver: NearAccount | string): Transaction;
     /** Test whether an account exists on the network */
     exists(): Promise<boolean>;
     /**

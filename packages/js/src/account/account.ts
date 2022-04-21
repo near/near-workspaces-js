@@ -53,8 +53,8 @@ export class Account implements NearAccount {
     return this.manager.balance(this.accountId);
   }
 
-  createTransaction(receiver: NearAccount | string): Transaction {
-    return this.manager.createTransaction(this, receiver);
+  batch(receiver: NearAccount | string): Transaction {
+    return this.manager.batch(this, receiver);
   }
 
   async getKey(): Promise<KeyPair | null> {
@@ -216,7 +216,7 @@ export class Account implements NearAccount {
       signWithKey?: KeyPair;
     } = {},
   ): Promise<TransactionResult> {
-    return this.createTransaction(contractId)
+    return this.batch(contractId)
       .functionCall(methodName, args, {gas, attachedDeposit})
       .transact(signWithKey);
   }
@@ -294,7 +294,7 @@ export class Account implements NearAccount {
   }
 
   async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
-    const result = await this.createTransaction(this)
+    const result = await this.batch(this)
       .deleteAccount(beneficiaryId)
       .transact(keyPair);
     if (result.succeeded && await this.getKey() !== null) {
@@ -338,7 +338,7 @@ export class Account implements NearAccount {
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
-    return this.createTransaction(accountId).transfer(amount).transact();
+    return this.batch(accountId).transfer(amount).transact();
   }
 
   protected async internalCreateAccount(
@@ -352,7 +352,7 @@ export class Account implements NearAccount {
     const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
     const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
     const amount = (initialBalance ?? this.manager.initialBalance).toString();
-    return this.createTransaction(newAccountId)
+    return this.batch(newAccountId)
       .createAccount()
       .transfer(amount)
       .addKey(pubKey);

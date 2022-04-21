@@ -105,7 +105,7 @@ export abstract class AccountManager implements NearAccountManager {
     return JsonRpcProvider.from(this.config);
   }
 
-  createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction {
+  batch(sender: NearAccount | string, receiver: NearAccount | string): Transaction {
     return new ManagedTransaction(this, sender, receiver);
   }
 
