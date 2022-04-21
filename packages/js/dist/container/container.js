@@ -237,4 +237,4 @@ class SandboxContainer extends WorkspaceContainer {
 }
 exports.SandboxContainer = SandboxContainer;
 SandboxContainer.LINKDROP_PATH = (0, path_1.join)(__dirname, '..', '..', 'core_contracts', 'testnet-linkdrop.wasm');
-//# sourceMappingURL=runtime.js.map
+//# sourceMappingURL=container.js.map
