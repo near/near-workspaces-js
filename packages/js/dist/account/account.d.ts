@@ -21,7 +21,7 @@ export declare class Account implements NearAccount {
     get accountId(): string;
     availableBalance(): Promise<NEAR>;
     balance(): Promise<AccountBalance>;
-    createTransaction(receiver: NearAccount | string): Transaction;
+    batch(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;
     setKey(keyPair?: KeyPair): Promise<PublicKey>;
     createAccount(accountId: string, { keyPair, initialBalance, }?: {

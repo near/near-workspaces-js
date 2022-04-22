@@ -99,7 +99,7 @@ class Worker {
      */
     async fork(fn) {
         (0, internal_utils_1.debug)('Lifecycle.Worker.fork()', 'fn:', fn);
-        const container = await this.container.createFrom();
+        const container = await this.container.clone();
         await container.fork(fn);
         return container;
     }

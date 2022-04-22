@@ -51,8 +51,8 @@ class Account {
     async balance() {
         return this.manager.balance(this.accountId);
     }
-    createTransaction(receiver) {
-        return this.manager.createTransaction(this, receiver);
+    batch(receiver) {
+        return this.manager.batch(this, receiver);
     }
     async getKey() {
         return this.manager.getKey(this.accountId);
@@ -137,7 +137,7 @@ class Account {
         return this.getAccount(accountId);
     }
     async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
-        return this.createTransaction(contractId)
+        return this.batch(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .transact(signWithKey);
     }
@@ -189,7 +189,7 @@ class Account {
         return this.provider.sandbox_patch_state(records);
     }
     async delete(beneficiaryId, keyPair) {
-        const result = await this.createTransaction(this)
+        const result = await this.batch(this)
             .deleteAccount(beneficiaryId)
             .transact(keyPair);
         if (result.succeeded && await this.getKey() !== null) {
@@ -224,13 +224,13 @@ class Account {
         return this.sandbox_patch_state(this.recordBuilder().data(key_string, value_string));
     }
     async transfer(accountId, amount) {
-        return this.createTransaction(accountId).transfer(amount).transact();
+        return this.batch(accountId).transfer(amount).transact();
     }
     async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
         const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
         const amount = (initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance).toString();
-        return this.createTransaction(newAccountId)
+        return this.batch(newAccountId)
             .createAccount()
             .transfer(amount)
             .addKey(pubKey);

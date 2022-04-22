@@ -22,7 +22,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     get initialBalance(): string;
     get doubleInitialBalance(): BN;
     get provider(): JsonRpcProvider;
-    createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
+    batch(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
     getPublicKey(accountId: string): Promise<PublicKey | null>;
     /** Sets the provided key to store, otherwise creates a new one */

@@ -34,9 +34,9 @@ export abstract class WorkspaceContainer {
     debug('Lifecycle.WorkspaceContainer.create()', 'config:', config, 'fn:', fn);
     switch (config.network ?? getNetworkFromEnv()) {
       case 'testnet':
-        return TestnetRuntime.create(config, fn);
+        return TestnetContainer.create(config, fn);
       case 'sandbox':
-        return SandboxRuntime.create(config, fn);
+        return SandboxContainer.create(config, fn);
       default:
         throw new Error(
           `config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
@@ -131,25 +131,25 @@ export abstract class WorkspaceContainer {
     return fn();
   }
 
-  abstract createFrom(): Promise<WorkspaceContainer>;
+  abstract clone(): Promise<WorkspaceContainer>;
   protected abstract beforeRun(): Promise<void>;
   protected abstract afterRun(): Promise<void>;
 }
 
-export class TestnetRuntime extends WorkspaceContainer {
-  static async create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetRuntime> {
-    debug('Lifecycle.TestnetRuntime.create()', 'config:', config, 'initFn:', initFn);
+export class TestnetContainer extends WorkspaceContainer {
+  static async create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetContainer> {
+    debug('Lifecycle.TestnetContainer.create()', 'config:', config, 'initFn:', initFn);
     // Add better error handling
     const fullConfig = {...this.defaultConfig, initFn, ...config};
     debug('Skipping initialization function for testnet; will run before each `worker.fork`');
-    const runtime = new TestnetRuntime(fullConfig);
+    const runtime = new TestnetContainer(fullConfig);
     await runtime.manager.init();
     return runtime;
   }
 
-  async createFrom(): Promise<TestnetRuntime> {
-    debug('Lifecycle.TestnetRuntime.createFrom()');
-    const runtime = new TestnetRuntime({...this.config, init: false, initFn: this.config.initFn!}, this.createdAccounts);
+  async clone(): Promise<TestnetContainer> {
+    debug('Lifecycle.TestnetContainer.clone()');
+    const runtime = new TestnetContainer({...this.config, init: false, initFn: this.config.initFn!}, this.createdAccounts);
     runtime.manager = await this.manager.createFrom(runtime.config);
     return runtime;
   }
@@ -178,19 +178,19 @@ export class TestnetRuntime extends WorkspaceContainer {
   }
 
   async beforeRun(): Promise<void> {
-    debug('Lifecycle.TestnetRuntime.beforeRun()');
+    debug('Lifecycle.TestnetContainer.beforeRun()');
     if (this.config.initFn) {
       this.createdAccounts = await this.config.initFn({workspace: this, root: this.root});
     }
   }
 
   async afterRun(): Promise<void> {
-    debug('Lifecycle.TestnetRuntime.afterRun()');
+    debug('Lifecycle.TestnetContainer.afterRun()');
     await this.manager.cleanup();
   }
 }
 
-export class SandboxRuntime extends WorkspaceContainer {
+export class SandboxContainer extends WorkspaceContainer {
   private static readonly LINKDROP_PATH = join(__dirname, '..', '..', 'core_contracts', 'testnet-linkdrop.wasm');
   // Edit genesis.json to add `sandbox` as an account
   private static get BASE_ACCOUNT_ID() {
@@ -215,10 +215,10 @@ export class SandboxRuntime extends WorkspaceContainer {
   static async create(
     config: Partial<Config>,
     fn?: InitWorkspaceFn,
-  ): Promise<SandboxRuntime> {
-    debug('Lifecycle.SandboxRuntime.create()', 'config:', config, 'fn:', fn);
+  ): Promise<SandboxContainer> {
+    debug('Lifecycle.SandboxContainer.create()', 'config:', config, 'fn:', fn);
     const defaultConfig = await this.defaultConfig();
-    const sandbox = new SandboxRuntime({...defaultConfig, ...config});
+    const sandbox = new SandboxContainer({...defaultConfig, ...config});
     if (fn) {
       await sandbox.createRun(fn);
     }
@@ -230,26 +230,26 @@ export class SandboxRuntime extends WorkspaceContainer {
     fn: WorkspaceFn,
     config: Partial<Config> = {},
   ): Promise<void> {
-    debug('Lifecycle.SandboxRuntime.createAndRun()', 'fn:', fn, 'config:', config);
+    debug('Lifecycle.SandboxContainer.createAndRun()', 'fn:', fn, 'config:', config);
     await WorkspaceContainer.createAndRun(fn, config);
   }
 
-  async createFrom(): Promise<SandboxRuntime> {
-    debug('Lifecycle.SandboxRuntime.createAndrun()');
-    let config = await SandboxRuntime.defaultConfig();
+  async clone(): Promise<SandboxContainer> {
+    debug('Lifecycle.SandboxContainer.clone()');
+    let config = await SandboxContainer.defaultConfig();
     config = {...this.config, ...config, init: false, refDir: this.homeDir};
-    const runtime = new SandboxRuntime(config, this.createdAccounts);
+    const runtime = new SandboxContainer(config, this.createdAccounts);
     return runtime;
   }
 
   get baseAccountId(): string {
-    return SandboxRuntime.BASE_ACCOUNT_ID;
+    return SandboxContainer.BASE_ACCOUNT_ID;
   }
 
   static get clientConfig(): ClientConfig {
     return {
       network: 'sandbox',
-      rootAccount: SandboxRuntime.BASE_ACCOUNT_ID,
+      rootAccount: SandboxContainer.BASE_ACCOUNT_ID,
       rpcAddr: '', // With be over written
       initialBalance: NEAR.parse('100 N').toJSON(),
     };
@@ -264,10 +264,10 @@ export class SandboxRuntime extends WorkspaceContainer {
   }
 
   async beforeRun(): Promise<void> {
-    debug('Lifecycle.SandboxRuntime.beforeRun()');
-    // If (!(await exists(SandboxRuntime.LINKDROP_PATH))) {
-    //   debug(`Downloading testnet's linkdrop to ${SandboxRuntime.LINKDROP_PATH}`);
-    //   await fs.writeFile(SandboxRuntime.LINKDROP_PATH, await TestnetRuntime.provider.viewCode('testnet'));
+    debug('Lifecycle.SandboxContainer.beforeRun()');
+    // If (!(await exists(SandboxContainer.LINKDROP_PATH))) {
+    //   debug(`Downloading testnet's linkdrop to ${SandboxContainer.LINKDROP_PATH}`);
+    //   await fs.writeFile(SandboxContainer.LINKDROP_PATH, await TestnetContainer.provider.viewCode('testnet'));
     // }
 
     this.server = await SandboxServer.init(this.config);
@@ -275,13 +275,13 @@ export class SandboxRuntime extends WorkspaceContainer {
     if (this.config.init) {
       await this.manager.init();
     //   Console.log(await this.manager.getKey(this.config.rootAccount!))
-      // await this.root.createAndDeploy('sandbox', SandboxRuntime.LINKDROP_PATH);
+      // await this.root.createAndDeploy('sandbox', SandboxContainer.LINKDROP_PATH);
       // debug('Deployed \'sandbox\' linkdrop contract');
     }
   }
 
   async afterRun(): Promise<void> {
-    debug('Lifecycle.SandboxRuntime.afterRun()');
+    debug('Lifecycle.SandboxContainer.afterRun()');
     try {
       await this.server.close();
     } catch (error: unknown) {
