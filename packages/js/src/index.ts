@@ -4,8 +4,8 @@ if (!process.env.NEAR_PRINT_LOGS) {
   process.env.NEAR_NO_LOGS = 'true';
 }
 
-export * from './workspace';
-export * from './container';
+export * from './worker';
+export * from './server';
 export * from './utils';
 export * from './types';
 export * from './account';
