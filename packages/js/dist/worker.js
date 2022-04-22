@@ -2,12 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxWorker = exports.TestnetWorker = exports.Worker = void 0;
 const near_units_1 = require("near-units");
-const utils_1 = require("../utils");
-const account_1 = require("../account");
-const jsonrpc_1 = require("../jsonrpc");
-const internal_utils_1 = require("../internal-utils");
-const server_1 = require("../server/server");
-//TODO: move to another file?
+const utils_1 = require("./utils");
+const account_1 = require("./account");
+const jsonrpc_1 = require("./jsonrpc");
+const internal_utils_1 = require("./internal-utils");
+const server_1 = require("./server/server");
 class Worker {
     constructor(config) {
         (0, internal_utils_1.debug)('Lifecycle.Worker.constructor', 'config:', config);
@@ -40,8 +39,11 @@ class TestnetWorker extends Worker {
         await runtime.manager.init();
         return runtime;
     }
-    tearDown() {
-        // we do not to stop any server here because we are using Testnet
+    get provider() {
+        return jsonrpc_1.JsonRpcProvider.from(TestnetWorker.clientConfig);
+    }
+    async tearDown() {
+        // We are not stoping any server here because we are using Testnet
         return Promise.resolve();
     }
     static get defaultConfig() {
@@ -63,18 +65,10 @@ class SandboxWorker extends Worker {
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.SandboxWorker.create()', 'config:', config);
         const defaultConfig = await this.defaultConfig();
-        let worker = new SandboxWorker({ ...defaultConfig, ...config });
+        const worker = new SandboxWorker({ ...defaultConfig, ...config });
         worker.server = await server_1.SandboxServer.init(worker.config);
         await worker.server.start();
         return worker;
-    }
-    async tearDown() {
-        try {
-            return await this.server.close();
-        }
-        catch (error) {
-            (0, internal_utils_1.debug)('this.server.close() threw error.', JSON.stringify(error, null, 2));
-        }
     }
     static async defaultConfig() {
         const port = await server_1.SandboxServer.nextPort();
@@ -88,20 +82,28 @@ class SandboxWorker extends Worker {
             rpcAddr: `http://localhost:${port}`,
         };
     }
+    get provider() {
+        return jsonrpc_1.JsonRpcProvider.from(this.rpcAddr);
+    }
+    async tearDown() {
+        try {
+            await this.server.close();
+        }
+        catch (error) {
+            (0, internal_utils_1.debug)('this.server.close() threw error.', JSON.stringify(error, null, 2));
+        }
+    }
     static get clientConfig() {
         return {
             network: 'sandbox',
-            rootAccount: "test.near",
+            rootAccount: 'test.near',
             rpcAddr: '',
             initialBalance: near_units_1.NEAR.parse('100 N').toJSON(),
         };
-    }
-    get provider() {
-        return jsonrpc_1.JsonRpcProvider.from(this.rpcAddr);
     }
     get rpcAddr() {
         return `http://localhost:${this.config.port}`;
     }
 }
 exports.SandboxWorker = SandboxWorker;
-//# sourceMappingURL=runtime.js.map
+//# sourceMappingURL=worker.js.map
