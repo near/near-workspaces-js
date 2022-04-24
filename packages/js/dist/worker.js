@@ -29,6 +29,9 @@ class Worker {
     get rootAccount() {
         return this.manager.root;
     }
+    getPreviouslyCreatedAccount(accountId) {
+        return this.manager.getAccount(accountId);
+    }
 }
 exports.Worker = Worker;
 class TestnetWorker extends Worker {
