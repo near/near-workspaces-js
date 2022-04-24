@@ -50,7 +50,6 @@ class TestnetWorker extends Worker {
         return {
             homeDir: 'ignored',
             port: 3030,
-            init: true,
             rm: false,
             refDir: null,
             ...this.clientConfig,
@@ -68,6 +67,7 @@ class SandboxWorker extends Worker {
         const worker = new SandboxWorker({ ...defaultConfig, ...config });
         worker.server = await server_1.SandboxServer.init(worker.config);
         await worker.server.start();
+        await worker.manager.init();
         return worker;
     }
     static async defaultConfig() {
@@ -76,7 +76,6 @@ class SandboxWorker extends Worker {
             ...this.clientConfig,
             homeDir: server_1.SandboxServer.randomHomeDir(),
             port,
-            init: true,
             rm: false,
             refDir: null,
             rpcAddr: `http://localhost:${port}`,

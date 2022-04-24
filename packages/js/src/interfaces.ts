@@ -4,7 +4,6 @@ import {NearAccount} from './account/near-account';
 export interface Config extends ClientConfig {
   homeDir: string;
   port: number;
-  init: boolean;
   rm: boolean;
   refDir: string | null;
   initFn?: InitWorkspaceFn;

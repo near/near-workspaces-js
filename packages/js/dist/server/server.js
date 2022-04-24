@@ -102,15 +102,13 @@ class SandboxServer {
             await (0, internal_utils_1.rm)(server.homeDir);
             await (0, internal_utils_1.copyDir)(server.config.refDir, server.config.homeDir);
         }
-        if ((await (0, internal_utils_1.exists)(server.homeDir)) && server.config.init) {
+        if ((await (0, internal_utils_1.exists)(server.homeDir))) {
             await (0, internal_utils_1.rm)(server.homeDir);
         }
-        if (server.config.init) {
-            const { stderr, code } = await server.spawn('init');
-            if (code && code < 0) {
-                (0, internal_utils_1.debug)(stderr);
-                throw new Error('Failed to spawn sandbox server');
-            }
+        const { stderr, code } = await server.spawn('init');
+        if (code && code < 0) {
+            (0, internal_utils_1.debug)(stderr);
+            throw new Error('Failed to spawn sandbox server');
         }
         return server;
     }
