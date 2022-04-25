@@ -37,10 +37,6 @@ export abstract class Worker {
     return this.manager.root;
   }
 
-  getPreviouslyCreatedAccount(accountId: string): NearAccount {
-    return this.manager.getAccount(accountId);
-  }
-
   abstract get provider(): JsonRpcProvider;
 
   abstract tearDown(): Promise<void>;

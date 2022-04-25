@@ -7,7 +7,6 @@ export declare abstract class Worker {
     constructor(config: Config);
     static init(config?: Partial<Config>): Promise<Worker>;
     get rootAccount(): NearAccount;
-    getPreviouslyCreatedAccount(accountId: string): NearAccount;
     abstract get provider(): JsonRpcProvider;
     abstract tearDown(): Promise<void>;
 }
