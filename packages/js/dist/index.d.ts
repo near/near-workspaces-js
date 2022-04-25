@@ -1,3 +1,4 @@
+export * from './assertions';
 export * from './workspace';
 export * from './container';
 export * from './utils';
