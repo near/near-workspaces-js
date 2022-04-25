@@ -1,51 +1,59 @@
 import path from 'path';
 import anyTest, {TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {getNetworkFromEnv, Worker} from '..';
+import {getNetworkFromEnv, NearAccount, Worker} from '..';
 import {RecordBuilder} from '../dist/record';
 
-const test = anyTest as TestFn<{worker: Worker}>;
+const test = anyTest as TestFn<{
+  worker: Worker;
+  accounts: Record<string, NearAccount>;
+}>;
 
 if (getNetworkFromEnv() === 'sandbox') {
-  const workspacePromise = Worker.init(async ({root}) => {
+  test.beforeEach(async t => {
+    const worker = await Worker.init();
+    const root = worker.rootAccount;
+
     const contract = await root.createAndDeploy(
       'status-message',
       path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
     );
     const ali = await root.createSubAccount('ali');
-    return {contract, ali};
+
+    t.context.worker = worker;
+    t.context.accounts = {root, contract, ali};
   });
 
-  // eslint-disable-next-line promise/prefer-await-to-then
-  void workspacePromise.then(worker => {
-    test('Patch Account', async t => {
-      await worker.fork(async ({root, ali, contract}) => {
-        const bob = root.getAccount('bob');
-        const public_key = await bob.setKey();
-        const {code_hash} = await contract.accountView();
-        const BOB_BALANCE = NEAR.parse('100 N');
-        const rb = RecordBuilder.fromAccount(bob)
-          .account({
-            amount: BOB_BALANCE.toString(),
-            code_hash,
-          }).accessKey(
-            public_key,
-            {
-              nonce: 0,
-              permission: 'FullAccess',
-            },
-          )
-          .contract(await contract.viewCode());
-        await bob.sandbox_patch_state(rb);
-        const balance = await bob.availableBalance();
-        t.deepEqual(balance, BOB_BALANCE);
-        await ali.call(bob, 'set_status', {message: 'hello'});
-        const result = await bob.view('get_status', {
-          account_id: ali.accountId,
-        });
-        t.is(result, 'hello');
-      });
+  test.afterEach(async t => {
+    await t.context.worker.tearDown().catch(error => {
+      console.log('Failed to stop the Sandbox:', error);
     });
+  });
+
+  test('Patch account', async t => {
+    const {root, ali, contract} = t.context.accounts;
+    const bob = root.getAccount('bob');
+    const public_key = await bob.setKey();
+    const {code_hash} = await contract.accountView();
+    const BOB_BALANCE = NEAR.parse('100 N');
+    const rb = RecordBuilder.fromAccount(bob)
+      .account({
+        amount: BOB_BALANCE.toString(),
+        code_hash,
+      }).accessKey(
+        public_key,
+        {
+          nonce: 0,
+          permission: 'FullAccess',
+        }).contract(await contract.viewCode());
+    await bob.sandbox_patch_state(rb);
+    const balance = await bob.availableBalance();
+    t.deepEqual(balance, BOB_BALANCE);
+    await ali.call(bob, 'set_status', {message: 'hello'});
+    const result = await bob.view('get_status', {
+      account_id: ali.accountId,
+    });
+    t.is(result, 'hello');
   });
 } else {
   test('skipping; not using sandbox', t => {

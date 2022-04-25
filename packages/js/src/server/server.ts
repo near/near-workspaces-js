@@ -105,16 +105,14 @@ export class SandboxServer {
       await copyDir(server.config.refDir, server.config.homeDir);
     }
 
-    if ((await exists(server.homeDir)) && server.config.init) {
+    if ((await exists(server.homeDir))) {
       await rm(server.homeDir);
     }
 
-    if (server.config.init) {
-      const {stderr, code} = await server.spawn('init');
-      if (code && code < 0) {
-        debug(stderr);
-        throw new Error('Failed to spawn sandbox server');
-      }
+    const {stderr, code} = await server.spawn('init');
+    if (code && code < 0) {
+      debug(stderr);
+      throw new Error('Failed to spawn sandbox server');
     }
 
     return server;

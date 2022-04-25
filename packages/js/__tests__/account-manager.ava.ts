@@ -1,7 +1,7 @@
 import anyTest, {TestFn} from 'ava';
 import {
   AccountManager,
-  TestnetContainer,
+  TestnetWorker,
   Worker,
   TestnetManager,
   getNetworkFromEnv,
@@ -11,14 +11,14 @@ const test = anyTest as TestFn<{worker: Worker}>;
 
 if (getNetworkFromEnv() === 'testnet') {
   test('should create a new account', async t => {
-    const accountManager = AccountManager.create(TestnetContainer.defaultConfig);
+    const accountManager = AccountManager.create(TestnetWorker.defaultConfig);
     await accountManager.init();
     const {root} = accountManager;
     t.true(await root.exists());
   });
 
   test('should be able to add funds', async t => {
-    const accountManager = AccountManager.create(TestnetContainer.defaultConfig) as TestnetManager;
+    const accountManager = AccountManager.create(TestnetWorker.defaultConfig) as TestnetManager;
     await accountManager.init();
     const {root} = accountManager;
     const balance = await root.availableBalance();

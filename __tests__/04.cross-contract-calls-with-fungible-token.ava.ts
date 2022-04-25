@@ -51,208 +51,214 @@ async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<BN> {
   }));
 }
 
-const test = anyTest as TestFn<{worker: Worker}>;
-test.before(async t => {
-  t.context.worker = await Worker.init(async ({root}) => ({
-    ft: await root.createAndDeploy(
-      root.getSubAccount('fungible-token').accountId,
-      '__tests__/build/debug/fungible_token.wasm',
-      {initialBalance: NEAR.parse('3 N').toJSON()},
-    ),
-    defi: await root.createAndDeploy(
-      root.getSubAccount('defi').accountId,
-      '__tests__/build/debug/defi.wasm',
-      {initialBalance: NEAR.parse('3 N').toJSON()},
-    ),
-    ali: await root.createSubAccount('ali', {initialBalance: NEAR.parse('1 N').toJSON()}),
-  }));
+const test = anyTest as TestFn<{
+  worker: Worker;
+  accounts: Record<string, NearAccount>;
+}>;
+
+test.beforeEach(async t => {
+  const worker = await Worker.init();
+  const root = worker.rootAccount;
+  const ft = await root.createAndDeploy(
+    root.getSubAccount('fungible-token').accountId,
+    '__tests__/build/debug/fungible_token.wasm',
+    {initialBalance: NEAR.parse('3 N').toJSON()},
+  );
+  const defi = await root.createAndDeploy(
+    root.getSubAccount('defi').accountId,
+    '__tests__/build/debug/defi.wasm',
+    {initialBalance: NEAR.parse('3 N').toJSON()},
+  );
+  const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('1 N').toJSON()});
+
+  t.context.worker = worker;
+  t.context.accounts = {root, ft, defi, ali};
+});
+
+test.afterEach(async t => {
+  await t.context.worker.tearDown().catch(error => {
+    console.log('Failed to stop the Sandbox:', error);
+  });
 });
 
 test('Total supply', async t => {
-  await t.context.worker.fork(async ({ft, ali}) => {
-    await init_ft(ft, ali, '1000');
+  const {ft, ali} = t.context.accounts;
+  await init_ft(ft, ali, '1000');
 
-    const totalSupply: string = await ft.view('ft_total_supply');
-    t.is(totalSupply, '1000');
-  });
+  const totalSupply: string = await ft.view('ft_total_supply');
+  t.is(totalSupply, '1000');
 });
 
 test('Simple transfer', async t => {
-  await t.context.worker.fork(async ({ft, ali, root}) => {
-    const initialAmount = new BN('10000');
-    const transferAmount = new BN('100');
-    await init_ft(ft, root, initialAmount);
+  const {ft, ali, root} = t.context.accounts;
+  const initialAmount = new BN('10000');
+  const transferAmount = new BN('100');
+  await init_ft(ft, root, initialAmount);
 
-    // Register by prepaying for storage.
-    await registerUser(ft, ali);
+  // Register by prepaying for storage.
+  await registerUser(ft, ali);
 
-    await root.call(
-      ft,
-      'ft_transfer',
-      {
-        receiver_id: ali,
-        amount: transferAmount,
-      },
-      {attachedDeposit: '1'},
-    );
+  await root.call(
+    ft,
+    'ft_transfer',
+    {
+      receiver_id: ali,
+      amount: transferAmount,
+    },
+    {attachedDeposit: '1'},
+  );
 
-    const rootBalance = await ft_balance_of(ft, root);
-    const aliBalance = await ft_balance_of(ft, ali);
+  const rootBalance = await ft_balance_of(ft, root);
+  const aliBalance = await ft_balance_of(ft, ali);
 
-    t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-    t.deepEqual(new BN(aliBalance), transferAmount);
-  });
+  t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
+  t.deepEqual(new BN(aliBalance), transferAmount);
 });
 
 test('Can close empty balance account', async t => {
-  await t.context.worker.fork(async ({ft, ali, root}) => {
-    await init_ft(ft, root);
+  const {ft, ali, root} = t.context.accounts;
+  await init_ft(ft, root);
 
-    await registerUser(ft, ali);
+  await registerUser(ft, ali);
 
-    const result = await ali.call(
-      ft,
-      'storage_unregister',
-      {},
-      {attachedDeposit: '1'},
-    );
+  const result = await ali.call(
+    ft,
+    'storage_unregister',
+    {},
+    {attachedDeposit: '1'},
+  );
 
-    t.is(result, true);
-  });
+  t.is(result, true);
 });
 
 test('Can force close non-empty balance account', async t => {
-  await t.context.worker.fork(async ({ft, root}) => {
-    await init_ft(ft, root, '100');
-    const errorString = await captureError(async () =>
-      root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
+  const {ft, root} = t.context.accounts;
 
-    t.regex(errorString, /Can't unregister the account with the positive balance without force/);
+  await init_ft(ft, root, '100');
 
-    const result = await root.call_raw(
-      ft,
-      'storage_unregister',
-      {force: true},
-      {attachedDeposit: '1'},
-    );
+  const errorString = await captureError(async () =>
+    root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
+  t.regex(errorString, /Can't unregister the account with the positive balance without force/);
 
-    t.is(result.logs[0],
-      `Closed @${root.accountId} with 100`,
-    );
-  });
+  const result = await root.call_raw(
+    ft,
+    'storage_unregister',
+    {force: true},
+    {attachedDeposit: '1'},
+  );
+
+  t.is(result.logs[0],
+    `Closed @${root.accountId} with 100`,
+  );
 });
 
 test('Transfer call with burned amount', async t => {
-  await t.context.worker.fork(async ({ft, defi, root}) => {
-    const initialAmount = new BN(10_000);
-    const transferAmount = new BN(100);
-    const burnAmount = new BN(10);
-    await init_ft(ft, root, initialAmount);
-    await init_defi(defi, ft);
+  const {ft, defi, root} = t.context.accounts;
 
-    await registerUser(ft, defi);
+  const initialAmount = new BN(10_000);
+  const transferAmount = new BN(100);
+  const burnAmount = new BN(10);
+  await init_ft(ft, root, initialAmount);
+  await init_defi(defi, ft);
 
-    const result = await root
-      .batch(ft)
-      .functionCall(
-        'ft_transfer_call',
-        {
-          receiver_id: defi,
-          amount: transferAmount,
-          msg: burnAmount,
-        },
-        {attachedDeposit: '1', gas: '150 Tgas'},
-      )
-      .functionCall(
-        'storage_unregister',
-        {force: true},
-        {attachedDeposit: '1', gas: '150 Tgas'},
-      )
-      .transact();
+  await registerUser(ft, defi);
+  const result = await root
+    .batch(ft)
+    .functionCall(
+      'ft_transfer_call',
+      {
+        receiver_id: defi,
+        amount: transferAmount,
+        msg: burnAmount,
+      },
+      {attachedDeposit: '1', gas: '150 Tgas'},
+    )
+    .functionCall(
+      'storage_unregister',
+      {force: true},
+      {attachedDeposit: '1', gas: '150 Tgas'},
+    )
+    .transact();
 
-    t.true(result.logs.includes(
-      `Closed @${root.accountId} with ${
-        (initialAmount.sub(transferAmount)).toString()}`,
-    ));
+  t.true(result.logs.includes(
+    `Closed @${root.accountId} with ${
+      (initialAmount.sub(transferAmount)).toString()}`,
+  ));
 
-    t.is(result.parseResult(), true);
+  t.is(result.parseResult(), true);
 
-    t.true(result.logs.includes(
-      'The account of the sender was deleted',
-    ));
-    t.true(result.logs.includes(
-      `Account @${root.accountId} burned ${burnAmount.toString()}`,
-    ));
+  t.true(result.logs.includes(
+    'The account of the sender was deleted',
+  ));
 
-    // Help: this index is diff from sim, we have 10 len when they have 4
-    const callbackOutcome = result.receipts_outcomes[5];
+  t.true(result.logs.includes(
+    `Account @${root.accountId} burned ${burnAmount.toString()}`,
+  ));
 
-    t.is(callbackOutcome.parseResult(), transferAmount.toString());
-    const expectedAmount = transferAmount.sub(burnAmount);
-
-    const totalSupply: string = await ft.view('ft_total_supply');
-    t.is(totalSupply, expectedAmount.toString());
-
-    const defiBalance = await ft_balance_of(ft, defi);
-    t.deepEqual(defiBalance, expectedAmount);
-  });
+  // Help: this index is diff from sim, we have 10 len when they have 4
+  const callbackOutcome = result.receipts_outcomes[5];
+  t.is(callbackOutcome.parseResult(), transferAmount.toString());
+  const expectedAmount = transferAmount.sub(burnAmount);
+  const totalSupply: string = await ft.view('ft_total_supply');
+  t.is(totalSupply, expectedAmount.toString());
+  const defiBalance = await ft_balance_of(ft, defi);
+  t.deepEqual(defiBalance, expectedAmount);
 });
 
 test('Transfer call immediate return no refund', async t => {
-  await t.context.worker.fork(async ({ft, defi, root}) => {
-    const initialAmount = new BN(10_000);
-    const transferAmount = new BN(100);
-    await init_ft(ft, root, initialAmount);
-    await init_defi(defi, ft);
+  const {ft, defi, root} = t.context.accounts;
+  const initialAmount = new BN(10_000);
+  const transferAmount = new BN(100);
+  await init_ft(ft, root, initialAmount);
+  await init_defi(defi, ft);
 
-    await registerUser(ft, defi);
+  await registerUser(ft, defi);
 
-    await root.call(
-      ft,
-      'ft_transfer_call',
-      {
-        receiver_id: defi,
-        amount: transferAmount,
-        memo: null,
-        msg: 'take-my-money',
-      },
-      {attachedDeposit: '1', gas: '150 Tgas'},
-    );
+  await root.call(
+    ft,
+    'ft_transfer_call',
+    {
+      receiver_id: defi,
+      amount: transferAmount,
+      memo: null,
+      msg: 'take-my-money',
+    },
+    {attachedDeposit: '1', gas: '150 Tgas'},
+  );
 
-    const rootBalance = await ft_balance_of(ft, root);
-    const defiBalance = await ft_balance_of(ft, defi);
+  const rootBalance = await ft_balance_of(ft, root);
+  const defiBalance = await ft_balance_of(ft, defi);
 
-    t.deepEqual(rootBalance, initialAmount.sub(transferAmount));
-    t.deepEqual(defiBalance, transferAmount);
-  });
+  t.deepEqual(rootBalance, initialAmount.sub(transferAmount));
+  t.deepEqual(defiBalance, transferAmount);
 });
 
 test('Transfer call promise panics for a full refund', async t => {
-  await t.context.worker.fork(async ({ft, defi, root}) => {
-    const initialAmount = new BN(10_000);
-    const transferAmount = new BN(100);
-    await init_ft(ft, root, initialAmount);
-    await init_defi(defi, ft);
+  const {ft, defi, root} = t.context.accounts;
+  const initialAmount = new BN(10_000);
+  const transferAmount = new BN(100);
+  await init_ft(ft, root, initialAmount);
+  await init_defi(defi, ft);
 
-    await registerUser(ft, defi);
+  await registerUser(ft, defi);
 
-    const result = await root.call_raw(
-      ft,
-      'ft_transfer_call',
-      {
-        receiver_id: defi,
-        amount: transferAmount,
-        memo: null,
-        msg: 'this won\'t parse as an integer',
-      },
-      {attachedDeposit: '1', gas: '150 Tgas'},
-    );
-    t.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
+  const result = await root.call_raw(
+    ft,
+    'ft_transfer_call',
+    {
+      receiver_id: defi,
+      amount: transferAmount,
+      memo: null,
+      msg: 'this won\'t parse as an integer',
+    },
+    {attachedDeposit: '1', gas: '150 Tgas'},
+  );
 
-    const rootBalance = await ft_balance_of(ft, root);
-    const defiBalance = await ft_balance_of(ft, defi);
+  t.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
 
-    t.deepEqual(rootBalance, initialAmount);
-    t.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
-  });
+  const rootBalance = await ft_balance_of(ft, root);
+  const defiBalance = await ft_balance_of(ft, defi);
+
+  t.deepEqual(rootBalance, initialAmount);
+  t.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
 });
