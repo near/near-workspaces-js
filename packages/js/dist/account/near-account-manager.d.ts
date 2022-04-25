@@ -22,7 +22,7 @@ export interface NearAccountManager {
     cleanup(): Promise<void>;
     /** Creates a KeyPair if one is not provided */
     setKey(accountId: string, keyPair?: KeyPair): Promise<KeyPair>;
-    createTransaction(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
+    batch(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     createFrom(config: Config): Promise<NearAccountManager>;
     init(): Promise<NearAccountManager>;
 }

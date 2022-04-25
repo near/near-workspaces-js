@@ -1,20 +1,13 @@
-import { ClientConfig } from '../types';
+import { ClientConfig, FinalExecutionOutcome } from '../types';
 import { NearAccount, NearAccountManager } from '../account';
-import { Config } from '../interfaces';
+import { AccountArgs, Config, InitWorkspaceFn, ReturnedAccounts, WorkspaceFn } from '../interfaces';
 import { JsonRpcProvider } from '../jsonrpc';
-export declare abstract class Worker {
+declare type AccountShortName = string;
+declare type AccountId = string;
+export declare abstract class WorkspaceContainer {
     config: Config;
+    returnedAccounts: Map<AccountId, AccountShortName>;
     protected manager: NearAccountManager;
-<<<<<<< HEAD
-    constructor(config: Config);
-    static init(config?: Partial<Config>): Promise<Worker>;
-    get rootAccount(): NearAccount;
-    abstract tearDown(): Promise<void>;
-}
-export declare class TestnetWorker extends Worker {
-    static init(config: Partial<Config>): Promise<TestnetWorker>;
-    tearDown(): Promise<void>;
-=======
     protected createdAccounts: ReturnedAccounts;
     constructor(config: Config, accounts?: ReturnedAccounts);
     static create(config: Partial<Config>, fn?: InitWorkspaceFn): Promise<WorkspaceContainer>;
@@ -35,30 +28,27 @@ export declare class TestnetWorker extends Worker {
 export declare class TestnetContainer extends WorkspaceContainer {
     static create(config: Partial<Config>, initFn?: InitWorkspaceFn): Promise<TestnetContainer>;
     clone(): Promise<TestnetContainer>;
->>>>>>> main
     static get defaultConfig(): Config;
     static get clientConfig(): ClientConfig;
+    static get provider(): JsonRpcProvider;
+    static get baseAccountId(): string;
+    beforeRun(): Promise<void>;
+    afterRun(): Promise<void>;
 }
-<<<<<<< HEAD
-export declare class SandboxWorker extends Worker {
-=======
 export declare class SandboxContainer extends WorkspaceContainer {
     private static readonly LINKDROP_PATH;
     private static get BASE_ACCOUNT_ID();
->>>>>>> main
     private server;
-    static init(config: Partial<Config>): Promise<SandboxWorker>;
-    tearDown(): Promise<void>;
     static defaultConfig(): Promise<Config>;
-<<<<<<< HEAD
-=======
     static create(config: Partial<Config>, fn?: InitWorkspaceFn): Promise<SandboxContainer>;
     createAndRun(fn: WorkspaceFn, config?: Partial<Config>): Promise<void>;
     clone(): Promise<SandboxContainer>;
     get baseAccountId(): string;
->>>>>>> main
     static get clientConfig(): ClientConfig;
     get provider(): JsonRpcProvider;
     get rpcAddr(): string;
+    beforeRun(): Promise<void>;
+    afterRun(): Promise<void>;
 }
-//# sourceMappingURL=runtime.d.ts.map
+export {};
+//# sourceMappingURL=container.d.ts.map

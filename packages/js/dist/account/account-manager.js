@@ -101,7 +101,7 @@ class AccountManager {
     get provider() {
         return jsonrpc_1.JsonRpcProvider.from(this.config);
     }
-    createTransaction(sender, receiver) {
+    batch(sender, receiver) {
         return new ManagedTransaction(this, sender, receiver);
     }
     async getKey(accountId) {
