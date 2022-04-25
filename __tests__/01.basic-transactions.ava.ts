@@ -28,14 +28,16 @@ test.beforeEach(async t => {
   );
   const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('3 N').toJSON()});
 
-  // Save state for test runs
+  // Save state for test runs, it is unique for each test
   t.context.worker = worker;
   t.context.accounts = {root, contract, ali};
 });
 
 test.afterEach(async t => {
   // Stop Sandbox server
-  await t.context.worker.tearDown();
+  await t.context.worker.tearDown().catch(error => {
+    console.log('Failed to stop the Sandbox:', error);
+  });
 });
 
 test('Root gets null status', async t => {

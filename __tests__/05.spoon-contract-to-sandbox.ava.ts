@@ -27,37 +27,47 @@ const DEFAULT_BLOCK_HEIGHT = 45_800_000;
 
 const INIT_SHARES_SUPPLY = '1000000000000000000000000';
 
-const test = anyTest as TestFn<{worker: Worker}>;
-test.before(async t => {
+const test = anyTest as TestFn<{
+  worker: Worker;
+  accounts: Record<string, NearAccount>;
+}>;
+
+test.beforeEach(async t => {
   t.context.worker = await Worker.init();
 });
 
-test('using `withData` for contracts > 50kB fails', async t => {
-  await t.context.worker.fork(async ({root}) => {
-    t.regex(
-      await captureError(async () => {
-        await root.importAccount({
-          mainnetContract: REF_FINANCE_ACCOUNT,
-          withData: true,
-          block_id: 50_000_000,
-        });
-      }),
-      new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
-    );
+test.afterEach(async t => {
+  await t.context.worker.tearDown().catch(error => {
+    console.log('Failed to stop the Sandbox:', error);
   });
 });
 
+test('using `withData` for contracts > 50kB fails', async t => {
+  const root = t.context.worker.rootAccount;
+
+  t.regex(
+    await captureError(async () => {
+      await root.importAccount({
+        mainnetContract: REF_FINANCE_ACCOUNT,
+        withData: true,
+        block_id: 50_000_000,
+      });
+    }),
+    new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
+  );
+});
+
 test('if skipping `withData`, fetches only contract Wasm bytes', async t => {
-  await t.context.worker.fork(async ({root}) => {
-    const refFinance = await root.importAccount({
-      mainnetContract: REF_FINANCE_ACCOUNT,
-      block_id: DEFAULT_BLOCK_HEIGHT,
-    });
-    t.regex(
-      await captureError(async () => refFinance.view('version')),
-      /The contract is not initialized/,
-    );
+  const root = t.context.worker.rootAccount;
+
+  const refFinance = await root.importAccount({
+    mainnetContract: REF_FINANCE_ACCOUNT,
+    block_id: DEFAULT_BLOCK_HEIGHT,
   });
+  t.regex(
+    await captureError(async () => refFinance.view('version')),
+    /The contract is not initialized/,
+  );
 });
 
 /**
@@ -75,63 +85,63 @@ test('if skipping `withData`, fetches only contract Wasm bytes', async t => {
      *     on testnet or mainnet.
      */
 test('integrate own FT with Ref.Finance', async t => {
-  await t.context.worker.fork(async ({root}) => {
-    const [ft, refFinance, wNEAR] = await Promise.all([
-      root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
-        method: 'new_default_meta',
-        args: {
-          owner_id: root,
-          total_supply: NEAR.parse('1,000,000,000 N'),
-        },
-      }),
-      createRef(root),
-      createWNEAR(root),
-    ]);
-    const pool_id = await createPoolWithLiquidity(root, refFinance, {
-      [ft.accountId]: NEAR.parse('5 N').toJSON(),
-      [wNEAR.accountId]: NEAR.parse('10 N').toJSON(),
-    });
-    await depositTokens(root, refFinance, {
-      [ft.accountId]: NEAR.parse('100 N').toJSON(),
-      [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
-    });
-    await depositTokens(root, refFinance, {});
-    t.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-      NEAR.parse('100 N').toJSON(),
-    );
-    t.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
-      NEAR.parse('100 N').toJSON(),
-    );
-    t.is(
-      await refFinance.view('get_pool_total_shares', {pool_id}),
-      INIT_SHARES_SUPPLY,
-    );
+  const root = t.context.worker.rootAccount;
 
-    // Get price from pool :0 1 -> 2 tokens.
-    const expectedOut: string = await refFinance.view('get_return', {
-      pool_id,
-      token_in: ft,
-      amount_in: NEAR.parse('1 N'),
-      token_out: wNEAR,
-    });
-    t.is(expectedOut, '1662497915624478906119726');
-    const amountOut: string = await root.call(refFinance, 'swap', {actions: [{
-      pool_id,
-      token_in: ft,
-      amount_in: NEAR.parse('1 N'),
-      token_out: wNEAR,
-      min_amount_out: '1',
-    }]}, {
-      attachedDeposit: '1',
-    });
-    t.is(amountOut, expectedOut);
-    t.is(
-      await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-      NEAR.parse('99 N').toJSON(),
-    );
+  const [ft, refFinance, wNEAR] = await Promise.all([
+    root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
+      method: 'new_default_meta',
+      args: {
+        owner_id: root,
+        total_supply: NEAR.parse('1,000,000,000 N'),
+      },
+    }),
+    createRef(root),
+    createWNEAR(root),
+  ]);
+  const pool_id = await createPoolWithLiquidity(root, refFinance, {
+    [ft.accountId]: NEAR.parse('5 N').toJSON(),
+    [wNEAR.accountId]: NEAR.parse('10 N').toJSON(),
   });
+  await depositTokens(root, refFinance, {
+    [ft.accountId]: NEAR.parse('100 N').toJSON(),
+    [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
+  });
+  await depositTokens(root, refFinance, {});
+  t.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
+    NEAR.parse('100 N').toJSON(),
+  );
+  t.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
+    NEAR.parse('100 N').toJSON(),
+  );
+  t.is(
+    await refFinance.view('get_pool_total_shares', {pool_id}),
+    INIT_SHARES_SUPPLY,
+  );
+
+  // Get price from pool :0 1 -> 2 tokens.
+  const expectedOut: string = await refFinance.view('get_return', {
+    pool_id,
+    token_in: ft,
+    amount_in: NEAR.parse('1 N'),
+    token_out: wNEAR,
+  });
+  t.is(expectedOut, '1662497915624478906119726');
+  const amountOut: string = await root.call(refFinance, 'swap', {actions: [{
+    pool_id,
+    token_in: ft,
+    amount_in: NEAR.parse('1 N'),
+    token_out: wNEAR,
+    min_amount_out: '1',
+  }]}, {
+    attachedDeposit: '1',
+  });
+  t.is(amountOut, expectedOut);
+  t.is(
+    await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
+    NEAR.parse('99 N').toJSON(),
+  );
 });
 
 // Contract: https://github.com/near/core-contracts/blob/master/w-near

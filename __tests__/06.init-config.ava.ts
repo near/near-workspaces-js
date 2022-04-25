@@ -1,23 +1,26 @@
-import {Worker} from 'near-workspaces';
+import {NearAccount, Worker} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 
-const test = anyTest as TestFn<{worker: Worker}>;
-test.before(async t => {
+const test = anyTest as TestFn<{
+  worker: Worker;
+  accounts: Record<string, NearAccount>;
+}>;
+
+test.beforeEach(async t => {
   t.context.worker = await Worker.init({
     network: 'testnet',
     rootAccount: 'meta',
   });
 });
 
-/* This test is throwing "Rejected promise returned by test" KeyNotFound error.
-    Probably caused by https://github.com/near/workspaces-js/issues/128
-*/
+test.afterEach(async t => {
+  await t.context.worker.tearDown().catch(error => {
+    console.log('Failed to stop the Sandbox:', error);
+  });
+});
+
 test('Inspecting an account on testnet', async t => {
-  /* Uncomment
-  * await t.context.worker.fork(async ({root}) => {
-  *   t.is(root.accountId, 'meta');
-  *   t.assert(await root.exists());
-  * });
-  */
-  t.assert(true); // Delete
+  const root = t.context.worker.rootAccount;
+  t.is(root.accountId, 'meta');
+  t.assert(await root.exists());
 });

@@ -13,20 +13,32 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
 import * as borsh from 'borsh';
-import {Worker, getNetworkFromEnv} from 'near-workspaces';
+import {Worker, getNetworkFromEnv, NearAccount} from 'near-workspaces';
 import {NEAR} from 'near-units';
 import anyTest, {TestFn} from 'ava';
 
 if (getNetworkFromEnv() === 'sandbox') {
-  const test = anyTest as TestFn<{worker: Worker}>;
-  test.before(async t => {
-    t.context.worker = await Worker.init(async ({root}) => {
-      const contract = await root.createAndDeploy(
-        'status-message',
-        '__tests__/build/debug/status_message.wasm',
-      );
-      const ali = await root.createSubAccount('ali');
-      return {contract, ali};
+  const test = anyTest as TestFn<{
+    worker: Worker;
+    accounts: Record<string, NearAccount>;
+  }>;
+
+  test.beforeEach(async t => {
+    const worker = await Worker.init();
+    const root = worker.rootAccount;
+    const contract = await root.createAndDeploy(
+      'status-message',
+      '__tests__/build/debug/status_message.wasm',
+    );
+    const ali = await root.createSubAccount('ali');
+
+    t.context.worker = worker;
+    t.context.accounts = {root, contract, ali};
+  });
+
+  test.afterEach(async t => {
+    await t.context.worker.tearDown().catch(error => {
+      console.log('Failed to stop the Sandbox:', error);
     });
   });
 
@@ -41,12 +53,12 @@ if (getNetworkFromEnv() === 'sandbox') {
 
   class StatusMessage extends Assignable {}
 
-  class Record extends Assignable {}
+  class BorshRecord extends Assignable {}
 
   const schema = new Map([
-    [StatusMessage, {kind: 'struct', fields: [['records', [Record]]]}],
+    [StatusMessage, {kind: 'struct', fields: [['records', [BorshRecord]]]}],
     [
-      Record,
+      BorshRecord,
       {
         kind: 'struct',
         fields: [
@@ -58,82 +70,74 @@ if (getNetworkFromEnv() === 'sandbox') {
   ]);
 
   test('View state', async t => {
-    await t.context.worker.fork(async ({contract, ali}) => {
-      await ali.call(contract, 'set_status', {message: 'hello'});
-
-      const state = await contract.viewState();
-
-      // Get raw value
-      const data = state.get_raw('STATE');
-
-      // Deserialize from borsh
-      const statusMessage: StatusMessage = borsh.deserialize(
-        schema,
-        StatusMessage,
-        data,
-      );
-
-      t.deepEqual(statusMessage.records[0],
-        new Record({k: ali.accountId, v: 'hello'}),
-      );
-    });
+    const {contract, ali} = t.context.accounts;
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    const state = await contract.viewState();
+    // Get raw value
+    const data = state.get_raw('STATE');
+    // Deserialize from borsh
+    const statusMessage: StatusMessage = borsh.deserialize(
+      schema,
+      StatusMessage,
+      data,
+    );
+    t.deepEqual(statusMessage.records[0],
+      new BorshRecord({k: ali.accountId, v: 'hello'}),
+    );
   });
 
   test('Patch state', async t => {
-    await t.context.worker.fork(async ({contract, ali}) => {
-      // Contract must have some state for viewState & patchState to work
-      await ali.call(contract, 'set_status', {message: 'hello'});
-      // Get state
-      const state = await contract.viewState();
-      // Get raw value
-      const statusMessage = state.get('STATE', {schema, type: StatusMessage});
-
-      // Update contract state
-      statusMessage.records.push(
-        new Record({k: 'alice.near', v: 'hello world'}),
-      );
-
-      // Serialize and patch state back to runtime
-      await contract.patchState(
-        'STATE',
-        borsh.serialize(schema, statusMessage),
-      );
-
-      // Check again that the update worked
-      const result = await contract.view('get_status', {
-        account_id: 'alice.near',
-      });
-      t.is(result, 'hello world');
+    const {contract, ali} = t.context.accounts;
+    // Contract must have some state for viewState & patchState to work
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    // Get state
+    const state = await contract.viewState();
+    // Get raw value
+    const statusMessage = state.get('STATE', {schema, type: StatusMessage});
+    // Update contract state
+    statusMessage.records.push(
+      new BorshRecord({k: 'alice.near', v: 'hello world'}),
+    );
+    // Serialize and patch state back to runtime
+    await contract.patchState(
+      'STATE',
+      borsh.serialize(schema, statusMessage),
+    );
+    // Check again that the update worked
+    const result = await contract.view('get_status', {
+      account_id: 'alice.near',
     });
+    t.is(result, 'hello world');
   });
 
   test('Patch Account', async t => {
-    await t.context.worker.fork(async ({root, contract, ali}) => {
-      const bob = root.getAccount('bob');
-      const public_key = await bob.setKey();
-      const {code_hash} = await contract.accountView();
-      const BOB_BALANCE = NEAR.parse('100 N');
+    const {root, contract, ali} = t.context.accounts;
+    const bob = root.getAccount('bob');
+    const public_key = await bob.setKey();
+    const {code_hash} = await contract.accountView();
+    const BOB_BALANCE = NEAR.parse('100 N');
 
-      await bob.updateAccount({
-        amount: BOB_BALANCE.toString(),
-        code_hash,
-      });
-      await bob.updateAccessKey(
-        public_key,
-        {
-          nonce: 0,
-          permission: 'FullAccess',
-        },
-      );
-      await bob.updateContract(await contract.viewCode());
-
-      const balance = await bob.availableBalance();
-      t.deepEqual(balance, BOB_BALANCE);
-      await ali.call(bob, 'set_status', {message: 'hello'});
-      const result = await bob.view('get_status', {
-        account_id: ali.accountId,
-      });
-      t.is(result, 'hello');
+    await bob.updateAccount({
+      amount: BOB_BALANCE.toString(),
+      code_hash,
     });
+
+    await bob.updateAccessKey(
+      public_key,
+      {
+        nonce: 0,
+        permission: 'FullAccess',
+      },
+    );
+
+    await bob.updateContract(await contract.viewCode());
+    const balance = await bob.availableBalance();
+    t.deepEqual(balance, BOB_BALANCE);
+    await ali.call(bob, 'set_status', {message: 'hello'});
+    const result = await bob.view('get_status', {
+      account_id: ali.accountId,
+    });
+
+    t.is(result, 'hello');
   });
 }

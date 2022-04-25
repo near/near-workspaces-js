@@ -14,13 +14,13 @@ export declare class TestnetWorker extends Worker {
     static init(config: Partial<Config>): Promise<TestnetWorker>;
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
-    private static get defaultConfig();
+    static get defaultConfig(): Config;
     private static get clientConfig();
 }
 export declare class SandboxWorker extends Worker {
     private server;
     static init(config: Partial<Config>): Promise<SandboxWorker>;
-    private static defaultConfig;
+    static defaultConfig(): Promise<Config>;
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
     private static get clientConfig();

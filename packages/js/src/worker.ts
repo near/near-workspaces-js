@@ -60,7 +60,7 @@ export class TestnetWorker extends Worker {
     return Promise.resolve();
   }
 
-  private static get defaultConfig(): Config {
+  static get defaultConfig(): Config {
     return {
       homeDir: 'ignored',
       port: 3030,
@@ -88,7 +88,7 @@ export class SandboxWorker extends Worker {
     return worker;
   }
 
-  private static async defaultConfig(): Promise<Config> {
+  static async defaultConfig(): Promise<Config> {
     const port = await SandboxServer.nextPort();
     return {
       ...this.clientConfig,
