@@ -20,8 +20,10 @@ jobs:
         with:
           path: '/home/workspaces/.near-credentials/near-workspaces'
           key: ${{ matrix.platform }}-${{ hashFiles('$HOME/.near-credentials/near-workspaces/testnet/*') }}
+      - name: yarn
+        run: yarn
       - name: Run tests
-        run: yarn && (yarn test:testnet:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:testnet:ci --fail-fast --verbose --noStackTrace)
+        run: yarn test:testnet:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:testnet:ci --fail-fast --verbose --noStackTrace
   testnet-nocache:
     strategy:
       matrix:
@@ -30,5 +32,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
-      - name: Run tests
-        run: yarn && yarn test:testnet:ci --fail-fast --match 'Ali sets*' '*/01*' && yarn test:testnet:ci '**/account*' && yarn clean:accounts
+      - name: yarn
+        run: yarn
+      - name: Run simple test
+        run: yarn test:testnet:ci --fail-fast --match 'Ali sets*' '*/01*'
+      - name: Run account creation test
+        run: yarn test:testnet:ci '**/account*'
+      - name: Clean accounts
+        run: yarn clean:accounts
