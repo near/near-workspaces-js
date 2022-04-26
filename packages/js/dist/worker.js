@@ -35,9 +35,9 @@ class TestnetWorker extends Worker {
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.TestnetWorker.create()', 'config:', config);
         const fullConfig = { ...this.defaultConfig, ...config };
-        const runtime = new TestnetWorker(fullConfig);
-        await runtime.manager.init();
-        return runtime;
+        const worker = new TestnetWorker(fullConfig);
+        await worker.manager.init();
+        return worker;
     }
     get provider() {
         return jsonrpc_1.JsonRpcProvider.from(TestnetWorker.clientConfig);
