@@ -120,7 +120,7 @@ export class Account implements NearAccount {
     const refContract = (mainnetContract ?? testnetContract)!;
 
     const rpc = JsonRpcProvider.fromNetwork(network);
-    const blockQuery = blockId ? {blockId} : undefined;
+    const blockQuery = blockId ? {block_id: blockId} : undefined;
     const account = this.getAccount(refContract) as Account;
 
     // Get account view of account on reference network

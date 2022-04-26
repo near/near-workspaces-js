@@ -40,7 +40,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param accountId contract account
    * @returns Buffer of Wasm binary
    */
-  async viewCode(accountId: string, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<Buffer> {
+  async viewCode(accountId: string, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<Buffer> {
     return Buffer.from(await this.viewCodeRaw(accountId, blockQuery), 'base64');
   }
 
@@ -49,7 +49,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param accountId contract account
    * @returns Base64 string of Wasm binary
    */
-  async viewCodeRaw(accountId: string, blockQuery: {blockId: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<string> {
+  async viewCodeRaw(accountId: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<string> {
     const {code_base64}: ContractCodeView = await this.query({
       request_type: 'view_code',
       account_id: accountId,
@@ -58,7 +58,7 @@ export class JsonRpcProvider extends JSONRpc {
     return code_base64;
   }
 
-  async viewAccount(accountId: string, blockQuery: {blockId: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<AccountView> {
+  async viewAccount(accountId: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<AccountView> {
     return this.query<AccountView>({
       request_type: 'view_account',
       account_id: accountId,
@@ -66,7 +66,7 @@ export class JsonRpcProvider extends JSONRpc {
     });
   }
 
-  async accountExists(accountId: string, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<boolean> {
+  async accountExists(accountId: string, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<boolean> {
     try {
       await this.viewAccount(accountId, blockQuery);
       return true;
@@ -75,7 +75,7 @@ export class JsonRpcProvider extends JSONRpc {
     }
   }
 
-  async viewAccessKey(accountId: string, publicKey: PublicKey | string, blockQuery: {blockId: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<any> {
+  async viewAccessKey(accountId: string, publicKey: PublicKey | string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<any> {
     return this.query({
       request_type: 'view_access_key',
       account_id: accountId,
@@ -84,11 +84,12 @@ export class JsonRpcProvider extends JSONRpc {
     });
   }
 
-  async protocolConfig(blockQuery: {blockId: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<NearProtocolConfig> {
+  async protocolConfig(blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<NearProtocolConfig> {
+    // @ts-expect-error Bad type
     return this.experimental_protocolConfig(blockQuery);
   }
 
-  async accountBalance(accountId: string, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<AccountBalance> {
+  async accountBalance(accountId: string, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<AccountBalance> {
     const config = await this.protocolConfig(blockQuery);
     const state = await this.viewAccount(accountId, blockQuery);
     const cost = config.runtime_config.storage_amount_per_byte;
@@ -105,7 +106,7 @@ export class JsonRpcProvider extends JSONRpc {
     };
   }
 
-  async viewCall(accountId: string, methodName: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<CodeResult> {
+  async viewCall(accountId: string, methodName: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<CodeResult> {
     const args_buffer = stringifyJsonOrBytes(args);
     return this.viewCallRaw(accountId, methodName, args_buffer.toString('base64'), blockQuery);
   }
@@ -118,7 +119,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param blockQuery
    * @returns
    */
-  async viewCallRaw(accountId: string, methodName: string, args: string, blockQuery: {blockId: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<CodeResult> {
+  async viewCallRaw(accountId: string, methodName: string, args: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<CodeResult> {
     return this.query({
       request_type: 'call_function',
       account_id: accountId,
@@ -136,7 +137,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param blockQuery state at what block, defaults to most recent final block
    * @returns raw RPC response
    */
-  async viewState(accountId: string, prefix: string | Uint8Array, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<Array<{key: Buffer; value: Buffer}>> {
+  async viewState(accountId: string, prefix: string | Uint8Array, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<Array<{key: Buffer; value: Buffer}>> {
     const values = await this.viewStateRaw(accountId, prefix, blockQuery);
 
     return values.map(({key, value}) => ({
@@ -153,7 +154,7 @@ export class JsonRpcProvider extends JSONRpc {
    * @param blockQuery state at what block, defaults to most recent final block
    * @returns raw RPC response
    */
-  async viewStateRaw(accountId: string, prefix: string | Uint8Array, blockQuery?: {blockId: BlockId} | {finality: Finality}): Promise<StateItem[]> {
+  async viewStateRaw(accountId: string, prefix: string | Uint8Array, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<StateItem[]> {
     const {values} = await this.query<ViewStateResult>({
       request_type: 'view_state',
       ...(blockQuery ?? {finality: 'optimistic'}),

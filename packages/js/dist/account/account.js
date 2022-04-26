@@ -85,7 +85,7 @@ class Account {
         const network = mainnetContract ? 'mainnet' : 'testnet';
         const refContract = (mainnetContract !== null && mainnetContract !== void 0 ? mainnetContract : testnetContract);
         const rpc = jsonrpc_1.JsonRpcProvider.fromNetwork(network);
-        const blockQuery = blockId ? { blockId } : undefined;
+        const blockQuery = blockId ? { block_id: blockId } : undefined;
         const account = this.getAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);
