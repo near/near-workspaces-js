@@ -1,8 +1,7 @@
 import {NEAR} from 'near-units';
 import {getNetworkFromEnv, urlConfigFromNetwork} from './utils';
-import {ClientConfig} from './types';
+import {Config, ClientConfig} from './types';
 import {AccountManager, NearAccount, NearAccountManager} from './account';
-import {Config} from './interfaces';
 import {JsonRpcProvider} from './jsonrpc';
 import {debug} from './internal-utils';
 import {SandboxServer} from './server/server';

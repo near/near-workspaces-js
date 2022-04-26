@@ -1,4 +1,4 @@
-import { Config } from '../interfaces';
+import { Config } from '../types';
 export declare class SandboxServer {
     private static lastPort;
     private static binPath;

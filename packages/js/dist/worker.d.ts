@@ -1,5 +1,5 @@
+import { Config } from './types';
 import { NearAccount, NearAccountManager } from './account';
-import { Config } from './interfaces';
 import { JsonRpcProvider } from './jsonrpc';
 export declare abstract class Worker {
     protected config: Config;

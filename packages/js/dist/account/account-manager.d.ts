@@ -1,9 +1,8 @@
 import * as nearAPI from 'near-api-js';
 import { NEAR } from 'near-units';
-import { KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
+import { Config, KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JsonRpcProvider } from '../jsonrpc';
-import { Config } from '../interfaces';
 import { TransactionResult } from '../transaction-result';
 import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';

@@ -4,6 +4,7 @@ import _BN from 'bn.js';
 import { KeyPair } from 'near-api-js';
 import { Output } from 'promisify-child-process';
 import { NEAR } from 'near-units';
+import { KeyStore } from 'near-api-js/lib/key_stores';
 export { ServerError } from 'near-api-js/lib/utils/rpc_errors';
 export { KeyPair, Connection } from 'near-api-js';
 export { PublicKey, KeyPairEd25519 } from 'near-api-js/lib/utils';
@@ -41,6 +42,13 @@ export interface ClientConfig {
     initialBalance?: string;
     walletUrl?: string;
     archivalUrl?: string;
+}
+export interface Config extends ClientConfig {
+    homeDir: string;
+    port: number;
+    rm: boolean;
+    refDir: string | null;
+    keyStore?: KeyStore;
 }
 export declare const TESTNET_RPC_ADDR = "https://archival-rpc.testnet.near.org";
 export declare const MAINNET_RPC_ADDR = "https://archival-rpc.mainnet.near.org";
