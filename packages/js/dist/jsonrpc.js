@@ -33,45 +33,45 @@ class JsonRpcProvider extends types_1.JSONRpc {
     }
     /**
      * Download the binary of a given contract.
-     * @param account_id contract account
+     * @param accountId contract account
      * @returns Buffer of Wasm binary
      */
-    async viewCode(account_id, blockQuery) {
-        return buffer_1.Buffer.from(await this.viewCodeRaw(account_id, blockQuery), 'base64');
+    async viewCode(accountId, blockQuery) {
+        return buffer_1.Buffer.from(await this.viewCodeRaw(accountId, blockQuery), 'base64');
     }
     /**
      * Download the binary of a given contract.
-     * @param account_id contract account
+     * @param accountId contract account
      * @returns Base64 string of Wasm binary
      */
-    async viewCodeRaw(account_id, blockQuery = OPTIMISTIC) {
+    async viewCodeRaw(accountId, blockQuery = OPTIMISTIC) {
         const { code_base64 } = await this.query({
             request_type: 'view_code',
-            account_id,
+            account_id: accountId,
             ...blockQuery,
         });
         return code_base64;
     }
-    async viewAccount(account_id, blockQuery = OPTIMISTIC) {
+    async viewAccount(accountId, blockQuery = OPTIMISTIC) {
         return this.query({
             request_type: 'view_account',
-            account_id,
+            account_id: accountId,
             ...blockQuery,
         });
     }
-    async accountExists(account_id, blockQuery) {
+    async accountExists(accountId, blockQuery) {
         try {
-            await this.viewAccount(account_id, blockQuery);
+            await this.viewAccount(accountId, blockQuery);
             return true;
         }
         catch {
             return false;
         }
     }
-    async view_access_key(account_id, publicKey, blockQuery = OPTIMISTIC) {
+    async viewAccessKey(accountId, publicKey, blockQuery = OPTIMISTIC) {
         return this.query({
             request_type: 'view_access_key',
-            account_id,
+            account_id: accountId,
             public_key: typeof publicKey === 'string' ? publicKey : publicKey.toString(),
             ...blockQuery,
         });
@@ -80,9 +80,9 @@ class JsonRpcProvider extends types_1.JSONRpc {
         // @ts-expect-error Bad type
         return this.experimental_protocolConfig(blockQuery);
     }
-    async account_balance(account_id, blockQuery) {
+    async accountBalance(accountId, blockQuery) {
         const config = await this.protocolConfig(blockQuery);
-        const state = await this.viewAccount(account_id, blockQuery);
+        const state = await this.viewAccount(accountId, blockQuery);
         const cost = config.runtime_config.storage_amount_per_byte;
         const costPerByte = near_units_1.NEAR.from(cost);
         const stateStaked = near_units_1.NEAR.from(state.storage_usage).mul(costPerByte);
@@ -96,37 +96,37 @@ class JsonRpcProvider extends types_1.JSONRpc {
             available,
         };
     }
-    async view_call(account_id, method_name, args, blockQuery) {
+    async viewCall(accountId, methodName, args, blockQuery) {
         const args_buffer = (0, transaction_1.stringifyJsonOrBytes)(args);
-        return this.view_call_raw(account_id, method_name, args_buffer.toString('base64'), blockQuery);
+        return this.viewCallRaw(accountId, methodName, args_buffer.toString('base64'), blockQuery);
     }
     /**
      *
-     * @param account_id
-     * @param method_name
+     * @param accountId
+     * @param methodName
      * @param args Base64 encoded string
      * @param blockQuery
      * @returns
      */
-    async view_call_raw(account_id, method_name, args_base64, blockQuery = OPTIMISTIC) {
+    async viewCallRaw(accountId, methodName, args, blockQuery = OPTIMISTIC) {
         return this.query({
             request_type: 'call_function',
-            account_id,
-            method_name,
-            args_base64,
+            account_id: accountId,
+            method_name: methodName,
+            args_base64: args,
             ...blockQuery,
         });
     }
     /**
      * Download the state of a contract given a prefix of a key.
      *
-     * @param account_id contract account to lookup
+     * @param accountId contract account to lookup
      * @param prefix string or byte prefix of keys to loodup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
-    async viewState(account_id, prefix, blockQuery) {
-        const values = await this.viewStateRaw(account_id, prefix, blockQuery);
+    async viewState(accountId, prefix, blockQuery) {
+        const values = await this.viewStateRaw(accountId, prefix, blockQuery);
         return values.map(({ key, value }) => ({
             key: buffer_1.Buffer.from(key, 'base64'),
             value: buffer_1.Buffer.from(value, 'base64'),
@@ -135,16 +135,16 @@ class JsonRpcProvider extends types_1.JSONRpc {
     /**
      * Download the state of a contract given a prefix of a key without decoding from base64.
      *
-     * @param account_id contract account to lookup
+     * @param accountId contract account to lookup
      * @param prefix string or byte prefix of keys to loodup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
-    async viewStateRaw(account_id, prefix, blockQuery) {
+    async viewStateRaw(accountId, prefix, blockQuery) {
         const { values } = await this.query({
             request_type: 'view_state',
             ...(blockQuery !== null && blockQuery !== void 0 ? blockQuery : { finality: 'optimistic' }),
-            account_id,
+            account_id: accountId,
             prefix_base64: buffer_1.Buffer.from(prefix).toString('base64'),
         });
         return values;
@@ -155,7 +155,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
      * @param records
      * @returns
      */
-    async sandbox_patch_state(records) {
+    async patchStateRecords(records) {
         return this.sendJsonRpc('sandbox_patch_state', records);
     }
 }

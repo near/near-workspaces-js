@@ -74,7 +74,7 @@ if (getNetworkFromEnv() === 'sandbox') {
     await ali.call(contract, 'set_status', {message: 'hello'});
     const state = await contract.viewState();
     // Get raw value
-    const data = state.get_raw('STATE');
+    const data = state.getRaw('STATE');
     // Deserialize from borsh
     const statusMessage: StatusMessage = borsh.deserialize(
       schema,

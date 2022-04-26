@@ -46,7 +46,7 @@ if (getNetworkFromEnv() === 'sandbox') {
           nonce: 0,
           permission: 'FullAccess',
         }).contract(await contract.viewCode());
-    await bob.sandbox_patch_state(rb);
+    await bob.patchStateRecords(rb);
     const balance = await bob.availableBalance();
     t.deepEqual(balance, BOB_BALANCE);
     await ali.call(bob, 'set_status', {message: 'hello'});

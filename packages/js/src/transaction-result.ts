@@ -31,10 +31,10 @@ function parseValue<T>(value: string): T | string {
   }
 }
 
-export class PromiseOutcome {
+export class ReceiptOutcome {
   constructor(public outcome: ExecutionOutcome) {}
 
-  get errors(): Array<Record<string, unknown>> {
+  get failures(): Array<Record<string, unknown>> {
     return [];
   }
 
@@ -78,7 +78,7 @@ export class PromiseOutcome {
     return undefined;
   }
 
-  get executionError(): ExecutionError | undefined {
+  get executionFailure(): ExecutionError | undefined {
     if (this.isFailure) {
       return this.executionStatus.Failure!;
     }
@@ -86,12 +86,12 @@ export class PromiseOutcome {
     return undefined;
   }
 
-  get errorMessage(): string | undefined {
-    return this.executionError?.error_message;
+  get failureMessage(): string | undefined {
+    return this.executionFailure?.error_message;
   }
 
-  get errorType(): string | undefined {
-    return this.executionError?.error_type;
+  get failureType(): string | undefined {
+    return this.executionFailure?.error_type;
   }
 
   get logs(): string[] {
@@ -120,14 +120,14 @@ export class TransactionResult {
     return [result.transaction_outcome, ...result.receipts_outcome];
   }
 
-  get receipts_outcomes(): PromiseOutcome[] {
+  get receipts_outcomes(): ReceiptOutcome[] {
     return this.result.receipts_outcome.flatMap(
-      o => new PromiseOutcome(o.outcome),
+      o => new ReceiptOutcome(o.outcome),
     );
   }
 
-  get outcome(): ExecutionOutcome[] {
-    return this.outcomesWithId.flatMap(o => o.outcome);
+  get outcome(): ExecutionOutcome {
+    return this.result.transaction_outcome.outcome;
   }
 
   get outcomes(): ExecutionOutcome[] {
@@ -142,14 +142,14 @@ export class TransactionResult {
     return this.result.transaction as TransactionReceipt;
   }
 
-  get errors(): ExecutionError[] {
-    const errors = [...this.promiseErrors];
+  get failures(): ExecutionError[] {
+    const failures = [...this.receiptFailures];
 
     if (this.Failure) {
-      errors.unshift(this.Failure);
+      failures.unshift(this.Failure);
     }
 
-    return errors;
+    return failures;
   }
 
   get status(): FinalExecutionStatus | FinalExecutionStatusBasic {
@@ -196,36 +196,36 @@ export class TransactionResult {
     return this.logs.filter(includes(pattern));
   }
 
-  promiseValuesContain(pattern: string | RegExp): boolean {
-    return this.promiseSuccessValues.some(includes(pattern));
+  receiptSuccessValuesContain(pattern: string | RegExp): boolean {
+    return this.receiptSuccessValues.some(includes(pattern));
   }
 
-  findPromiseValues(pattern: string | RegExp): string[] {
-    return this.promiseSuccessValues.filter(includes(pattern));
+  findReceiptSuccessValues(pattern: string | RegExp): string[] {
+    return this.receiptSuccessValues.filter(includes(pattern));
   }
 
   get finalExecutionStatus(): FinalExecutionStatus {
     return this.status as FinalExecutionStatus;
   }
 
-  get promiseErrors(): ExecutionError[] {
-    return this.receipts_outcomes.flatMap(o => o.executionError ?? []);
+  get receiptFailures(): ExecutionError[] {
+    return this.receipts_outcomes.flatMap(o => o.executionFailure ?? []);
   }
 
-  get promiseSuccessValues(): string[] {
+  get receiptSuccessValues(): string[] {
     return this.receipts_outcomes.flatMap(o => o.SuccessValue ?? []);
   }
 
-  get promiseErrorMessages(): string[] {
-    return this.promiseErrors.map(error => JSON.stringify(error));
+  get receiptFailureMessages(): string[] {
+    return this.receiptFailures.map(failure => JSON.stringify(failure));
   }
 
   get gas_burnt(): Gas {
     return Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
   }
 
-  promiseErrorMessagesContain(pattern: string | RegExp): boolean {
-    return this.promiseErrorMessages.some(includes(pattern));
+  receiptFailureMessagesContain(pattern: string | RegExp): boolean {
+    return this.receiptFailureMessages.some(includes(pattern));
   }
 
   parseResult<T>(): T {
@@ -236,8 +236,8 @@ export class TransactionResult {
     throw new Error(JSON.stringify(this.status));
   }
 
-  parsedPromiseResults(): any[] {
-    return this.promiseSuccessValues.map(parseValue);
+  parsedReceiptResults(): any[] {
+    return this.receiptSuccessValues.map(parseValue);
   }
 
   summary(): string {

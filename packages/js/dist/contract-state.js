@@ -29,12 +29,12 @@ class ContractState {
             this.data.set(key.toString(), value);
         }
     }
-    get_raw(key) {
+    getRaw(key) {
         var _a;
         return (_a = this.data.get(key)) !== null && _a !== void 0 ? _a : buffer_1.Buffer.from('');
     }
     get(key, borshSchema) {
-        const value = this.get_raw(key);
+        const value = this.getRaw(key);
         if (borshSchema) {
             return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
         }

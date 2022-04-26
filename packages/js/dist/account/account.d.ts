@@ -34,13 +34,13 @@ export declare class Account implements NearAccount {
         initialBalance?: string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
-    importAccount({ testnetContract, mainnetContract, withData, block_id, keyPair, initialBalance, }: {
+    importContract({ testnetContract, mainnetContract, withData, blockId, keyPair, initialBalance, }: {
         testnetContract?: string;
         mainnetContract?: string;
         withData?: boolean;
         keyPair?: KeyPair;
         initialBalance?: string;
-        block_id?: number | string;
+        blockId?: number | string;
     }): Promise<NearAccount>;
     getSubAccount(accountId: string): NearAccount;
     getAccount(accountId: string): NearAccount;
@@ -53,7 +53,7 @@ export declare class Account implements NearAccount {
         method?: string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
-    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
+    callRaw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
@@ -63,14 +63,14 @@ export declare class Account implements NearAccount {
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<T>;
-    view_raw(method: string, args?: Args): Promise<CodeResult>;
+    viewRaw(method: string, args?: Args): Promise<CodeResult>;
     view<T>(method: string, args?: Args): Promise<T>;
     viewCode(): Promise<Buffer>;
     viewCodeRaw(): Promise<string>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     viewStateRaw(prefix?: string | Uint8Array): Promise<StateItem[]>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<Empty>;
-    sandbox_patch_state(records: Records): Promise<Empty>;
+    patchStateRecords(records: Records): Promise<Empty>;
     delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     makeSubAccount(accountId: string): string;
     subAccountOf(accountId: string): boolean;

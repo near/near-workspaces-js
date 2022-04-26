@@ -47,10 +47,10 @@ test('using `withData` for contracts > 50kB fails', async t => {
 
   t.regex(
     await captureError(async () => {
-      await root.importAccount({
+      await root.importContract({
         mainnetContract: REF_FINANCE_ACCOUNT,
         withData: true,
-        block_id: 50_000_000,
+        blockId: 50_000_000,
       });
     }),
     new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
@@ -60,9 +60,9 @@ test('using `withData` for contracts > 50kB fails', async t => {
 test('if skipping `withData`, fetches only contract Wasm bytes', async t => {
   const root = t.context.worker.rootAccount;
 
-  const refFinance = await root.importAccount({
+  const refFinance = await root.importContract({
     mainnetContract: REF_FINANCE_ACCOUNT,
-    block_id: DEFAULT_BLOCK_HEIGHT,
+    blockId: DEFAULT_BLOCK_HEIGHT,
   });
   t.regex(
     await captureError(async () => refFinance.view('version')),
@@ -147,11 +147,11 @@ test('integrate own FT with Ref.Finance', async t => {
 // Contract: https://github.com/near/core-contracts/blob/master/w-near
 async function createWNEAR(
   creator: NearAccount,
-  block_id = DEFAULT_BLOCK_HEIGHT,
+  blockId = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
-  const wNEAR = await creator.importAccount({
+  const wNEAR = await creator.importContract({
     mainnetContract: 'wrap.near',
-    block_id,
+    blockId,
   });
   await creator.call(wNEAR, 'new', {
     owner_id: creator,
@@ -169,11 +169,11 @@ async function createWNEAR(
 // Contract: https://github.com/ref-finance/ref-contracts/
 async function createRef(
   creator: NearAccount,
-  block_id = DEFAULT_BLOCK_HEIGHT,
+  blockId = DEFAULT_BLOCK_HEIGHT,
 ): Promise<NearAccount> {
-  const refFinance = await creator.importAccount({
+  const refFinance = await creator.importContract({
     mainnetContract: REF_FINANCE_ACCOUNT,
-    block_id,
+    blockId,
     initialBalance: NEAR.parse('1000 N').toJSON(),
   });
   await creator.call(

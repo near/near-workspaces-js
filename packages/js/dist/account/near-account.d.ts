@@ -73,13 +73,13 @@ export interface NearAccount {
      *
      * @param options
      */
-    importAccount(options: {
+    importContract(options: {
         testnetContract?: string;
         mainnetContract?: string;
         withData?: boolean;
         keyPair?: KeyPair;
         initialBalance?: string;
-        block_id?: number | string;
+        blockId?: number | string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     /** Adds suffix to accountIdPrefix and get that account */
@@ -116,13 +116,13 @@ export interface NearAccount {
   
      * @returns nearAPI.providers.FinalExecutionOutcome
      */
-    call_raw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, options?: {
+    callRaw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, options?: {
         gas?: string | BN;
         attachedDeposit?: string | BN;
         signWithKey?: KeyPair;
     }): Promise<TransactionResult>;
     /**
-     * Convenient wrapper around lower-level `call_raw` that returns only successful result of call, or throws error encountered during call.  Example:
+     * Convenient wrapper around lower-level `callRaw` that returns only successful result of call, or throws error encountered during call.  Example:
      *
      *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
      *
@@ -138,7 +138,7 @@ export interface NearAccount {
      * @param method contract method
      * @param args args to pass to method if required
      */
-    view_raw(method: string, args?: Record<string, unknown> | Uint8Array): Promise<CodeResult>;
+    viewRaw(method: string, args?: Record<string, unknown> | Uint8Array): Promise<CodeResult>;
     /**
      * Get the parsed result returned by view method
      * @param method contract method
@@ -164,7 +164,7 @@ export interface NearAccount {
      */
     viewStateRaw(prefix?: string | Uint8Array): Promise<StateItem[]>;
     /** Update record to sandbox */
-    sandbox_patch_state(records: Records): Promise<Empty>;
+    patchStateRecords(records: Records): Promise<Empty>;
     /**
      *
      * @param key key to update in storage
@@ -196,25 +196,25 @@ export interface NearAccount {
     /**
      * Update the account balance, storage usage, locked_amount.
      *
-     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     * Uses patchStateRecords to update the account without a transaction. Only works with network: 'sandbox'.
      */
     updateAccount(accountData?: Partial<AccountData>): Promise<Empty>;
     /**
      * Add AccessKey to account.
      *
-     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     * Uses patchStateRecords to update the account without a transaction. Only works with network: 'sandbox'.
      */
     updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty>;
     /**
      * Deploy contract to account.
      *
-     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     * Uses patchStateRecords to update the account without a transaction. Only works with network: 'sandbox'.
      */
     updateContract(binary: Buffer | string): Promise<Empty>;
     /**
      * Update contract data of account.
      *
-     * Uses sandbox_patch_state to update the account without a transaction. Only works with network: 'sandbox'.
+     * Uses patchStateRecords to update the account without a transaction. Only works with network: 'sandbox'.
      *
      * @param data Base64 encoded string or Buffer to be encoded as Base64
      * @param value Base64 encoded string or Buffer to be encoded as Base64
