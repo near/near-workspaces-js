@@ -68,9 +68,9 @@ async function main() {
       const rootAccount = root.getAccount(rootAccountId);
       const key = await rootAccount.getKey() ?? undefined;
       const txs = await pMap(subaccounts, async account => deleteAccount(account, rootAccount, key));
-      const errors = txs.filter(tx => tx?.failed).map(tx => tx?.summary());
-      if (errors.length > 0) {
-        console.log(errors);
+      const failures = txs.filter(tx => tx?.failed).map(tx => tx?.summary());
+      if (failures.length > 0) {
+        console.log(failures);
       }
   
       await deleteAccount(rootAccountId, rootAccount);

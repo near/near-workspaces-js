@@ -140,7 +140,7 @@ test('Can force close non-empty balance account', async t => {
     root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
   t.regex(errorString, /Can't unregister the account with the positive balance without force/);
 
-  const result = await root.call_raw(
+  const result = await root.callRaw(
     ft,
     'storage_unregister',
     {force: true},
@@ -242,7 +242,7 @@ test('Transfer call promise panics for a full refund', async t => {
 
   await registerUser(ft, defi);
 
-  const result = await root.call_raw(
+  const result = await root.callRaw(
     ft,
     'ft_transfer_call',
     {
@@ -254,7 +254,7 @@ test('Transfer call promise panics for a full refund', async t => {
     {attachedDeposit: '1', gas: '150 Tgas'},
   );
 
-  t.regex(result.promiseErrorMessages.join('\n'), /ParseIntError/);
+  t.regex(result.receiptFailureMessages.join('\n'), /ParseIntError/);
 
   const rootBalance = await ft_balance_of(ft, root);
   const defiBalance = await ft_balance_of(ft, defi);

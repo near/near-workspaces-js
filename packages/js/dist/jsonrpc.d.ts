@@ -19,77 +19,77 @@ export declare class JsonRpcProvider extends JSONRpc {
     static fromNetwork(network: Network): JsonRpcProvider;
     /**
      * Download the binary of a given contract.
-     * @param account_id contract account
+     * @param accountId contract account
      * @returns Buffer of Wasm binary
      */
-    viewCode(account_id: string, blockQuery?: {
-        block_id: BlockId;
+    viewCode(accountId: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<Buffer>;
     /**
      * Download the binary of a given contract.
-     * @param account_id contract account
+     * @param accountId contract account
      * @returns Base64 string of Wasm binary
      */
-    viewCodeRaw(account_id: string, blockQuery?: {
-        block_id: BlockId;
+    viewCodeRaw(accountId: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<string>;
-    viewAccount(account_id: string, blockQuery?: {
-        block_id: BlockId;
+    viewAccount(accountId: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<AccountView>;
-    accountExists(account_id: string, blockQuery?: {
-        block_id: BlockId;
+    accountExists(accountId: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<boolean>;
-    view_access_key(account_id: string, publicKey: PublicKey | string, blockQuery?: {
-        block_id: BlockId;
+    viewAccessKey(accountId: string, publicKey: PublicKey | string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<any>;
     protocolConfig(blockQuery?: {
-        block_id: BlockId;
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<NearProtocolConfig>;
-    account_balance(account_id: string, blockQuery?: {
-        block_id: BlockId;
+    accountBalance(accountId: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<AccountBalance>;
-    view_call(account_id: string, method_name: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {
-        block_id: BlockId;
+    viewCall(accountId: string, methodName: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<CodeResult>;
     /**
      *
-     * @param account_id
-     * @param method_name
+     * @param accountId
+     * @param methodName
      * @param args Base64 encoded string
      * @param blockQuery
      * @returns
      */
-    view_call_raw(account_id: string, method_name: string, args_base64: string, blockQuery?: {
-        block_id: BlockId;
+    viewCallRaw(accountId: string, methodName: string, args: string, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<CodeResult>;
     /**
      * Download the state of a contract given a prefix of a key.
      *
-     * @param account_id contract account to lookup
+     * @param accountId contract account to lookup
      * @param prefix string or byte prefix of keys to loodup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
-    viewState(account_id: string, prefix: string | Uint8Array, blockQuery?: {
-        block_id: BlockId;
+    viewState(accountId: string, prefix: string | Uint8Array, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<Array<{
@@ -99,13 +99,13 @@ export declare class JsonRpcProvider extends JSONRpc {
     /**
      * Download the state of a contract given a prefix of a key without decoding from base64.
      *
-     * @param account_id contract account to lookup
+     * @param accountId contract account to lookup
      * @param prefix string or byte prefix of keys to loodup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
-    viewStateRaw(account_id: string, prefix: string | Uint8Array, blockQuery?: {
-        block_id: BlockId;
+    viewStateRaw(accountId: string, prefix: string | Uint8Array, blockQuery?: {
+        blockId: BlockId;
     } | {
         finality: Finality;
     }): Promise<StateItem[]>;
@@ -115,7 +115,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @param records
      * @returns
      */
-    sandbox_patch_state(records: Records): Promise<Empty>;
+    patchStateRecords(records: Records): Promise<Empty>;
 }
 export declare const TestnetRpc: JsonRpcProvider;
 export declare const MainnetRpc: JsonRpcProvider;

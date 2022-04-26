@@ -71,13 +71,13 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   async deleteKey(
-    account_id: string,
+    accountId: string,
   ): Promise<void> {
     try {
-      await this.keyStore.removeKey(this.networkId, account_id);
-      debug(`deleted Key for ${account_id}`);
+      await this.keyStore.removeKey(this.networkId, accountId);
+      debug(`deleted Key for ${accountId}`);
     } catch {
-      debug(`Failed to delete key for ${account_id}`);
+      debug(`Failed to delete key for ${accountId}`);
     }
   }
 
@@ -152,7 +152,7 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   async balance(account: string | NearAccount): Promise<AccountBalance> {
-    return this.provider.account_balance(asId(account));
+    return this.provider.accountBalance(asId(account));
   }
 
   async availableBalance(account: string | NearAccount): Promise<NEAR> {
@@ -269,7 +269,7 @@ export class TestnetManager extends AccountManager {
     return this;
   }
 
-  async createAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void> {
+  async createTopLevelAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void> {
     await this.urlAccountCreator.createAccount(accountId, keyPair.getPublicKey());
   }
 
@@ -278,7 +278,7 @@ export class TestnetManager extends AccountManager {
       await this.getParentAccount(accountId).createAccount(accountId, {keyPair});
       this.accountsCreated.delete(accountId);
     } else {
-      await this.createAccountWithHelper(accountId, keyPair ?? await this.getRootKey());
+      await this.createTopLevelAccountWithHelper(accountId, keyPair ?? await this.getRootKey());
       debug(`Created account ${accountId} with account creator`);
     }
 

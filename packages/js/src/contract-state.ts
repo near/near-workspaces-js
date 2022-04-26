@@ -10,12 +10,12 @@ export class ContractState {
     }
   }
 
-  get_raw(key: string): Buffer {
+  getRaw(key: string): Buffer {
     return this.data.get(key) ?? Buffer.from('');
   }
 
   get(key: string, borshSchema?: {type: any; schema: any}): any {
-    const value = this.get_raw(key);
+    const value = this.getRaw(key);
     if (borshSchema) {
       return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
     }

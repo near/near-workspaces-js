@@ -64,7 +64,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
   const actualKey = createKeyPair();
   const new_public_key = actualKey.getPublicKey().toString();
 
-  await linkdrop.call_raw(
+  await linkdrop.callRaw(
     linkdrop,
     'create_account_and_claim',
     {
@@ -98,7 +98,7 @@ test('Use `claim` to transfer to an existing account', async t => {
   await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
   // Can only create subaccounts
 
-  await linkdrop.call_raw(
+  await linkdrop.callRaw(
     linkdrop,
     'claim',
     {

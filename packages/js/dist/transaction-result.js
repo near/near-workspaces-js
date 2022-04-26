@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TransactionError = exports.TransactionResult = exports.PromiseOutcome = void 0;
+exports.TransactionError = exports.TransactionResult = exports.ReceiptOutcome = void 0;
 const buffer_1 = require("buffer");
 const near_units_1 = require("near-units");
 function includes(pattern) {
@@ -18,11 +18,11 @@ function parseValue(value) {
         return buffer;
     }
 }
-class PromiseOutcome {
+class ReceiptOutcome {
     constructor(outcome) {
         this.outcome = outcome;
     }
-    get errors() {
+    get failures() {
         return [];
     }
     get status() {
@@ -55,19 +55,19 @@ class PromiseOutcome {
         }
         return undefined;
     }
-    get executionError() {
+    get executionFailure() {
         if (this.isFailure) {
             return this.executionStatus.Failure;
         }
         return undefined;
     }
-    get errorMessage() {
+    get failureMessage() {
         var _a;
-        return (_a = this.executionError) === null || _a === void 0 ? void 0 : _a.error_message;
+        return (_a = this.executionFailure) === null || _a === void 0 ? void 0 : _a.error_message;
     }
-    get errorType() {
+    get failureType() {
         var _a;
-        return (_a = this.executionError) === null || _a === void 0 ? void 0 : _a.error_type;
+        return (_a = this.executionFailure) === null || _a === void 0 ? void 0 : _a.error_type;
     }
     get logs() {
         return this.outcome.logs;
@@ -76,7 +76,7 @@ class PromiseOutcome {
         return near_units_1.Gas.from(this.outcome.gas_burnt);
     }
 }
-exports.PromiseOutcome = PromiseOutcome;
+exports.ReceiptOutcome = ReceiptOutcome;
 class TransactionResult {
     constructor(result, startMs, endMs, config) {
         this.result = result;
@@ -92,10 +92,10 @@ class TransactionResult {
         return [result.transaction_outcome, ...result.receipts_outcome];
     }
     get receipts_outcomes() {
-        return this.result.receipts_outcome.flatMap(o => new PromiseOutcome(o.outcome));
+        return this.result.receipts_outcome.flatMap(o => new ReceiptOutcome(o.outcome));
     }
     get outcome() {
-        return this.outcomesWithId.flatMap(o => o.outcome);
+        return this.result.transaction_outcome.outcome;
     }
     get outcomes() {
         return this.outcomesWithId.flatMap(o => o.outcome);
@@ -106,12 +106,12 @@ class TransactionResult {
     get transactionReceipt() {
         return this.result.transaction;
     }
-    get errors() {
-        const errors = [...this.promiseErrors];
+    get failures() {
+        const failures = [...this.receiptFailures];
         if (this.Failure) {
-            errors.unshift(this.Failure);
+            failures.unshift(this.Failure);
         }
-        return errors;
+        return failures;
     }
     get status() {
         return this.result.status;
@@ -146,29 +146,29 @@ class TransactionResult {
     findLogs(pattern) {
         return this.logs.filter(includes(pattern));
     }
-    promiseValuesContain(pattern) {
-        return this.promiseSuccessValues.some(includes(pattern));
+    receiptSuccessValuesContain(pattern) {
+        return this.receiptSuccessValues.some(includes(pattern));
     }
-    findPromiseValues(pattern) {
-        return this.promiseSuccessValues.filter(includes(pattern));
+    findReceiptSuccessValues(pattern) {
+        return this.receiptSuccessValues.filter(includes(pattern));
     }
     get finalExecutionStatus() {
         return this.status;
     }
-    get promiseErrors() {
-        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionError) !== null && _a !== void 0 ? _a : []; });
+    get receiptFailures() {
+        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionFailure) !== null && _a !== void 0 ? _a : []; });
     }
-    get promiseSuccessValues() {
+    get receiptSuccessValues() {
         return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.SuccessValue) !== null && _a !== void 0 ? _a : []; });
     }
-    get promiseErrorMessages() {
-        return this.promiseErrors.map(error => JSON.stringify(error));
+    get receiptFailureMessages() {
+        return this.receiptFailures.map(failure => JSON.stringify(failure));
     }
     get gas_burnt() {
         return near_units_1.Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
     }
-    promiseErrorMessagesContain(pattern) {
-        return this.promiseErrorMessages.some(includes(pattern));
+    receiptFailureMessagesContain(pattern) {
+        return this.receiptFailureMessages.some(includes(pattern));
     }
     parseResult() {
         if (this.succeeded) {
@@ -176,8 +176,8 @@ class TransactionResult {
         }
         throw new Error(JSON.stringify(this.status));
     }
-    parsedPromiseResults() {
-        return this.promiseSuccessValues.map(parseValue);
+    parsedReceiptResults() {
+        return this.receiptSuccessValues.map(parseValue);
     }
     summary() {
         return `(${this.durationMs} ms) burned ${this.gas_burnt.toHuman()} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;

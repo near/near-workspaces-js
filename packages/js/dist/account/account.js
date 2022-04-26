@@ -78,14 +78,14 @@ class Account {
         await tx.transact();
         return this.getSubAccount(accountId);
     }
-    async importAccount({ testnetContract, mainnetContract, withData = false, block_id, keyPair, initialBalance, }) {
+    async importContract({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
         if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }
         const network = mainnetContract ? 'mainnet' : 'testnet';
         const refContract = (mainnetContract !== null && mainnetContract !== void 0 ? mainnetContract : testnetContract);
         const rpc = jsonrpc_1.JsonRpcProvider.fromNetwork(network);
-        const blockQuery = block_id ? { block_id } : undefined;
+        const blockQuery = blockId ? { blockId } : undefined;
         const account = this.getAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);
@@ -98,9 +98,9 @@ class Account {
             const binary = await rpc.viewCodeRaw(refContract, blockQuery);
             records.contract(binary);
         }
-        await account.sandbox_patch_state(records);
+        await account.patchStateRecords(records);
         if (!await this.provider.accountExists(refContract)) {
-            await account.sandbox_patch_state(records);
+            await account.patchStateRecords(records);
             if (!await this.provider.accountExists(refContract)) {
                 throw new Error(`Account ${refContract} does not exist after trying to patch into sandbox.`);
             }
@@ -112,7 +112,7 @@ class Account {
                     account_id: account.accountId, data_key: key, value,
                 },
             }));
-            await account.sandbox_patch_state({ records: data });
+            await account.patchStateRecords({ records: data });
         }
         return account;
     }
@@ -136,13 +136,13 @@ class Account {
         await tx.transact();
         return this.getAccount(accountId);
     }
-    async call_raw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+    async callRaw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         return this.batch(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .transact(signWithKey);
     }
     async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
-        const txResult = await this.call_raw(contractId, methodName, args, {
+        const txResult = await this.callRaw(contractId, methodName, args, {
             gas,
             attachedDeposit,
             signWithKey,
@@ -152,11 +152,11 @@ class Account {
         }
         return txResult.parseResult();
     }
-    async view_raw(method, args = {}) {
-        return this.provider.view_call(this.accountId, method, args);
+    async viewRaw(method, args = {}) {
+        return this.provider.viewCall(this.accountId, method, args);
     }
     async view(method, args = {}) {
-        const result = await this.view_raw(method, args);
+        const result = await this.viewRaw(method, args);
         if (result.result) {
             const value = buffer_1.Buffer.from(result.result).toString();
             try {
@@ -183,10 +183,10 @@ class Account {
     async patchState(key, value_, borshSchema) {
         return this.updateData(buffer_1.Buffer.from(key), buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
     }
-    async sandbox_patch_state(records) {
+    async patchStateRecords(records) {
         // FIX THIS: Shouldn't need two calls to update before next RPC view call.
-        await this.provider.sandbox_patch_state(records);
-        return this.provider.sandbox_patch_state(records);
+        await this.provider.patchStateRecords(records);
+        return this.provider.patchStateRecords(records);
     }
     async delete(beneficiaryId, keyPair) {
         const result = await this.batch(this)
@@ -207,21 +207,21 @@ class Account {
         return this.accountId;
     }
     async updateAccount(accountData) {
-        return this.sandbox_patch_state(this.recordBuilder().account(accountData));
+        return this.patchStateRecords(this.recordBuilder().account(accountData));
     }
     async updateAccessKey(key, access_key_data) {
-        return this.sandbox_patch_state(this.recordBuilder().accessKey(key, access_key_data));
+        return this.patchStateRecords(this.recordBuilder().accessKey(key, access_key_data));
     }
     async updateContract(binary) {
         const accountView = await this.accountView();
         const rb = this.recordBuilder();
         rb.account(accountView);
-        return this.sandbox_patch_state(rb.contract(binary));
+        return this.patchStateRecords(rb.contract(binary));
     }
     async updateData(key, value) {
         const key_string = key instanceof buffer_1.Buffer ? key.toString('base64') : key;
         const value_string = value instanceof buffer_1.Buffer ? value.toString('base64') : value;
-        return this.sandbox_patch_state(this.recordBuilder().data(key_string, value_string));
+        return this.patchStateRecords(this.recordBuilder().data(key_string, value_string));
     }
     async transfer(accountId, amount) {
         return this.batch(accountId).transfer(amount).transact();

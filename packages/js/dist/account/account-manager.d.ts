@@ -16,7 +16,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     accountView(accountId: string): Promise<AccountView>;
     getAccount(accountId: string): NearAccount;
     getParentAccount(accountId: string): NearAccount;
-    deleteKey(account_id: string): Promise<void>;
+    deleteKey(accountId: string): Promise<void>;
     init(): Promise<AccountManager>;
     get root(): NearAccount;
     get initialBalance(): string;
@@ -55,7 +55,7 @@ export declare class TestnetManager extends AccountManager {
     get defaultKeyStore(): KeyStore;
     get urlAccountCreator(): nearAPI.accountCreator.UrlAccountCreator;
     init(): Promise<AccountManager>;
-    createAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void>;
+    createTopLevelAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void>;
     createAccount(accountId: string, keyPair?: KeyPair): Promise<NearAccount>;
     addFundsFromNetwork(accountId?: string): Promise<void>;
     addFunds(accountId: string, amount: BN): Promise<void>;

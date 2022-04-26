@@ -73,13 +73,13 @@ class AccountManager {
         }
         return this.getAccount(split.slice(1).join('.'));
     }
-    async deleteKey(account_id) {
+    async deleteKey(accountId) {
         try {
-            await this.keyStore.removeKey(this.networkId, account_id);
-            (0, internal_utils_1.debug)(`deleted Key for ${account_id}`);
+            await this.keyStore.removeKey(this.networkId, accountId);
+            (0, internal_utils_1.debug)(`deleted Key for ${accountId}`);
         }
         catch {
-            (0, internal_utils_1.debug)(`Failed to delete key for ${account_id}`);
+            (0, internal_utils_1.debug)(`Failed to delete key for ${accountId}`);
         }
     }
     async init() {
@@ -141,7 +141,7 @@ class AccountManager {
         return keyPair;
     }
     async balance(account) {
-        return this.provider.account_balance((0, utils_1.asId)(account));
+        return this.provider.accountBalance((0, utils_1.asId)(account));
     }
     async availableBalance(account) {
         return (await this.balance(account)).available;
@@ -230,7 +230,7 @@ class TestnetManager extends AccountManager {
         await this.createAndFundAccount();
         return this;
     }
-    async createAccountWithHelper(accountId, keyPair) {
+    async createTopLevelAccountWithHelper(accountId, keyPair) {
         await this.urlAccountCreator.createAccount(accountId, keyPair.getPublicKey());
     }
     async createAccount(accountId, keyPair) {
@@ -239,7 +239,7 @@ class TestnetManager extends AccountManager {
             this.accountsCreated.delete(accountId);
         }
         else {
-            await this.createAccountWithHelper(accountId, keyPair !== null && keyPair !== void 0 ? keyPair : await this.getRootKey());
+            await this.createTopLevelAccountWithHelper(accountId, keyPair !== null && keyPair !== void 0 ? keyPair : await this.getRootKey());
             (0, internal_utils_1.debug)(`Created account ${accountId} with account creator`);
         }
         return this.getAccount(accountId);

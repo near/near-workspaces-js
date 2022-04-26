@@ -97,11 +97,11 @@ export class Account implements NearAccount {
     return this.getSubAccount(accountId);
   }
 
-  async importAccount({
+  async importContract({
     testnetContract,
     mainnetContract,
     withData = false,
-    block_id,
+    blockId,
     keyPair,
     initialBalance,
   }: {
@@ -110,7 +110,7 @@ export class Account implements NearAccount {
     withData?: boolean;
     keyPair?: KeyPair;
     initialBalance?: string;
-    block_id?: number | string;
+    blockId?: number | string;
   }): Promise<NearAccount> {
     if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
       throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
@@ -120,7 +120,7 @@ export class Account implements NearAccount {
     const refContract = (mainnetContract ?? testnetContract)!;
 
     const rpc = JsonRpcProvider.fromNetwork(network);
-    const blockQuery = block_id ? {block_id} : undefined;
+    const blockQuery = blockId ? {blockId} : undefined;
     const account = this.getAccount(refContract) as Account;
 
     // Get account view of account on reference network
@@ -136,10 +136,10 @@ export class Account implements NearAccount {
       records.contract(binary);
     }
 
-    await account.sandbox_patch_state(records);
+    await account.patchStateRecords(records);
 
     if (!await this.provider.accountExists(refContract)) {
-      await account.sandbox_patch_state(records);
+      await account.patchStateRecords(records);
       if (!await this.provider.accountExists(refContract)) {
         throw new Error(`Account ${refContract} does not exist after trying to patch into sandbox.`);
       }
@@ -152,7 +152,7 @@ export class Account implements NearAccount {
           account_id: account.accountId, data_key: key, value,
         },
       }));
-      await account.sandbox_patch_state({records: data});
+      await account.patchStateRecords({records: data});
     }
 
     return account;
@@ -202,7 +202,7 @@ export class Account implements NearAccount {
     return this.getAccount(accountId);
   }
 
-  async call_raw(
+  async callRaw(
     contractId: NearAccount | string,
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
@@ -235,7 +235,7 @@ export class Account implements NearAccount {
       signWithKey?: KeyPair;
     } = {},
   ): Promise<T> {
-    const txResult = await this.call_raw(contractId, methodName, args, {
+    const txResult = await this.callRaw(contractId, methodName, args, {
       gas,
       attachedDeposit,
       signWithKey,
@@ -247,12 +247,12 @@ export class Account implements NearAccount {
     return txResult.parseResult<T>();
   }
 
-  async view_raw(method: string, args: Args = {}): Promise<CodeResult> {
-    return this.provider.view_call(this.accountId, method, args);
+  async viewRaw(method: string, args: Args = {}): Promise<CodeResult> {
+    return this.provider.viewCall(this.accountId, method, args);
   }
 
   async view<T>(method: string, args: Args = {}): Promise<T> {
-    const result = await this.view_raw(method, args);
+    const result = await this.viewRaw(method, args);
     if (result.result) {
       const value = Buffer.from(result.result).toString();
       try {
@@ -287,10 +287,10 @@ export class Account implements NearAccount {
     return this.updateData(Buffer.from(key), Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
   }
 
-  async sandbox_patch_state(records: Records): Promise<Empty> {
+  async patchStateRecords(records: Records): Promise<Empty> {
     // FIX THIS: Shouldn't need two calls to update before next RPC view call.
-    await this.provider.sandbox_patch_state(records);
-    return this.provider.sandbox_patch_state(records);
+    await this.provider.patchStateRecords(records);
+    return this.provider.patchStateRecords(records);
   }
 
   async delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
@@ -317,24 +317,24 @@ export class Account implements NearAccount {
   }
 
   async updateAccount(accountData?: Partial<AccountData>): Promise<Empty> {
-    return this.sandbox_patch_state(this.recordBuilder().account(accountData));
+    return this.patchStateRecords(this.recordBuilder().account(accountData));
   }
 
   async updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty> {
-    return this.sandbox_patch_state(this.recordBuilder().accessKey(key, access_key_data));
+    return this.patchStateRecords(this.recordBuilder().accessKey(key, access_key_data));
   }
 
   async updateContract(binary: Buffer | string): Promise<Empty> {
     const accountView = await this.accountView();
     const rb = this.recordBuilder();
     rb.account(accountView);
-    return this.sandbox_patch_state(rb.contract(binary));
+    return this.patchStateRecords(rb.contract(binary));
   }
 
   async updateData(key: string | Buffer, value: string | Buffer): Promise<Empty> {
     const key_string = key instanceof Buffer ? key.toString('base64') : key;
     const value_string = value instanceof Buffer ? value.toString('base64') : value;
-    return this.sandbox_patch_state(this.recordBuilder().data(key_string, value_string));
+    return this.patchStateRecords(this.recordBuilder().data(key_string, value_string));
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {

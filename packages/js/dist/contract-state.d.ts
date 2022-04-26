@@ -6,7 +6,7 @@ export declare class ContractState {
         key: Buffer;
         value: Buffer;
     }>);
-    get_raw(key: string): Buffer;
+    getRaw(key: string): Buffer;
     get(key: string, borshSchema?: {
         type: any;
         schema: any;
