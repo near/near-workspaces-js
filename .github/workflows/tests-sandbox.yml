@@ -12,5 +12,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+      - name: yarn
+        run: yarn
       - name: Run tests
-        run: (yarn && yarn test:sandbox:ci --fail-fast) || NEAR_WORKSPACES_DEBUG=true yarn test:sandbox:ci --fail-fast --verbose --noStackTrace
+        run: yarn test:sandbox:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:sandbox:ci --fail-fast --verbose --noStackTrace

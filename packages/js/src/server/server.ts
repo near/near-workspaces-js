@@ -7,7 +7,6 @@ import * as http from 'http';
 import tmpDir from 'temp-dir';
 import * as portCheck from 'node-port-check';
 import UUID from 'pure-uuid';
-import {Config} from '../interfaces';
 import {
   debug,
   asyncSpawn,
@@ -17,7 +16,7 @@ import {
   copyDir,
   ensureBinary,
 } from '../internal-utils';
-import {ChildProcessPromise} from '../types';
+import {Config, ChildProcessPromise} from '../types';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',
