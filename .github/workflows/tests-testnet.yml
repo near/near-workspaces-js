@@ -23,7 +23,7 @@ jobs:
       - name: yarn
         run: yarn
       - name: Run tests
-        run: yarn test:testnet:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:testnet:ci --fail-fast --verbose --noStackTrace
+        run: yarn test:testnet:ci --fail-fast
   testnet-nocache:
     strategy:
       matrix:
@@ -32,11 +32,27 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: yarn
         run: yarn
-      - name: Run simple test
-        run: yarn test:testnet:ci --fail-fast --match 'Ali sets*' '*/01*'
-      - name: Run account creation test
-        run: yarn test:testnet:ci '**/account*'
+      - name: Run tests
+        run: yarn test:testnet:ci --fail-fast
+  testnet-clean-accs:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: yarn
+        run: yarn
+      - name: Run tests
+        run: yarn test:testnet:ci --fail-fast
       - name: Clean accounts
         run: yarn clean:accounts
