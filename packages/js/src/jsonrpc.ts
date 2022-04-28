@@ -7,16 +7,16 @@ import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalan
 
 const OPTIMISTIC: {finality: 'optimistic'} = {finality: 'optimistic'};
 /**
- * Extends the main provider class in NAJ, adding more methods for
+ * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.
  */
 export class JsonRpcProvider extends JSONRpc {
   private static readonly providers: Map<string, JsonRpcProvider> = new Map();
 
   /**
-   *
+   * Create a JsonRpcProvider from config or rpcAddr
    * @param config rpc endpoint URL or a configuration that includes one.
-   * @returns
+   * @returns JsonRpcProvider
    */
   static from(config: string | {rpcAddr: string}): JsonRpcProvider {
     const url = typeof config === 'string' ? config : config.rpcAddr;
@@ -112,7 +112,7 @@ export class JsonRpcProvider extends JSONRpc {
   }
 
   /**
-   *
+   * Get full response from RPC about result of view method
    * @param accountId
    * @param methodName
    * @param args Base64 encoded string
@@ -169,7 +169,7 @@ export class JsonRpcProvider extends JSONRpc {
    * Updates records without using a transaction.
    * Note: only avaialable on Sandbox endpoints.
    * @param records
-   * @returns
+   * @returns Promise<Empty>
    */
   async patchStateRecords(records: Records): Promise<Empty> {
     return this.sendJsonRpc('sandbox_patch_state', records);

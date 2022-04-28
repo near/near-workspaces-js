@@ -8,14 +8,14 @@ const transaction_1 = require("near-api-js/lib/transaction");
 const types_1 = require("./types");
 const OPTIMISTIC = { finality: 'optimistic' };
 /**
- * Extends the main provider class in NAJ, adding more methods for
+ * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.
  */
 class JsonRpcProvider extends types_1.JSONRpc {
     /**
-     *
+     * Create a JsonRpcProvider from config or rpcAddr
      * @param config rpc endpoint URL or a configuration that includes one.
-     * @returns
+     * @returns JsonRpcProvider
      */
     static from(config) {
         const url = typeof config === 'string' ? config : config.rpcAddr;
@@ -101,7 +101,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
         return this.viewCallRaw(accountId, methodName, args_buffer.toString('base64'), blockQuery);
     }
     /**
-     *
+     * Get full response from RPC about result of view method
      * @param accountId
      * @param methodName
      * @param args Base64 encoded string
@@ -153,7 +153,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
      * Updates records without using a transaction.
      * Note: only avaialable on Sandbox endpoints.
      * @param records
-     * @returns
+     * @returns Promise<Empty>
      */
     async patchStateRecords(records) {
         return this.sendJsonRpc('sandbox_patch_state', records);

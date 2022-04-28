@@ -3,15 +3,15 @@ import { Buffer } from 'buffer';
 import { Records } from './record';
 import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network } from './types';
 /**
- * Extends the main provider class in NAJ, adding more methods for
+ * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.
  */
 export declare class JsonRpcProvider extends JSONRpc {
     private static readonly providers;
     /**
-     *
+     * Create a JsonRpcProvider from config or rpcAddr
      * @param config rpc endpoint URL or a configuration that includes one.
-     * @returns
+     * @returns JsonRpcProvider
      */
     static from(config: string | {
         rpcAddr: string;
@@ -68,7 +68,7 @@ export declare class JsonRpcProvider extends JSONRpc {
         finality: Finality;
     }): Promise<CodeResult>;
     /**
-     *
+     * Get full response from RPC about result of view method
      * @param accountId
      * @param methodName
      * @param args Base64 encoded string
@@ -113,7 +113,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * Updates records without using a transaction.
      * Note: only avaialable on Sandbox endpoints.
      * @param records
-     * @returns
+     * @returns Promise<Empty>
      */
     patchStateRecords(records: Records): Promise<Empty>;
 }

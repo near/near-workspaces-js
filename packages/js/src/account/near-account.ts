@@ -123,13 +123,13 @@ export interface NearAccount {
   /**
    * Call a NEAR contract and return full results with raw receipts, etc. Example:
    *
-   *     await call('lol.testnet', 'set_status', { message: 'hello' }, {gas: new BN(30 * 10**12), attachedDeposit: new BN(10**24)})
+   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas: new BN(30 * 10**12), attachedDeposit: new BN(10**24)})
    *
    *     //`gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
    *
-   *     await call('lol.testnet', 'set_status', { message: 'hello' }, {gas:"10 Tgas", attachedDeposit: "1 N"})
+   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas:"10 Tgas", attachedDeposit: "1 N"})
 
-   * @returns nearAPI.providers.FinalExecutionOutcome
+   * @returns Promise<TransactionResult>
    */
   callRaw(
     contractId: NearAccount | string,
@@ -199,7 +199,7 @@ export interface NearAccount {
   patchStateRecords(records: Records): Promise<Empty>;
 
   /**
-   *
+   * Patch state data of given key and value to sandbox
    * @param key key to update in storage
    * @param value_ Data to be serialized to JSON by default
    * @param borshSchema If passed will be used to encode the data
