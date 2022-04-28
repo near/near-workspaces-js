@@ -248,7 +248,15 @@ export class TestnetManager extends AccountManager {
   }
 
   async init(): Promise<AccountManager> {
-    await this.createAndFundRootAccount();
+    if (!this.rootAccountId) {
+      this.rootAccountId = randomAccountId();
+    }
+
+    if (!(await this.exists(this.rootAccountId))) {
+      await this.createAccount(this.rootAccountId);
+      debug(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
+    }
+
     return this;
   }
 
@@ -294,17 +302,6 @@ export class TestnetManager extends AccountManager {
     }
 
     await parent.transfer(accountId, amount);
-  }
-
-  async createAndFundRootAccount(): Promise<void> {
-    if (!this.rootAccountId) {
-      this.rootAccountId = randomAccountId();
-    }
-
-    if (!(await this.exists(this.rootAccountId))) {
-      await this.createAccount(this.rootAccountId);
-      debug(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
-    }
   }
 
   async deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]> {

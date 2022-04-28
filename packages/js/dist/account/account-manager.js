@@ -217,7 +217,13 @@ class TestnetManager extends AccountManager {
         this.config.helperUrl);
     }
     async init() {
-        await this.createAndFundRootAccount();
+        if (!this.rootAccountId) {
+            this.rootAccountId = (0, utils_1.randomAccountId)();
+        }
+        if (!(await this.exists(this.rootAccountId))) {
+            await this.createAccount(this.rootAccountId);
+            (0, internal_utils_1.debug)(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
+        }
         return this;
     }
     async createTopLevelAccountWithHelper(accountId, keyPair) {
@@ -257,15 +263,6 @@ class TestnetManager extends AccountManager {
             await this.addFunds(parent.accountId, amount);
         }
         await parent.transfer(accountId, amount);
-    }
-    async createAndFundRootAccount() {
-        if (!this.rootAccountId) {
-            this.rootAccountId = (0, utils_1.randomAccountId)();
-        }
-        if (!(await this.exists(this.rootAccountId))) {
-            await this.createAccount(this.rootAccountId);
-            (0, internal_utils_1.debug)(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
-        }
     }
     async deleteAccounts(accounts, beneficiaryId) {
         var _a;
