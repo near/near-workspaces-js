@@ -1,10 +1,27 @@
 import { Config } from './types';
 import { NearAccount, NearAccountManager } from './account';
 import { JsonRpcProvider } from './jsonrpc';
+/**
+ * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
+ */
 export declare abstract class Worker {
     protected config: Config;
     protected manager: NearAccountManager;
     constructor(config: Config);
+    /**
+     * Initialize a new worker.
+     *
+     * In local sandbox mode, this will:
+     *   - Create a new local blockchain
+     *   - Load the root account for that blockchain, available as `root`:
+     *
+     * In testnet mode, the same functionality is achieved via different means:
+     * creating a new account as the `root`.
+     * Since all actions must occur on one blockchain instead of N.
+     *
+     * @param config a configuration object
+     * @returns an instance of the Worker class
+     */
     static init(config?: Partial<Config>): Promise<Worker>;
     get rootAccount(): NearAccount;
     abstract get provider(): JsonRpcProvider;
