@@ -21,7 +21,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = exports.AccountManager = void 0;
 const path = __importStar(require("path"));
-const os = __importStar(require("os"));
 const process = __importStar(require("process"));
 const nearAPI = __importStar(require("near-api-js"));
 const near_units_1 = require("near-units");
@@ -33,18 +32,6 @@ const jsonrpc_1 = require("../jsonrpc");
 const transaction_result_1 = require("../transaction-result");
 const account_1 = require("./account");
 const utils_2 = require("./utils");
-async function findAccountsWithPrefix(prefix, keyStore, network) {
-    const accounts = await keyStore.getAccounts(network);
-    (0, internal_utils_1.debug)(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
-    const paths = accounts.filter(f => f.startsWith(prefix));
-    if (paths.length > 0) {
-        (0, internal_utils_1.debug)(`Found:\n  ${paths.join('\n  ')}`);
-        return paths;
-    }
-    const newAccount = (0, utils_1.timeSuffix)(prefix, 13);
-    (0, internal_utils_1.debug)(`Creating account: ${newAccount}`);
-    return [newAccount];
-}
 class AccountManager {
     constructor(config) {
         this.config = config;
@@ -196,6 +183,9 @@ class AccountManager {
     get rootAccountId() {
         return this.config.rootAccount;
     }
+    set rootAccountId(value) {
+        this.config.rootAccount = value;
+    }
     get keyStore() {
         var _a;
         return (_a = this.config.keyStore) !== null && _a !== void 0 ? _a : this.defaultKeyStore;
@@ -227,7 +217,7 @@ class TestnetManager extends AccountManager {
         this.config.helperUrl);
     }
     async init() {
-        await this.createAndFundAccount();
+        await this.createAndFundRootAccount();
         return this;
     }
     async createTopLevelAccountWithHelper(accountId, keyPair) {
@@ -268,13 +258,13 @@ class TestnetManager extends AccountManager {
         }
         await parent.transfer(accountId, amount);
     }
-    async createAndFundAccount() {
-        await this.initRootAccount();
-        const accountId = this.rootAccountId;
-        if (!(await this.exists(accountId))) {
-            await this.createAccount(accountId);
-            (0, internal_utils_1.debug)(`Added masterAccount ${accountId}
-          https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
+    async createAndFundRootAccount() {
+        if (!this.rootAccountId) {
+            this.rootAccountId = (0, utils_1.randomAccountId)();
+        }
+        if (!(await this.exists(this.rootAccountId))) {
+            await this.createAccount(this.rootAccountId);
+            (0, internal_utils_1.debug)(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
     }
     async deleteAccounts(accounts, beneficiaryId) {
@@ -284,24 +274,6 @@ class TestnetManager extends AccountManager {
             await this.deleteAccount(accountId, beneficiaryId, keyPair);
             await this.deleteKey(accountId);
         }));
-    }
-    async initRootAccount() {
-        if (this.config.rootAccount !== undefined) {
-            return;
-        }
-        const fileName = (0, utils_2.findCallerFile)()[0];
-        const p = path.parse(fileName);
-        if (['.ts', '.js'].includes(p.ext)) {
-            const hash = (0, utils_2.sanitize)((0, utils_2.hashPathBase64)(fileName));
-            const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
-            TestnetManager.numRootAccounts++;
-            const name = `r${currentRootNumber}${hash.slice(0, 19)}`;
-            const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
-            const accountId = accounts.shift();
-            this.config.rootAccount = accountId;
-            return;
-        }
-        throw new Error(`Bad filename name passed by callsites: ${fileName}`);
     }
     async createFrom(config) {
         const currentRunAccount = TestnetManager.numTestAccounts;
@@ -323,7 +295,6 @@ class TestnetManager extends AccountManager {
 }
 exports.TestnetManager = TestnetManager;
 TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'workspaces');
-TestnetManager.numRootAccounts = 0;
 TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {
     async init() {

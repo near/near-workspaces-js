@@ -1,9 +1,8 @@
 import * as path from 'path';
-import * as os from 'os';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {NEAR} from 'near-units';
-import {asId, isTopLevelAccount, randomAccountId, timeSuffix} from '../utils';
+import {asId, isTopLevelAccount, randomAccountId} from '../utils';
 import {Config, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
@@ -11,26 +10,8 @@ import {JsonRpcProvider} from '../jsonrpc';
 import {TransactionResult} from '../transaction-result';
 import {Account} from './account';
 import {NearAccount} from './near-account';
-import {findCallerFile, getKeyFromFile, hashPathBase64, sanitize} from './utils';
+import {getKeyFromFile} from './utils';
 import {NearAccountManager} from './near-account-manager';
-
-async function findAccountsWithPrefix(
-  prefix: string,
-  keyStore: KeyStore,
-  network: string,
-): Promise<string[]> {
-  const accounts = await keyStore.getAccounts(network);
-  debug(`HOME: ${os.homedir()}\nPWD: ${process.cwd()}\nLooking for ${prefix} in:\n  ${accounts.join('\n  ')}`);
-  const paths = accounts.filter(f => f.startsWith(prefix));
-  if (paths.length > 0) {
-    debug(`Found:\n  ${paths.join('\n  ')}`);
-    return paths;
-  }
-
-  const newAccount = timeSuffix(prefix, 13);
-  debug(`Creating account: ${newAccount}`);
-  return [newAccount];
-}
 
 export abstract class AccountManager implements NearAccountManager {
   accountsCreated: Set<string> = new Set();
@@ -215,6 +196,10 @@ export abstract class AccountManager implements NearAccountManager {
     return this.config.rootAccount!;
   }
 
+  protected set rootAccountId(value: string) {
+    this.config.rootAccount = value;
+  }
+
   abstract get DEFAULT_INITIAL_BALANCE(): string;
   abstract createFrom(config: Config): Promise<NearAccountManager>;
   abstract get defaultKeyStore(): KeyStore;
@@ -238,7 +223,6 @@ export abstract class AccountManager implements NearAccountManager {
 
 export class TestnetManager extends AccountManager {
   static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials', 'workspaces');
-  private static numRootAccounts = 0;
   private static numTestAccounts = 0;
 
   static get defaultKeyStore(): KeyStore {
@@ -264,7 +248,7 @@ export class TestnetManager extends AccountManager {
   }
 
   async init(): Promise<AccountManager> {
-    await this.createAndFundAccount();
+    await this.createAndFundRootAccount();
     return this;
   }
 
@@ -312,15 +296,14 @@ export class TestnetManager extends AccountManager {
     await parent.transfer(accountId, amount);
   }
 
-  async createAndFundAccount(): Promise<void> {
-    await this.initRootAccount();
-    const accountId: string = this.rootAccountId;
-    if (!(await this.exists(accountId))) {
-      await this.createAccount(accountId);
-      debug(`Added masterAccount ${
-        accountId
-      }
-          https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
+  async createAndFundRootAccount(): Promise<void> {
+    if (!this.rootAccountId) {
+      this.rootAccountId = randomAccountId();
+    }
+
+    if (!(await this.exists(this.rootAccountId))) {
+      await this.createAccount(this.rootAccountId);
+      debug(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
     }
   }
 
@@ -331,30 +314,6 @@ export class TestnetManager extends AccountManager {
         await this.deleteAccount(accountId, beneficiaryId, keyPair);
         await this.deleteKey(accountId);
       }),
-    );
-  }
-
-  async initRootAccount(): Promise<void> {
-    if (this.config.rootAccount !== undefined) {
-      return;
-    }
-
-    const fileName = findCallerFile()[0];
-    const p = path.parse(fileName);
-    if (['.ts', '.js'].includes(p.ext)) {
-      const hash: string = sanitize(hashPathBase64(fileName));
-      const currentRootNumber = TestnetManager.numRootAccounts === 0 ? '' : `${TestnetManager.numRootAccounts}`;
-      TestnetManager.numRootAccounts++;
-      const name = `r${currentRootNumber}${hash.slice(0, 19)}`;
-
-      const accounts = await findAccountsWithPrefix(name, this.keyStore, this.networkId);
-      const accountId = accounts.shift()!;
-      this.config.rootAccount = accountId;
-      return;
-    }
-
-    throw new Error(
-      `Bad filename name passed by callsites: ${fileName}`,
     );
   }
 
