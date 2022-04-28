@@ -4,8 +4,8 @@ jobs:
   testnet:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
-        node-version: [14, 16]
+        platform: [ubuntu-latest]
+        node-version: [16]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
