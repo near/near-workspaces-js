@@ -4,15 +4,31 @@ jobs:
   testnet:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
-        node-version: [14, 16]
+        platform: [ubuntu-latest]
+        node-version: [16]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install dependencies
-        run: yarn
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ matrix.platform }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - uses: actions/cache@v2
+        with:
+          path: '/home/workspaces/.near-credentials/near-workspaces'
+          key: ${{ matrix.platform }}-${{ hashFiles('$HOME/.near-credentials/near-workspaces/testnet/*') }}
       - name: Run tests
-        run: yarn test:testnet:ci --fail-fast
+        run: yarn && (yarn test:testnet:ci --fail-fast || NEAR_WORKSPACES_DEBUG=true yarn test:testnet:ci --fail-fast --verbose --noStackTrace)
+  testnet-nocache:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [16]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: yarn && yarn test:testnet:ci --fail-fast --match 'Ali sets*' '*/01*' && yarn test:testnet:ci '**/account*'

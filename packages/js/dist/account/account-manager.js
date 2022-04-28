@@ -218,10 +218,14 @@ class TestnetManager extends AccountManager {
     }
     async init() {
         if (!this.rootAccountId) {
+            console.info('No rootAccountId in config');
             this.rootAccountId = (0, utils_1.randomAccountId)();
+            console.info(`generated new rootAccountId: ${this.rootAccountId}`);
         }
         if (!(await this.exists(this.rootAccountId))) {
+            console.info(`${this.rootAccountId} does not exist, creating...`);
             await this.createAccount(this.rootAccountId);
+            console.info(`${this.rootAccountId} probably created`);
             (0, internal_utils_1.debug)(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
         }
         return this;
@@ -231,11 +235,14 @@ class TestnetManager extends AccountManager {
     }
     async createAccount(accountId, keyPair) {
         if (accountId.includes('.')) {
+            console.info(`${accountId} contains dot`);
             await this.getParentAccount(accountId).createAccount(accountId, { keyPair });
             this.accountsCreated.delete(accountId);
         }
         else {
+            console.info(`No dot in ${accountId}, creating acc with createTopLevelAccountWithHelper`);
             await this.createTopLevelAccountWithHelper(accountId, keyPair !== null && keyPair !== void 0 ? keyPair : await this.getRootKey());
+            console.info(`Created account ${accountId} with account creator`);
             (0, internal_utils_1.debug)(`Created account ${accountId} with account creator`);
         }
         return this.getAccount(accountId);
