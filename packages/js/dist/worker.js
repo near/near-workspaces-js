@@ -7,12 +7,29 @@ const account_1 = require("./account");
 const jsonrpc_1 = require("./jsonrpc");
 const internal_utils_1 = require("./internal-utils");
 const server_1 = require("./server/server");
+/**
+ * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
+ */
 class Worker {
     constructor(config) {
         (0, internal_utils_1.debug)('Lifecycle.Worker.constructor', 'config:', config);
         this.config = config;
         this.manager = account_1.AccountManager.create(config);
     }
+    /**
+     * Initialize a new worker.
+     *
+     * In local sandbox mode, this will:
+     *   - Create a new local blockchain
+     *   - Load the root account for that blockchain, available as `root`:
+     *
+     * In testnet mode, the same functionality is achieved via different means:
+     * creating a new account as the `root`.
+     * Since all actions must occur on one blockchain instead of N.
+     *
+     * @param config a configuration object
+     * @returns an instance of the Worker class
+     */
     static async init(config = {}) {
         var _a;
         (0, internal_utils_1.debug)('Lifecycle.Worker.init()', 'config:', config);
