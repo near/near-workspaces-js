@@ -256,7 +256,7 @@ class TestnetManager extends AccountManager {
         }
         return this.getAccount(accountId);
     }
-    async addFundsFromNetwork(accountId = this.rootAccountId) {
+    async addFundsFromNetwork(accountId = this.fullRootAccountId) {
         const temporaryId = (0, utils_1.randomAccountId)();
         try {
             const key = await this.getRootKey();

@@ -300,7 +300,7 @@ export class TestnetManager extends AccountManager {
     return this.getAccount(accountId);
   }
 
-  async addFundsFromNetwork(accountId: string = this.rootAccountId): Promise<void> {
+  async addFundsFromNetwork(accountId: string = this.fullRootAccountId): Promise<void> {
     const temporaryId = randomAccountId();
     try {
       const key = await this.getRootKey();
