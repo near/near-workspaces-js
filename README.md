@@ -18,8 +18,6 @@ To get started with `Near Workspaces` you need to do only two things:
 
 1. Initialize a `Worker`.
 
-    This will be used as the starting point for more workers soon.
-
     ```ts
     const worker = await Worker.init();
     const root = worker.rootAccount;
