@@ -6,6 +6,9 @@ import {JsonRpcProvider} from './jsonrpc';
 import {debug} from './internal-utils';
 import {SandboxServer} from './server/server';
 
+/**
+ * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
+ */
 export abstract class Worker {
   protected config: Config;
 
@@ -17,6 +20,20 @@ export abstract class Worker {
     this.manager = AccountManager.create(config);
   }
 
+  /**
+   * Initialize a new worker.
+   *
+   * In local sandbox mode, this will:
+   *   - Create a new local blockchain
+   *   - Load the root account for that blockchain, available as `root`:
+   *
+   * In testnet mode, the same functionality is achieved via different means:
+   * creating a new account as the `root`.
+   * Since all actions must occur on one blockchain instead of N.
+   *
+   * @param config a configuration object
+   * @returns an instance of the Worker class
+   */
   static async init(config: Partial<Config> = {}): Promise<Worker> {
     debug('Lifecycle.Worker.init()', 'config:', config);
     switch (config.network ?? getNetworkFromEnv()) {
