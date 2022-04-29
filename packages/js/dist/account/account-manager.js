@@ -235,7 +235,7 @@ class TestnetManager extends AccountManager {
     }
     async init() {
         if (!this.rootAccountId) {
-            this.rootAccountId = (0, utils_1.randomAccountId)();
+            this.rootAccountId = (0, utils_1.randomAccountId)('r-', 5, 5);
         }
         if (!(await this.exists(this.fullRootAccountId))) {
             await this.getAccount(this.masterAccountId).createSubAccount(this.rootAccountId);

@@ -274,7 +274,7 @@ export class TestnetManager extends AccountManager {
 
   async init(): Promise<AccountManager> {
     if (!this.rootAccountId) {
-      this.rootAccountId = randomAccountId();
+      this.rootAccountId = randomAccountId('r-', 5, 5);
     }
 
     if (!(await this.exists(this.fullRootAccountId))) {
