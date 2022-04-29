@@ -46,6 +46,9 @@
       "ava/no-ignored-test-files": 0,
       "@typescript-eslint/no-unsafe-return": 0
     },
+    "ignores": [
+      "examples/**/*.js"
+    ],
     "overrides": [
       {
         "files": [
