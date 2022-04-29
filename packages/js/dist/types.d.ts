@@ -35,7 +35,7 @@ export interface AccountBalance {
 export declare type Network = 'testnet' | 'mainnet' | 'sandbox';
 export interface ClientConfig {
     network: Network;
-    rootAccount?: string;
+    rootAccountId?: string;
     rpcAddr: string;
     helperUrl?: string;
     explorerUrl?: string;

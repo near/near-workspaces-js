@@ -193,11 +193,11 @@ export abstract class AccountManager implements NearAccountManager {
   async cleanup(): Promise<void> {} // eslint-disable-line @typescript-eslint/no-empty-function
 
   get rootAccountId(): string {
-    return this.config.rootAccount!;
+    return this.config.rootAccountId!;
   }
 
   protected set rootAccountId(value: string) {
-    this.config.rootAccount = value;
+    this.config.rootAccountId = value;
   }
 
   abstract get DEFAULT_INITIAL_BALANCE(): string;
@@ -318,7 +318,7 @@ export class TestnetManager extends AccountManager {
     const currentRunAccount = TestnetManager.numTestAccounts;
     const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
     TestnetManager.numTestAccounts += 1;
-    const newConfig = {...config, rootAccount: `t${prefix}.${config.rootAccount!}`};
+    const newConfig = {...config, rootAccount: `t${prefix}.${config.rootAccountId!}`};
     return (new TestnetManager(newConfig)).init();
   }
 

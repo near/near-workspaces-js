@@ -181,10 +181,10 @@ class AccountManager {
     }
     async cleanup() { } // eslint-disable-line @typescript-eslint/no-empty-function
     get rootAccountId() {
-        return this.config.rootAccount;
+        return this.config.rootAccountId;
     }
     set rootAccountId(value) {
-        this.config.rootAccount = value;
+        this.config.rootAccountId = value;
     }
     get keyStore() {
         var _a;
@@ -276,7 +276,7 @@ class TestnetManager extends AccountManager {
         const currentRunAccount = TestnetManager.numTestAccounts;
         const prefix = currentRunAccount === 0 ? '' : currentRunAccount;
         TestnetManager.numTestAccounts += 1;
-        const newConfig = { ...config, rootAccount: `t${prefix}.${config.rootAccount}` };
+        const newConfig = { ...config, rootAccount: `t${prefix}.${config.rootAccountId}` };
         return (new TestnetManager(newConfig)).init();
     }
     async cleanup() {

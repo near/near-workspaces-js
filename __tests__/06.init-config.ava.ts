@@ -9,7 +9,7 @@ const test = anyTest as TestFn<{
 test.beforeEach(async t => {
   t.context.worker = await Worker.init({
     network: 'testnet',
-    rootAccount: 'meta',
+    rootAccountId: 'meta',
   });
 });
 
