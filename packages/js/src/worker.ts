@@ -131,7 +131,7 @@ export class SandboxWorker extends Worker {
   private static get clientConfig(): ClientConfig {
     return {
       network: 'sandbox',
-      rootAccount: 'test.near',
+      rootAccountId: 'test.near',
       rpcAddr: '', // Will be over written
       initialBalance: NEAR.parse('100 N').toJSON(),
     };

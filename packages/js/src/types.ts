@@ -59,7 +59,8 @@ export type Network = 'testnet' | 'mainnet' | 'sandbox';
 
 export interface ClientConfig {
   network: Network;
-  rootAccount?: string;
+  rootAccountId?: string;
+  testnetMasterAccountId?: string;
   rpcAddr: string;
   helperUrl?: string;
   explorerUrl?: string;

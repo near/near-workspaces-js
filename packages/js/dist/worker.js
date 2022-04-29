@@ -112,7 +112,7 @@ class SandboxWorker extends Worker {
     static get clientConfig() {
         return {
             network: 'sandbox',
-            rootAccount: 'test.near',
+            rootAccountId: 'test.near',
             rpcAddr: '',
             initialBalance: near_units_1.NEAR.parse('100 N').toJSON(),
         };

@@ -159,23 +159,26 @@ near-workspaces is set up so that you can write tests once and run them against 
 * You can test against deployed testnet contracts
 * If something seems off in Sandbox mode, you can compare it to testnet
 
-You can run in testnet mode in three ways.
+In order to use Workspaces JS in testnet mode you will need to have a testnet account. You can create one [here](https://wallet.testnet.near.org/).
 
-1. When creating your Worker, pass a config object as the first argument:
+You can switch to testnet mode in three ways.
+
+1. When creating Worker set network to `testnet` and pass your master account:
 
    ```ts
-   const worker = await Worker.init(
-     {network: 'testnet'},
-   )
+   const worker = await Worker.init({
+     network: 'testnet',
+     testnetMasterAccountId: '<yourAccountName>',
+  })
    ```
 
-2. Set the `NEAR_WORKSPACES_NETWORK` environment variable when running your tests:
+2. Set the `NEAR_WORKSPACES_NETWORK` and `TESTNET_MASTER_ACCOUNT_ID` environment variables when running your tests:
 
    ```bash
-   NEAR_WORKSPACES_NETWORK=testnet node test.js
+   NEAR_WORKSPACES_NETWORK=testnet TESTNET_MASTER_ACCOUNT_ID=<your master account Id> node test.js
    ```
 
-   If you set this environment variable and pass `{network: 'testnet'}` to `Worker.init`, the config object takes precedence.
+   If you set this environment variables and pass `{network: 'testnet', testnetMasterAccountId: <masterAccountId>}` to `Worker.init`, the config object takes precedence.
 
 3. If using `near-workspaces` with AVA, you can use a custom config file. Other test runners allow similar config files; adjust the following instructions for your situation.
 
@@ -185,6 +188,9 @@ You can run in testnet mode in three ways.
    module.exports = {
      ...require('near-workspaces/ava.testnet.config.cjs'),
      ...require('./ava.config.cjs'),
+   };
+   module.exports.environmentVariables = {
+        TESTNET_MASTER_ACCOUNT_ID: '<masterAccountId>',
    };
    ```
 
