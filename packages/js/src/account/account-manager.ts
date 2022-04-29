@@ -225,11 +225,35 @@ export class TestnetManager extends AccountManager {
   static readonly KEYSTORE_PATH: string = path.join(process.cwd(), '.near-credentials', 'workspaces');
   private static numTestAccounts = 0;
 
+  private _testnetRoot?: NearAccount;
+
   static get defaultKeyStore(): KeyStore {
     const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(
       this.KEYSTORE_PATH,
     );
     return keyStore;
+  }
+
+  get masterAccountId(): string {
+    if (!this.config.testnetMasterAccountId) {
+      throw new Error(
+        'Master account is not provided. You can set it in config while calling Worker.init(config); or with TESTNET_MASTER_ACCOUNT_ID env variable',
+      );
+    }
+
+    return this.config.testnetMasterAccountId ?? process.env.TESTNET_MASTER_ACCOUNT_ID;
+  }
+
+  get fullRootAccountId(): string {
+    return this.rootAccountId + '.' + this.masterAccountId;
+  }
+
+  get root(): NearAccount {
+    if (!this._testnetRoot) {
+      this._testnetRoot = new Account(this.fullRootAccountId, this);
+    }
+
+    return this._testnetRoot;
   }
 
   get DEFAULT_INITIAL_BALANCE(): string {
@@ -252,9 +276,8 @@ export class TestnetManager extends AccountManager {
       this.rootAccountId = randomAccountId();
     }
 
-    if (!(await this.exists(this.rootAccountId))) {
-      await this.createAccount(this.rootAccountId);
-      debug(`Added masterAccount ${this.rootAccountId} https://explorer.testnet.near.org/accounts/${this.rootAccountId}`);
+    if (!(await this.exists(this.fullRootAccountId))) {
+      await this.getAccount(this.masterAccountId).createSubAccount(this.rootAccountId);
     }
 
     return this;

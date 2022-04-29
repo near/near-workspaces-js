@@ -49,7 +49,11 @@ export declare abstract class AccountManager implements NearAccountManager {
 export declare class TestnetManager extends AccountManager {
     static readonly KEYSTORE_PATH: string;
     private static numTestAccounts;
+    private _testnetRoot?;
     static get defaultKeyStore(): KeyStore;
+    get masterAccountId(): string;
+    get fullRootAccountId(): string;
+    get root(): NearAccount;
     get DEFAULT_INITIAL_BALANCE(): string;
     get defaultKeyStore(): KeyStore;
     get urlAccountCreator(): nearAPI.accountCreator.UrlAccountCreator;
