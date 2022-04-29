@@ -18,29 +18,27 @@ To get started with `Near Workspaces` you need to do only two things:
 
 1. Initialize a `Worker`.
 
-    This will be used as the starting point for more workers soon.
+    ```ts
+    const worker = await Worker.init();
+    const root = worker.rootAccount;
 
-   ```ts
-   const worker = await Worker.init(async ({root}) => {
-     const alice = await root.createSubAccount('alice');
-     const contract = await root.createAndDeploy(
-       'contract-account-name',
-       'path/to/compiled.wasm'
-     );
-     return {alice, contract};
-   });
-   ```
+    const alice = await root.createSubAccount('alice');
+    const contract = await root.createAndDeploy(
+      root.getSubAccount('contract-name').accountId,
+      'path/to/compiled.wasm'
+    );
+    ```
 
    Let's step through this.
 
-   1. `Worker.init` initializes a new [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox) node/instance. This is essentially a mini-NEAR blockchain created just for this test. Each of these Sandbox instances gets its own data directory and port, so that tests can run in parallel.
-   2. This blockchain also has a `root` user. Mainnet has `*.near`, testnet has `*.testnet`, and these tests have `*.${root.accountId}`. This account name is not currently `sandbox` but might be in the future. Since it doesn't matter, you can think of it as being called `sandbox` while you're still figuring things out.
-   3. `root.createSubAccount` creates a new subaccount of `root` with the given name, for example `alice.sandbox`.
-   4. `root.createAndDeploy` creates a new subaccount with the given name, `contract-account-name.sandbox`, then deploys the specified Wasm file to it.
+   1. `Worker.init` initializes a new `SandboxWorker` or `TestnetWorker` depending on the config. `SandboxWorker` contains [NEAR Sandbox](https://docs.near.org/docs/develop/contracts/sandbox), which is essentially a local mini-NEAR blockchain. You can create one `Worker` per test to get its own data directory and port (for Sandbox) or root account (for Testnet), so that tests can run in parallel without race conditions in accessing states. If there's no state intervention. you can also reuse the `Worker` to speedup the tests.
+   2. The worker has a `root` account. For `SandboxWorker`, it's `test.near`. For `TestnetWorker`, it creates a unique account. The following accounts are created as subaccounts of the root account. The name of the account will change from different runs, so you should not refer to them by hard coded account name. You can access them via the account object, such as `root`, `alice` and `contract` above.
+   3. `root.createSubAccount` creates a new subaccount of `root` with the given name, for example `alice.<root-account-name>`.
+   4. `root.createAndDeploy` creates an account with the given name, `contract-name.<root-account-name>`, then deploys the specified Wasm file to it.
    5. `path/to/compiled.wasm` will resolve relative to your project root. That is, the nearest directory with a `package.json` file, or your current working directory if no `package.json` is found. To construct a path relative to your test file, you can use `path.join(__dirname, '../etc/etc.wasm')` ([more info](https://nodejs.org/api/path.html#path_path_join_paths)).
-   6. After `Worker.create` finishes running the function passed into it, it gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
-   7. `worker` contains a reference to this data directory, so that multiple tests can use it as a starting point.
-   8. The object returned, `{alice, contract}`, will be passed along to subsequent tests.
+   6. `worker` contains a reference to this data directory, so that multiple tests can use it as a starting point.
+   7. If you're using a test framework, you can save the `worker` object and account objects `root`, `alice`, `contract` to test context to reuse them in subsequent tests.
+   8. At the end of test, call `await worker.tearDown()` to shuts down the Worker. It gracefully shuts down the Sandbox instance it ran in the background. However, it keeps the data directory around. That's what stores the state of the two accounts that were created (`alice` and `contract-account-name` with its deployed contract).
 
 2. Writing tests.
 
@@ -50,7 +48,7 @@ To get started with `Near Workspaces` you need to do only two things:
    import {strict as assert} from 'assert';
 
    await Promise.all([
-     worker.fork(async ({alice, contract}) => {
+     async () => {
        await alice.call(
          contract,
          'some_update_function',
@@ -61,8 +59,8 @@ To get started with `Near Workspaces` you need to do only two things:
          {account_id: alice}
        );
        assert.equal(result, 'whatever');
-     }),
-     worker.fork(async ({alice, contract}) => {
+     },
+     async () => {
        const result = await contract.view(
          'some_view_function',
          {account_id: alice}
@@ -71,14 +69,14 @@ To get started with `Near Workspaces` you need to do only two things:
        a default here, because this `fork` runs *at the same time* as the
        previous, in a separate local blockchain */
        assert.equal(result, 'some default');
-     });
+     }
    ]);
    ```
 
    Let's step through this.
 
-   1. Like the earlier call to `Worker.init`, each call to `worker.fork` sets up its own Sandbox instance. Each will copy the data directory set up earlier as the starting point for its tests. Each will use a unique port so that tests can be safely run in parallel.
-   2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `call_raw` instead.
+   1. `worker` and accounts such as `alice` are created before.
+   2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `callRaw` instead.
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
    4. Gotcha: the full account names does not match the strings passed to `createSubAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
@@ -96,28 +94,38 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
   import {Worker} from 'near-workspaces';
   import anyTest, {TestFn} from 'ava'
 
-  const test = anyTest as TestFn<{worker: Worker}>;
+  const test = anyTest as TestFn<{
+    worker: Worker;
+    accounts: Record<string, NearAccount>;
+  }>;
+
+  /* If using `test.before`, each test is reusing the same worker;
+  If you'd like to make a copy of the worker, use `beforeEach` after `afterEach`,
+  which allows you to isolate the state for each test */
   test.before(async t => {
-    t.context.worker = await Worker.init(async ({root}) => ({
-      contract: await root.createAndDeploy(
-        'account-id-for-contract',
-        'path/to/contract/file.wasm',
-      ),
-      /* Account that you will be able to use in your tests */
-      ali: await root.createSubAccount('ali'),
-    }));
+    const worker = await Worker.init();
+    const root = worker.rootAccount;
+    const contract = await root.createAndDeploy(
+      'account-id-for-contract',
+      'path/to/contract/file.wasm',
+    );
+    /* Account that you will be able to use in your tests */
+    const ali = await root.createSubAccount('ali');
+    t.context.worker = worker;
+    t.context.accounts = {root, contract, ali};
   })
 
   test('Test name', async t => {
-    /* Each test is making a "fork", a copy of the
-    worker, that was created in "before" function.
-    It allows you to isolate each test and run them concurrently */
-    await t.context.worker.fork(async ({contract, ali}) => {
-      await ali.call(contract, 'set_status', {message: 'hello'});
-      const result: string = await contract.view('get_status', {
-        account_id: ali,
-      });
-      t.is(result, 'hello');
+    const {ali, contract} = t.context.accounts;
+    await ali.call(contract, 'set_status', {message: 'hello'});
+    const result: string = await contract.view('get_status', {account_id: ali});
+    t.is(result, 'hello');
+  });
+
+  test.after(async t => {
+    // Stop Sandbox server
+    await t.context.worker.tearDown().catch(error => {
+      console.log('Failed to stop the Sandbox:', error);
     });
   });
   ```
@@ -129,12 +137,10 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
 [Spooning a blockchain](https://coinmarketcap.com/alexandria/glossary/spoon-blockchain) is copying the data from one network into a different network. near-workspaces makes it easy to copy data from Mainnet or Testnet contracts into your local Sandbox environment:
 
 ```ts
-await worker.fork(async ({root}) => {
-  const refFinance = await root.importContract({
-    mainnetContract: 'v2.ref-finance.near',
-    blockId: 50_000_000,
-    withData: true,
-  });
+const refFinance = await root.importContract({
+  mainnetContract: 'v2.ref-finance.near',
+  blockId: 50_000_000,
+  withData: true,
 });
 ```
 
@@ -160,7 +166,6 @@ You can run in testnet mode in three ways.
    ```ts
    const worker = await Worker.init(
      {network: 'testnet'},
-     async ({root}) => { … }
    )
    ```
 
@@ -203,22 +208,16 @@ Let's revisit a shortened version of the example from How It Works above, descri
 1. Create a `Worker`.
 
    ```ts
-   const worker = await Worker.init(async ({root}) => {
-     await root.createSubAccount('alice');
-     await root.createAndDeploy(
-       'contract-account-name',
-       'path/to/compiled.wasm'
-     );
-   });
+   const worker = await Worker.init();
    ```
 
-   `Worker.init` does not interact with Testnet at all yet. Instead, the function runs at the beginning of each subsequent call to `worker.fork`. This matches the semantics of the sandbox that all subsequent calls to `fork` have the same starting point, however, testnet requires that each forkd worker has its own root account. In fact `Worker.init` creates a unique testnet account and each test is a unique sub-account.
+   `Worker.init` creates a unique testnet account as root account.
 
 2. Write tests.
 
    ```ts
    await Promise.all([
-     worker.fork(async ({alice, contract}) => {
+     async () => {
        await alice.call(
          contract,
          'some_update_function',
@@ -229,26 +228,18 @@ Let's revisit a shortened version of the example from How It Works above, descri
          {account_id: alice}
        );
        assert.equal(result, 'whatever');
-     }),
-     worker.fork(async ({alice, contract}) => {
+     },
+     async () => {
        const result = await contract.view(
          'some_view_function',
          {account_id: alice}
        );
        assert.equal(result, 'some default');
-     });
+     }
    ]);
    ```
 
-   Each call to `worker.fork` will:
-
-   - Get or create its own sub-account on testnet account, e.g. `t.rdsq0289478`. If creating the account the keys will be stored at `$PWD/.near-credentials/workspaces/testnet/t.rdsq0289478.json`.
-   - Run the `initFn` passed to `Worker.init`
-   - Create sub-accounts for each `createAccount` and `createAndDeploy`, such as `alice.t.rdsq0289478`
-   - If the test account runs out of funds to create accounts it will request a transfer from the root account.
-   - After the test is finished each account created is deleted and the funds sent back to the test account.
-
-Note: Since the testnet accounts are cached, if account creation rate limits are reached simply wait a little while and try again.
+Note: Sometimes account creation rate limits are reached on testnet, simply wait a little while and try again.
 
 Running tests only in Sandbox
 -------------------------------
@@ -257,24 +248,19 @@ If some of your runs take advantage of Sandbox-specific features, you can skip t
 
 1. You can skip entire sections of your files by checking `getNetworkFromEnv() === 'sandbox'`.
 
-   ```ts
-   let worker = Worker.init(async ({root}) => ({ // note the implicit return
-     contract: await root.createAndDeploy(
-       'contract-account-name',
-       'path/to/compiled.wasm'
-     )
-   }));
-   worker.fork('thing that makes sense on any network', async ({…}) => {
-     // logic using basic contract & account interactions
-   });
-   if (getNetworkFromEnv() === 'sandbox') {
-     worker.fork('thing that only makes sense with sandbox', async ({…}) => {
-       // logic using patch-state, fast-forwarding, etc
-     });
-   }
-   ```
+  ```ts
+  let worker = Worker.init();
+  // things make sense to any network
+  const root = worker.rootAccount;
+  const alice = await root.createSubAccount('alice');
 
-2. Use a separate testnet config file, as described under the "Running on Testnet" heading above.
+
+  if (getNetworkFromEnv() === 'sandbox') {
+    // thing that only makes sense with sandbox
+  }
+  ```
+
+2. Use a separate testnet config file, as described under the "Running on Testnet" heading above. Specify test files to include and exclude in config file.
 
 Patch State on the Fly
 ======================
@@ -294,16 +280,15 @@ Pro Tips
 
 * `Worker.init` [config](https://github.com/near/workspaces-js/blob/main/packages/js/src/interfaces.ts) – you can pass a config object as the first argument to `Worker.init`. This lets you do things like:
 
-  * skip initialization if specified data directory already exists
+  * skip initialization if specified data directory already exists (the default behavior)
 
     ```ts
     Worker.init(
-      { init: false, homeDir: './test-data/alice-owns-an-nft' },
-      async ({root}) => { … }
+      { rm: false, homeDir: './test-data/alice-owns-an-nft' },
     )
     ```
 
-  * always recreate such data directory instead (the default behavior)
+  * always recreate such data directory instead with `rm: true`
 
   * specify which port to run on
 
