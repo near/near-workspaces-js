@@ -208,10 +208,11 @@ class TestnetManager extends AccountManager {
     }
     get masterAccountId() {
         var _a;
-        if (!this.config.testnetMasterAccountId) {
+        const passedAccountId = (_a = this.config.testnetMasterAccountId) !== null && _a !== void 0 ? _a : process.env.TESTNET_MASTER_ACCOUNT_ID;
+        if (!passedAccountId) {
             throw new Error('Master account is not provided. You can set it in config while calling Worker.init(config); or with TESTNET_MASTER_ACCOUNT_ID env variable');
         }
-        return (_a = this.config.testnetMasterAccountId) !== null && _a !== void 0 ? _a : process.env.TESTNET_MASTER_ACCOUNT_ID;
+        return passedAccountId;
     }
     get fullRootAccountId() {
         return this.rootAccountId + '.' + this.masterAccountId;
