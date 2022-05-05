@@ -26,7 +26,7 @@ if (getNetworkFromEnv() === 'sandbox') {
 
   test.afterEach(async t => {
     await t.context.worker.tearDown().catch(error => {
-      console.log('Failed to stop the Sandbox:', error);
+      console.log('Failed to tear down the worker:', error);
     });
   });
 

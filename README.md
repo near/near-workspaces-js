@@ -125,7 +125,7 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
   test.after(async t => {
     // Stop Sandbox server
     await t.context.worker.tearDown().catch(error => {
-      console.log('Failed to stop the Sandbox:', error);
+      console.log('Failed to tear down the worker:', error);
     });
   });
   ```
