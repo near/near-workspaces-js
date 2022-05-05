@@ -1,5 +1,7 @@
 /**
  * This test file demonstrates the reuse of the Worker across several tests.
+ * The maine differance is the usage of before() and after() AVA functions
+ * instead of beforeEach() and after each.
  * Keep in mind that tests are executed in parallel.
  * It means that they should not depend on each other.
  */
