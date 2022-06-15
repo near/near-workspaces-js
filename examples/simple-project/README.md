@@ -4,8 +4,8 @@ This is the simplest project setup example with workspaces-js. You can copy it a
 
 ## Usage
 ```
-npm i
-npm run test
+yarn
+yarn test
 ```
 
 ## Setup your project
@@ -16,4 +16,4 @@ Assume you have written your smart contract. Setup and write workspaces-js test 
 2. Install the `near-workspaces` and `ava` with `npm` or `yarn`.
 3. Copy the ava.config.cjs to you project root directory.
 4. Write test, place in `__tests__/`, end with `.ava.js`. You can refer to `__tests__/test-status-message.ava.js` as an example.
-5. We're done! Run test with `npm run test` and continue adding more tests!
+5. We're done! Run test with `yarn test` and continue adding more tests!
