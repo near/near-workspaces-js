@@ -88,13 +88,16 @@ test('integrate own FT with Ref.Finance', async t => {
   const root = t.context.worker.rootAccount;
 
   const [ft, refFinance, wNEAR] = await Promise.all([
-    root.createAndDeploy('ft', '__tests__/build/debug/fungible_token.wasm', {
-      method: 'new_default_meta',
-      args: {
-        owner_id: root,
-        total_supply: NEAR.parse('1,000,000,000 N'),
-      },
-    }),
+    root.createAndDeploy(
+      root.getSubAccount('ft').accountId,
+      '__tests__/build/debug/fungible_token.wasm',
+      {
+        method: 'new_default_meta',
+        args: {
+          owner_id: root,
+          total_supply: NEAR.parse('1,000,000,000 N'),
+        },
+      }),
     createRef(root),
     createWNEAR(root),
   ]);
