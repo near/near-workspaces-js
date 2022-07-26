@@ -70,12 +70,6 @@ function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
 export function urlConfigFromNetwork(network: string | {network: string}): ClientConfig {
   const networkName = typeof network === 'string' ? network : network.network;
   switch (networkName) {
-    case 'sandbox':
-      return {
-        network: 'sandbox',
-        rpcAddr: 'http://localhost',
-      };
-
     case 'testnet':
     case 'mainnet': return configFromDomain(networkName);
     default:

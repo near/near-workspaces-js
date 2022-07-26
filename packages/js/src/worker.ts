@@ -112,12 +112,12 @@ export class SandboxWorker extends Worker {
       port,
       rm: false,
       refDir: null,
-      rpcAddr: `http://localhost:${port}`,
+      rpcAddr: `http://0.0.0.0:${port}`, // TODO: make it dynamic
     };
   }
 
   get provider(): JsonRpcProvider {
-    return JsonRpcProvider.from(this.rpcAddr);
+    return JsonRpcProvider.from(this.server.rpcAddr);
   }
 
   async tearDown(): Promise<void> {
@@ -135,9 +135,5 @@ export class SandboxWorker extends Worker {
       rpcAddr: '', // Will be over written
       initialBalance: NEAR.parse('100 N').toJSON(),
     };
-  }
-
-  private get rpcAddr(): string {
-    return `http://localhost:${this.config.port}`;
   }
 }

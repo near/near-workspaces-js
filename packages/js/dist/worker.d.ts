@@ -41,6 +41,5 @@ export declare class SandboxWorker extends Worker {
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
     private static get clientConfig();
-    private get rpcAddr();
 }
 //# sourceMappingURL=worker.d.ts.map
