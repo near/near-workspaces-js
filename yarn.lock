@@ -4885,10 +4885,10 @@ near-api-js@^0.44.1:
     text-encoding-utf-8 "^1.0.2"
     tweetnacl "^1.0.1"
 
-near-sandbox@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.npmjs.org/near-sandbox/-/near-sandbox-0.0.10.tgz#2216a77426bbf9ed794331939d5fbb427ff7c3da"
-  integrity sha512-ak0Lq9j+7VX4pjh7BnzrGFk4LVBblDDK7jezsQDdtToWm+QmjOmg23N/oPo6OVGxhrKCyQUGZVMDRhFylomWVQ==
+near-sandbox@^0.0.12:
+  version "0.0.12"
+  resolved "https://registry.npmjs.org/near-sandbox/-/near-sandbox-0.0.12.tgz#b0e36c9458a437c5cb4e1218f715585f087904b1"
+  integrity sha512-NfMSbPYiSpSMijM3JoC1FuNJuc3Pop86OF+/01ahc8phWQbjT404rMR+UvvuCZQ6Qge8/MC76KjBUPg3d7mg1Q==
   dependencies:
     got "^11.8.2"
     tar "^6.1.0"

@@ -136,7 +136,9 @@ export class SandboxServer {
       this.homeDir,
       'run',
       '--rpc-addr',
-      this.internalRpcAddr,
+      `0.0.0.0:${this.port}`,
+      '--network-addr',
+      `0.0.0.0:${await SandboxServer.nextPort()}`,
     ];
     if (process.env.NEAR_WORKSPACES_DEBUG) {
       const filePath = join(this.homeDir, 'sandboxServer.log');
@@ -177,10 +179,6 @@ export class SandboxServer {
     if (this.config.rm) {
       await rm(this.homeDir);
     }
-  }
-
-  private get internalRpcAddr(): string {
-    return `0.0.0.0:${this.port}`;
   }
 
   private async spawn(command: string): ChildProcessPromise {
