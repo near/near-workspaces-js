@@ -112,7 +112,7 @@ export class SandboxWorker extends Worker {
       port,
       rm: false,
       refDir: null,
-      rpcAddr: `http://0.0.0.0:${port}`, // TODO: make it dynamic
+      rpcAddr: `http://localhost:${port}`,
     };
   }
 
