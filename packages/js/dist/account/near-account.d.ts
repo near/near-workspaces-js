@@ -87,16 +87,15 @@ export interface NearAccount {
     /** Get the account with given full accountId */
     getAccount(accountId: string): NearAccount;
     /**
-     * Creates an account for a contract and then deploys a Wasm binary to its account.
+     * Creates an account for a contract and then deploys a Wasm binary to it.
      * If method arguments are provided a function call to `method` will be added to the transaction so that
      * the contract can be initialized in the same step.
      *
-     * @param accountId Name of contract to deploy
      * @param wasm path or data of contract binary
      * @param options If any method is passed it will be added to the transaction so that contract will be initialized
      *                `gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
      */
-    createAndDeploy(accountId: string, wasm: string | URL | Uint8Array | Buffer, options?: {
+    devDeploy(wasm: string | URL | Uint8Array | Buffer, options?: {
         args?: Record<string, unknown> | Uint8Array;
         attachedDeposit?: string | BN;
         gas?: string | BN;

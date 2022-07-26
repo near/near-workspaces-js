@@ -59,13 +59,11 @@ const test = anyTest as TestFn<{
 test.beforeEach(async t => {
   const worker = await Worker.init();
   const root = worker.rootAccount;
-  const ft = await root.createAndDeploy(
-    root.getSubAccount('fungible-token').accountId,
+  const ft = await root.devDeploy(
     '__tests__/build/debug/fungible_token.wasm',
     {initialBalance: NEAR.parse('3 N').toJSON()},
   );
-  const defi = await root.createAndDeploy(
-    root.getSubAccount('defi').accountId,
+  const defi = await root.devDeploy(
     '__tests__/build/debug/defi.wasm',
     {initialBalance: NEAR.parse('3 N').toJSON()},
   );

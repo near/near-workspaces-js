@@ -123,7 +123,9 @@ class Account {
     getAccount(accountId) {
         return new Account(accountId, this.manager);
     }
-    async createAndDeploy(accountId, wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
+    async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
+        const randomNumber = Math.floor((Math.random() * (9999 - 1000)) + 10000);
+        const accountId = `dev-${randomNumber}.${this.accountId}`;
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,

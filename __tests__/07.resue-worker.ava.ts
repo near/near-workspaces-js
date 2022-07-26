@@ -17,8 +17,7 @@ test.before(async t => {
   const worker = await Worker.init();
 
   const root = worker.rootAccount;
-  const contract = await root.createAndDeploy(
-    root.getSubAccount('status-message').accountId,
+  const contract = await root.devDeploy(
     '__tests__/build/debug/status_message.wasm',
     {initialBalance: NEAR.parse('3 N').toJSON()},
   );

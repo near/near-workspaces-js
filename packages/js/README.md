@@ -23,10 +23,7 @@ To get started with `Near Workspaces` you need to do only two things:
     const root = worker.rootAccount;
 
     const alice = await root.createSubAccount('alice');
-    const contract = await root.createAndDeploy(
-      root.getSubAccount('contract-name').accountId,
-      'path/to/compiled.wasm'
-    );
+    const contract = await root.devDeploy('path/to/compiled.wasm');
     ```
 
 2. Writing tests.

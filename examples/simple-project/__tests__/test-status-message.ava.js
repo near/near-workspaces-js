@@ -16,8 +16,7 @@ test.beforeEach(async t => {
 
   // Prepare sandbox for tests, create accounts, deploy contracts, etx.
   const root = worker.rootAccount;
-  const contract = await root.createAndDeploy(
-    root.getSubAccount('status-message').accountId,
+  const contract = await root.devDeploy(
     'contracts/status_message.wasm',
     {initialBalance: NEAR.parse('3 N').toJSON()},
   );

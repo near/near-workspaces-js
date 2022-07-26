@@ -88,8 +88,7 @@ test('integrate own FT with Ref.Finance', async t => {
   const root = t.context.worker.rootAccount;
 
   const [ft, refFinance, wNEAR] = await Promise.all([
-    root.createAndDeploy(
-      root.getSubAccount('ft').accountId,
+    root.devDeploy(
       '__tests__/build/debug/fungible_token.wasm',
       {
         method: 'new_default_meta',

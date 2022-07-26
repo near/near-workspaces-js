@@ -26,10 +26,7 @@ if (getNetworkFromEnv() === 'sandbox') {
   test.beforeEach(async t => {
     const worker = await Worker.init();
     const root = worker.rootAccount;
-    const contract = await root.createAndDeploy(
-      root.getSubAccount('status-message').accountId,
-      '__tests__/build/debug/status_message.wasm',
-    );
+    const contract = await root.devDeploy('__tests__/build/debug/status_message.wasm');
     const ali = await root.createSubAccount('ali');
 
     t.context.worker = worker;

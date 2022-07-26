@@ -167,8 +167,7 @@ export class Account implements NearAccount {
     return new Account(accountId, this.manager);
   }
 
-  async createAndDeploy(
-    accountId: string,
+  async devDeploy(
     wasm: string | URL | Uint8Array | Buffer,
     {
       attachedDeposit = NO_DEPOSIT,
@@ -188,6 +187,9 @@ export class Account implements NearAccount {
       isSubAccount?: boolean;
     } = {},
   ): Promise<NearAccount> {
+    const randomNumber = Math.floor((Math.random() * (9999 - 1000)) + 10_000);
+    const accountId = `dev-${randomNumber}.${this.accountId}`;
+
     let tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,
