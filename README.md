@@ -153,7 +153,7 @@ See an [example of spooning](https://github.com/near/workspaces-js/blob/main/__t
 Running on Testnet
 ==================
 
-near-workspaces is set up so that you can write tests once and run them against a local Sandbox node (the default behavior) or against [NEAR TestNet](https://docs.near.org/docs/concepts/networks). Some reasons this might be helpful:
+near-workspaces is set up so that you can write tests once and run them against a local Sandbox node (the default behavior) or against [NEAR TestNet](https://docs.near.org/concepts/basics/networks). Some reasons this might be helpful:
 
 * Gives higher confidence that your contracts work as expected
 * You can test against deployed testnet contracts
