@@ -128,7 +128,9 @@ class SandboxServer {
             this.homeDir,
             'run',
             '--rpc-addr',
-            this.internalRpcAddr,
+            `0.0.0.0:${this.port}`,
+            '--network-addr',
+            `0.0.0.0:${await SandboxServer.nextPort()}`,
         ];
         if (process_1.default.env.NEAR_WORKSPACES_DEBUG) {
             const filePath = (0, path_1.join)(this.homeDir, 'sandboxServer.log');
@@ -166,9 +168,6 @@ class SandboxServer {
         if (this.config.rm) {
             await (0, internal_utils_1.rm)(this.homeDir);
         }
-    }
-    get internalRpcAddr() {
-        return `0.0.0.0:${this.port}`;
     }
     async spawn(command) {
         (0, internal_utils_1.debug)('Lifecycle.SandboxServer.spawn()');

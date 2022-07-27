@@ -14,7 +14,6 @@ export declare class SandboxServer {
     get rpcAddr(): string;
     start(): Promise<SandboxServer>;
     close(): Promise<void>;
-    private get internalRpcAddr();
     private spawn;
 }
 //# sourceMappingURL=server.d.ts.map
