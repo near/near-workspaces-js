@@ -1,11 +1,14 @@
 {
   "name": "near-workspaces",
-  "version": "3.0.0",
+  "version": "2.0.0",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/near/workspaces-js.git",
+    "url": "git@github.com:near/workspaces-js.git",
     "directory": "packages/js"
+  },
+  "publishConfig": {
+    "registry": "https://www.npmjs.com/"
   },
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
