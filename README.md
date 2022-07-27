@@ -23,10 +23,7 @@ To get started with `Near Workspaces` you need to do only two things:
     const root = worker.rootAccount;
 
     const alice = await root.createSubAccount('alice');
-    const contract = await root.createAndDeploy(
-      root.getSubAccount('contract-name').accountId,
-      'path/to/compiled.wasm'
-    );
+    const contract = await root.devDeploy('path/to/compiled.wasm');
     ```
 
    Let's step through this.
@@ -34,7 +31,7 @@ To get started with `Near Workspaces` you need to do only two things:
    1. `Worker.init` initializes a new `SandboxWorker` or `TestnetWorker` depending on the config. `SandboxWorker` contains [NEAR Sandbox](https://github.com/near/sandbox), which is essentially a local mini-NEAR blockchain. You can create one `Worker` per test to get its own data directory and port (for Sandbox) or root account (for Testnet), so that tests can run in parallel without race conditions in accessing states. If there's no state intervention. you can also reuse the `Worker` to speedup the tests.
    2. The worker has a `root` account. For `SandboxWorker`, it's `test.near`. For `TestnetWorker`, it creates a unique account. The following accounts are created as subaccounts of the root account. The name of the account will change from different runs, so you should not refer to them by hard coded account name. You can access them via the account object, such as `root`, `alice` and `contract` above.
    3. `root.createSubAccount` creates a new subaccount of `root` with the given name, for example `alice.<root-account-name>`.
-   4. `root.createAndDeploy` creates an account with the given name, `contract-name.<root-account-name>`, then deploys the specified Wasm file to it.
+   4. `root.devDeploy` creates an account with random name, then deploys the specified Wasm file to it.
    5. `path/to/compiled.wasm` will resolve relative to your project root. That is, the nearest directory with a `package.json` file, or your current working directory if no `package.json` is found. To construct a path relative to your test file, you can use `path.join(__dirname, '../etc/etc.wasm')` ([more info](https://nodejs.org/api/path.html#path_path_join_paths)).
    6. `worker` contains a reference to this data directory, so that multiple tests can use it as a starting point.
    7. If you're using a test framework, you can save the `worker` object and account objects `root`, `alice`, `contract` to test context to reuse them in subsequent tests.
@@ -78,7 +75,6 @@ To get started with `Near Workspaces` you need to do only two things:
    1. `worker` and accounts such as `alice` are created before.
    2. `call` syntax mirrors [near-cli](https://github.com/near/near-cli) and either returns the successful return value of the given function or throws the encountered error. If you want to inspect a full transaction and/or avoid the `throw` behavior, you can use `callRaw` instead.
    3. While `call` is invoked on the account _doing the call_ (`alice.call(contract, …)`), `view` is invoked on the account _being viewed_ (`contract.view(…)`). This is because the caller of a view is irrelevant and ignored.
-   4. Gotcha: the full account names does not match the strings passed to `createSubAccount` and `createAndDeploy`, which is why you must write `alice.call(contract, …)` rather than `alice.call('contract-account-name', …)`. But! The `Account` class overrides `toJSON` so that you can pass `{account_id: alice}` in arguments rather than `{account_id: alice.accountId}`. If you need the generated account ID in some other circumstance, remember to use `alice.accountId`.
 
 
 See the [tests](https://github.com/near/workspaces-js/tree/main/__tests__) directory in this project for more examples.
@@ -105,10 +101,7 @@ Since `near-workspaces` is designed for concurrency, AVA is a great fit, because
   test.before(async t => {
     const worker = await Worker.init();
     const root = worker.rootAccount;
-    const contract = await root.createAndDeploy(
-      'account-id-for-contract',
-      'path/to/contract/file.wasm',
-    );
+    const contract = await root.devDeploy('path/to/contract/file.wasm');
     /* Account that you will be able to use in your tests */
     const ali = await root.createSubAccount('ali');
     t.context.worker = worker;

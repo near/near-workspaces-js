@@ -14,8 +14,7 @@ if (getNetworkFromEnv() === 'sandbox') {
     const worker = await Worker.init();
     const root = worker.rootAccount;
 
-    const contract = await root.createAndDeploy(
-      root.getSubAccount('status-message').accountId,
+    const contract = await root.devDeploy(
       path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'),
     );
     const ali = await root.createSubAccount('ali');

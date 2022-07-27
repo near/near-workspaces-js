@@ -34,8 +34,7 @@ const test = anyTest as TestFn<{
 test.beforeEach(async t => {
   const worker = await Worker.init();
   const root = worker.rootAccount;
-  const linkdrop = await root.createAndDeploy(
-    root.getSubAccount('linkdrop').accountId,
+  const linkdrop = await root.devDeploy(
     '__tests__/build/debug/linkdrop.wasm',
     {initialBalance: NEAR.parse('3 N').toJSON()},
   );
