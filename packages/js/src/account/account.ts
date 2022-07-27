@@ -167,6 +167,11 @@ export class Account implements NearAccount {
     return new Account(accountId, this.manager);
   }
 
+  async deploy(code: string | URL | Uint8Array | Buffer): Promise<TransactionResult> {
+    const tx = await this.batch(this).deployContractFile(code);
+    return tx.transact();
+  }
+
   async devDeploy(
     wasm: string | URL | Uint8Array | Buffer,
     {

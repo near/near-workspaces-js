@@ -86,6 +86,8 @@ export interface NearAccount {
     getSubAccount(accountIdPrefix: string): NearAccount;
     /** Get the account with given full accountId */
     getAccount(accountId: string): NearAccount;
+    /** Deploy contract to the current account */
+    deploy(code: string | URL | Uint8Array | Buffer): Promise<TransactionResult>;
     /**
      * Creates an account for a contract and then deploys a Wasm binary to it.
      * If method arguments are provided a function call to `method` will be added to the transaction so that
