@@ -21,6 +21,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Account = void 0;
 const buffer_1 = require("buffer");
+const process_1 = require("process");
 const borsh = __importStar(require("borsh"));
 const types_1 = require("../types");
 const contract_state_1 = require("../contract-state");
@@ -153,6 +154,10 @@ class Account {
             attachedDeposit,
             signWithKey,
         });
+        if (!process_1.env.NEAR_WORKSPACES_NO_LOGS && txResult.logs.length > 0) {
+            const accId = typeof contractId === 'string' ? contractId : contractId.accountId;
+            console.log(`Contract logs from ${accId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
+        }
         if (txResult.failed) {
             throw new transaction_result_1.TransactionError(txResult);
         }
@@ -163,6 +168,9 @@ class Account {
     }
     async view(method, args = {}) {
         const result = await this.viewRaw(method, args);
+        if (!process_1.env.NEAR_WORKSPACES_NO_LOGS && result.logs.length > 0) {
+            console.log(`Contract logs from ${this.accountId}.${method}(${JSON.stringify(args)}) view call:`, result.logs);
+        }
         if (result.result) {
             const value = buffer_1.Buffer.from(result.result).toString();
             try {
