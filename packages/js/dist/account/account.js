@@ -66,7 +66,10 @@ class Account {
             initialBalance,
             isSubAccount: false,
         });
-        await tx.transact();
+        const result = await tx.transact();
+        if (result.Failure) {
+            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+        }
         return this.getAccount(accountId);
     }
     async createSubAccount(accountId, { keyPair, initialBalance, } = {}) {
@@ -75,7 +78,10 @@ class Account {
             initialBalance,
             isSubAccount: true,
         });
-        await tx.transact();
+        const result = await tx.transact();
+        if (result.Failure) {
+            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+        }
         return this.getSubAccount(accountId);
     }
     async importContract({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
@@ -139,7 +145,10 @@ class Account {
         if (method) {
             tx.functionCall(method, args, { gas, attachedDeposit });
         }
-        await tx.transact();
+        const result = await tx.transact();
+        if (result.Failure) {
+            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+        }
         return this.getAccount(accountId);
     }
     async callRaw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
