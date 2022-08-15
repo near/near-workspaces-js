@@ -78,7 +78,13 @@ export class Account implements NearAccount {
       initialBalance,
       isSubAccount: false,
     });
-    await tx.transact();
+
+    const result = await tx.transact();
+
+    if (result.Failure) {
+      throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+    }
+
     return this.getAccount(accountId);
   }
 
@@ -94,7 +100,13 @@ export class Account implements NearAccount {
       initialBalance,
       isSubAccount: true,
     });
-    await tx.transact();
+
+    const result = await tx.transact();
+
+    if (result.Failure) {
+      throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+    }
+
     return this.getSubAccount(accountId);
   }
 
@@ -206,7 +218,12 @@ export class Account implements NearAccount {
       tx.functionCall(method, args, {gas, attachedDeposit});
     }
 
-    await tx.transact();
+    const result = await tx.transact();
+
+    if (result.Failure) {
+      throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+    }
+
     return this.getAccount(accountId);
   }
 
