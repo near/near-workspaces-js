@@ -1,5 +1,6 @@
 import {URL} from 'url';
 import {Buffer} from 'buffer';
+import {env} from 'process';
 import BN from 'bn.js';
 import {NEAR} from 'near-units';
 import * as borsh from 'borsh';
@@ -247,6 +248,12 @@ export class Account implements NearAccount {
       attachedDeposit,
       signWithKey,
     });
+
+    if (!env.NEAR_WORKSPACES_NO_LOGS && txResult.logs.length > 0) {
+      const accId = typeof contractId === 'string' ? contractId : contractId.accountId;
+      console.log(`Contract logs from ${accId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
+    }
+
     if (txResult.failed) {
       throw new TransactionError(txResult);
     }
@@ -260,6 +267,11 @@ export class Account implements NearAccount {
 
   async view<T>(method: string, args: Args = {}): Promise<T> {
     const result = await this.viewRaw(method, args);
+
+    if (!env.NEAR_WORKSPACES_NO_LOGS && result.logs.length > 0) {
+      console.log(`Contract logs from ${this.accountId}.${method}(${JSON.stringify(args)}) view call:`, result.logs);
+    }
+
     if (result.result) {
       const value = Buffer.from(result.result).toString();
       try {
