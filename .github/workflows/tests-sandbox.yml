@@ -4,7 +4,7 @@ jobs:
   sandbox:
     strategy:
       matrix:
-        platform: [ubuntu-latest] # macos-latest
+        platform: [ubuntu-latest, macos-latest]
         node-version: [14, 16]
     runs-on: ${{ matrix.platform }}
     steps:
