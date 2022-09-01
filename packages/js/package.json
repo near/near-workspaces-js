@@ -1,6 +1,6 @@
 {
   "name": "near-workspaces",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Write tests in TypeScript/JavaScript to run in a controlled NEAR Sandbox local environment.",
   "repository": {
     "type": "git",
