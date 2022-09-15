@@ -14,7 +14,7 @@ if (getNetworkFromEnv() === 'testnet') {
     });
   });
 
-  test.afterEach(async t => {
+  test.afterEach.always(async t => {
     await t.context.worker.tearDown().catch(error => {
       console.log('Failed to tear down the worker:', error);
     });

@@ -36,7 +36,7 @@ test.beforeEach(async t => {
   t.context.worker = await Worker.init();
 });
 
-test.afterEach(async t => {
+test.afterEach.always(async t => {
   await t.context.worker.tearDown().catch(error => {
     console.log('Failed to tear down the worker:', error);
   });
