@@ -18,7 +18,7 @@ import {
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JsonRpcProvider} from '../jsonrpc';
-import {EMPTY_CONTRACT_HASH, NO_DEPOSIT} from '../utils';
+import {EMPTY_CONTRACT_HASH, NO_DEPOSIT, randomAccountId} from '../utils';
 import {TransactionResult, TransactionError} from '../transaction-result';
 import {AccessKeyData, AccountBuilder, AccountData, RecordBuilder, Records} from '../record';
 import {NearAccount} from './near-account';
@@ -185,6 +185,29 @@ export class Account implements NearAccount {
     return tx.transact();
   }
 
+  async devCreateAccount({
+    initialBalance,
+    keyPair,
+  }: {
+    initialBalance?: BN | string;
+    keyPair?: KeyPair;
+  } = {}): Promise<NearAccount> {
+    const accountId = randomAccountId();
+
+    const tx = await this.internalCreateAccount(accountId, {
+      keyPair,
+      initialBalance,
+    });
+
+    const result = await tx.transact();
+
+    if (result.Failure) {
+      throw new Error(`Failure during account creation, details: ${JSON.stringify(result)}`);
+    }
+
+    return this.getAccount(accountId);
+  }
+
   async devDeploy(
     wasm: string | URL | Uint8Array | Buffer,
     {
@@ -205,8 +228,7 @@ export class Account implements NearAccount {
       isSubAccount?: boolean;
     } = {},
   ): Promise<NearAccount> {
-    const randomNumber = Math.floor((Math.random() * (9999 - 1000)) + 10_000);
-    const accountId = `dev-${randomNumber}.${this.accountId}`;
+    const accountId = randomAccountId();
 
     let tx = await this.internalCreateAccount(accountId, {
       keyPair,
