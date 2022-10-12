@@ -192,8 +192,7 @@ export class Account implements NearAccount {
     initialBalance?: BN | string;
     keyPair?: KeyPair;
   } = {}): Promise<NearAccount> {
-    const accountId = randomAccountId();
-
+    const accountId = `${randomAccountId('dev-', 5, 5)}.${this.accountId}`;
     const tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,
@@ -228,8 +227,7 @@ export class Account implements NearAccount {
       isSubAccount?: boolean;
     } = {},
   ): Promise<NearAccount> {
-    const accountId = randomAccountId();
-
+    const accountId = `${randomAccountId('dev-', 5, 5)}.${this.accountId}`;
     let tx = await this.internalCreateAccount(accountId, {
       keyPair,
       initialBalance,

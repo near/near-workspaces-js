@@ -135,7 +135,7 @@ class Account {
         return tx.transact();
     }
     async devCreateAccount({ initialBalance, keyPair, } = {}) {
-        const accountId = (0, utils_1.randomAccountId)();
+        const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
@@ -147,7 +147,7 @@ class Account {
         return this.getAccount(accountId);
     }
     async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
-        const accountId = (0, utils_1.randomAccountId)();
+        const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
