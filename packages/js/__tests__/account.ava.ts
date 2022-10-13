@@ -30,4 +30,13 @@ if (getNetworkFromEnv() === 'sandbox') {
     const result = await statusMessage.view('get_status', {account_id: root});
     t.is(result, 'hello');
   });
+
+  test('devCreateAccount', async t => {
+    const {root} = t.context.accounts;
+    const devAcc = await root.devCreateAccount();
+    await devAcc.deploy(path.join(__dirname, '..', '..', '..', '__tests__', 'build', 'debug', 'status_message.wasm'));
+    await root.call(devAcc, 'set_status', {message: 'hello'});
+    const result = await devAcc.view('get_status', {account_id: root});
+    t.is(result, 'hello');
+  });
 }

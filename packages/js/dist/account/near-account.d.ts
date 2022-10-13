@@ -89,6 +89,11 @@ export interface NearAccount {
     /** Deploy contract to the current account */
     deploy(code: string | URL | Uint8Array | Buffer): Promise<TransactionResult>;
     /**
+     * Creates an account with random accoundId
+     * @returns Promise<NearAccount>
+     */
+    devCreateAccount(): Promise<NearAccount>;
+    /**
      * Creates an account for a contract and then deploys a Wasm binary to it.
      * If method arguments are provided a function call to `method` will be added to the transaction so that
      * the contract can be initialized in the same step.

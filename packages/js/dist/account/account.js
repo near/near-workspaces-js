@@ -134,9 +134,20 @@ class Account {
         const tx = await this.batch(this).deployContractFile(code);
         return tx.transact();
     }
+    async devCreateAccount({ initialBalance, keyPair, } = {}) {
+        const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
+        const tx = await this.internalCreateAccount(accountId, {
+            keyPair,
+            initialBalance,
+        });
+        const result = await tx.transact();
+        if (result.Failure) {
+            throw new Error(`Failure during account creation, details: ${JSON.stringify(result)}`);
+        }
+        return this.getAccount(accountId);
+    }
     async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
-        const randomNumber = Math.floor((Math.random() * (9999 - 1000)) + 10000);
-        const accountId = `dev-${randomNumber}.${this.accountId}`;
+        const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
