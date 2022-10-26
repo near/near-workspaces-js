@@ -119,7 +119,7 @@ class SandboxServer {
         return this.config.port;
     }
     get rpcAddr() {
-        return `http://localhost:${this.port}`;
+        return `http://127.0.0.1:${this.port}`;
     }
     async start() {
         (0, internal_utils_1.debug)('Lifecycle.SandboxServer.start()');

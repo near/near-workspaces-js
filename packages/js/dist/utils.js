@@ -90,7 +90,7 @@ function urlConfigFromNetwork(network) {
         case 'sandbox':
             return {
                 network: 'sandbox',
-                rpcAddr: 'http://localhost',
+                rpcAddr: 'http://127.0.0.1',
             };
         case 'testnet':
         case 'mainnet': return configFromDomain(networkName);
