@@ -214,6 +214,12 @@ class Account {
     async viewStateRaw(prefix = '') {
         return this.provider.viewStateRaw(this.accountId, prefix);
     }
+    async viewAccessKey(accountId, publicKey) {
+        return this.provider.viewAccessKey(accountId, publicKey);
+    }
+    async viewAccessKeys(accountId) {
+        return this.provider.viewAccessKeys(accountId);
+    }
     async patchState(key, value_, borshSchema) {
         return this.updateData(buffer_1.Buffer.from(key), buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
     }

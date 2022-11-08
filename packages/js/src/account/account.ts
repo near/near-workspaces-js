@@ -14,6 +14,8 @@ import {
   AccountView,
   Empty,
   StateItem,
+  AccessKeyView,
+  AccessKeyList,
 } from '../types';
 import {Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
@@ -339,6 +341,14 @@ export class Account implements NearAccount {
     return this.provider.viewStateRaw(this.accountId, prefix);
   }
 
+  async viewAccessKey(accountId: string, publicKey: PublicKey | string): Promise<AccessKeyView> {
+    return this.provider.viewAccessKey(accountId, publicKey);
+  }
+
+  async viewAccessKeys(accountId: string): Promise<AccessKeyList> {
+    return this.provider.viewAccessKeys(accountId);
+  }
+
   async patchState(key: string, value_: any, borshSchema?: any): Promise<Empty> {
     return this.updateData(Buffer.from(key), Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
   }
@@ -422,4 +432,3 @@ export class Account implements NearAccount {
     return RecordBuilder.fromAccount(this);
   }
 }
-

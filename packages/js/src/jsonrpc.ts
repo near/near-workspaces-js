@@ -3,7 +3,7 @@ import {Buffer} from 'buffer';
 import {NEAR} from 'near-units';
 import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
 import {Records} from './record';
-import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network} from './types';
+import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network, AccessKeyView, AccessKeyList} from './types';
 
 const OPTIMISTIC: {finality: 'optimistic'} = {finality: 'optimistic'};
 /**
@@ -75,11 +75,19 @@ export class JsonRpcProvider extends JSONRpc {
     }
   }
 
-  async viewAccessKey(accountId: string, publicKey: PublicKey | string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<any> {
+  async viewAccessKey(accountId: string, publicKey: PublicKey | string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<AccessKeyView> {
     return this.query({
       request_type: 'view_access_key',
       account_id: accountId,
       public_key: typeof publicKey === 'string' ? publicKey : publicKey.toString(),
+      ...blockQuery,
+    });
+  }
+
+  async viewAccessKeys(accountId: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<AccessKeyList> {
+    return this.query({
+      request_type: 'view_access_key_list',
+      account_id: accountId,
       ...blockQuery,
     });
   }
@@ -178,4 +186,3 @@ export class JsonRpcProvider extends JSONRpc {
 
 export const TestnetRpc = JsonRpcProvider.from(TESTNET_RPC_ADDR);
 export const MainnetRpc = JsonRpcProvider.from(MAINNET_RPC_ADDR);
-

@@ -3,7 +3,7 @@ import {Buffer} from 'buffer';
 import BN from 'bn.js';
 import {NEAR} from 'near-units';
 import {KeyPair} from 'near-api-js';
-import {AccountBalance, PublicKey, CodeResult, AccountView, Empty, StateItem} from '../types';
+import {AccountBalance, PublicKey, CodeResult, AccountView, Empty, StateItem, AccessKeyList, AccessKeyView} from '../types';
 import {ContractState} from '../contract-state';
 import {Transaction} from '../transaction';
 import {TransactionResult} from '../transaction-result';
@@ -202,6 +202,19 @@ export interface NearAccount {
    */
   viewStateRaw(prefix?: string | Uint8Array): Promise<StateItem[]>;
 
+  /**
+   * Get the access key associated to the account id and public key.
+   * @param accountId ID of the account we want to get the access key from.
+   * @param publicKey Which particular access key we want to retrieve.
+   */
+  viewAccessKey(accountId: string, publicKey: PublicKey | string): Promise<AccessKeyView>;
+
+  /**
+   * Get all access keys associated to the account id.
+   * @param accountId ID of the account we want to get the access keys from.
+   */
+  viewAccessKeys(accountId: string): Promise<AccessKeyList>;
+
   /** Update record to sandbox */
   patchStateRecords(records: Records): Promise<Empty>;
 
@@ -268,4 +281,3 @@ export interface NearAccount {
    */
   updateData(data: string | Buffer, value: string | Buffer): Promise<Empty>;
 }
-

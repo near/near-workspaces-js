@@ -3,7 +3,7 @@ import { URL } from 'url';
 import { Buffer } from 'buffer';
 import BN from 'bn.js';
 import { NEAR } from 'near-units';
-import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView, Empty, StateItem } from '../types';
+import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView, Empty, StateItem, AccessKeyView, AccessKeyList } from '../types';
 import { Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JsonRpcProvider } from '../jsonrpc';
@@ -74,6 +74,8 @@ export declare class Account implements NearAccount {
     viewCodeRaw(): Promise<string>;
     viewState(prefix?: string | Uint8Array): Promise<ContractState>;
     viewStateRaw(prefix?: string | Uint8Array): Promise<StateItem[]>;
+    viewAccessKey(accountId: string, publicKey: PublicKey | string): Promise<AccessKeyView>;
+    viewAccessKeys(accountId: string): Promise<AccessKeyList>;
     patchState(key: string, value_: any, borshSchema?: any): Promise<Empty>;
     patchStateRecords(records: Records): Promise<Empty>;
     delete(beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
