@@ -39,4 +39,11 @@ if (getNetworkFromEnv() === 'sandbox') {
     const result = await devAcc.view('get_status', {account_id: root});
     t.is(result, 'hello');
   });
+
+  test('viewAccessKeys', async t => {
+    const {root} = t.context.accounts;
+    const access = await root.viewAccessKeys(root.accountId);
+    t.is(access.keys.length, 1);
+    t.is(access.keys[0].access_key.permission, 'FullAccess');
+  });
 }

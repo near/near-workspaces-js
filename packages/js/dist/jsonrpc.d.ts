@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import { Records } from './record';
-import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network } from './types';
+import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network, AccessKeyView, AccessKeyList } from './types';
 /**
  * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.
@@ -51,7 +51,12 @@ export declare class JsonRpcProvider extends JSONRpc {
         block_id: BlockId;
     } | {
         finality: Finality;
-    }): Promise<any>;
+    }): Promise<AccessKeyView>;
+    viewAccessKeys(accountId: string, blockQuery?: {
+        block_id: BlockId;
+    } | {
+        finality: Finality;
+    }): Promise<AccessKeyList>;
     protocolConfig(blockQuery?: {
         block_id: BlockId;
     } | {

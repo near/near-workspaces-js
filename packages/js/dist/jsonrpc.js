@@ -76,6 +76,13 @@ class JsonRpcProvider extends types_1.JSONRpc {
             ...blockQuery,
         });
     }
+    async viewAccessKeys(accountId, blockQuery = OPTIMISTIC) {
+        return this.query({
+            request_type: 'view_access_key_list',
+            account_id: accountId,
+            ...blockQuery,
+        });
+    }
     async protocolConfig(blockQuery = OPTIMISTIC) {
         // @ts-expect-error Bad type
         return this.experimental_protocolConfig(blockQuery);
