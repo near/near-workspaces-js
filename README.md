@@ -162,7 +162,7 @@ You can switch to testnet mode in three ways.
    const worker = await Worker.init({
      network: 'testnet',
      testnetMasterAccountId: '<yourAccountName>',
-  })
+   })
    ```
 
 2. Set the `NEAR_WORKSPACES_NETWORK` and `TESTNET_MASTER_ACCOUNT_ID` environment variables when running your tests:
