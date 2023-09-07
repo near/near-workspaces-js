@@ -40,7 +40,8 @@
     "test:sandbox": "yarn build && ava --verbose",
     "test:sandbox:ci": "yarn build && NEAR_WORKSPACES_DEBUG=true ava --verbose",
     "test": "ava --verbose && yarn test:testnet",
-    "clean:accounts": "ts-node ./scripts/delete-accounts.ts"
+    "clean:accounts": "ts-node ./scripts/delete-accounts.ts",
+    "test:jsonrpc:env": " NEAR_CLI_MAINNET_RPC_SERVER_URL=https://near-mainnet.api.pagoda.co/rpc/v1 ava __tests__/jsonrpc.ava.js"
   },
   "files": [
     "dist/",

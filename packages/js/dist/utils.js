@@ -75,9 +75,17 @@ function isTopLevelAccount(accountId) {
 }
 exports.isTopLevelAccount = isTopLevelAccount;
 function configFromDomain(network) {
+    let rpcAddr = `https://archival-rpc.${network}.near.org`;
+    if (network === 'mainnet' && process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) {
+        rpcAddr = process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL;
+    }
+    else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
+        rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
+    }
+    console.log();
     return {
         network,
-        rpcAddr: `https://archival-rpc.${network}.near.org`,
+        rpcAddr,
         walletUrl: `https://wallet.${network}.near.org`,
         helperUrl: `https://helper.${network}.near.org`,
         explorerUrl: `https://explorer.${network}.near.org`,

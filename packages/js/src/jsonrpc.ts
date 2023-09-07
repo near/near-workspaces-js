@@ -29,8 +29,8 @@ export class JsonRpcProvider extends JSONRpc {
 
   static fromNetwork(network: Network): JsonRpcProvider {
     switch (network) {
-      case 'mainnet': return MainnetRpc;
-      case 'testnet': return TestnetRpc;
+      case 'mainnet': return process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL? JsonRpcProvider.from(process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) : MainnetRpc;
+      case 'testnet': return process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL? JsonRpcProvider.from(process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) : TestnetRpc;
       default: throw new TypeError('Invalid network only mainnet or testnet');
     }
   }

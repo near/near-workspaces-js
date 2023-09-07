@@ -149,7 +149,6 @@ class AccountManager {
         }
         try {
             const start = Date.now();
-            // @ts-expect-error access shouldn't be protected
             const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions, returnError: true });
             const end = Date.now();
             if (oldKey) {
@@ -197,7 +196,7 @@ class AccountManager {
         return this.config.network;
     }
     get connection() {
-        return new nearAPI.Connection(this.networkId, this.provider, this.signer);
+        return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
     }
 }
 exports.AccountManager = AccountManager;
