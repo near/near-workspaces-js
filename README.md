@@ -39,7 +39,7 @@ To get started with `Near Workspaces` you need to do only two things:
 
 2. Writing tests.
 
-   `near-workspaces` is designed for concurrency. Here's a simple way to get concurrent runs using plain JS:
+   `near-workspaces` is designed for concurrency. Here's a simple way to get concurrent runs using plain JavaScript:
 
    ```ts
    import {strict as assert} from 'assert';
