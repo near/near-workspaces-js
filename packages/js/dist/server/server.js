@@ -78,8 +78,9 @@ async function sandboxStarted(port, timeout = 60000) {
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
+// 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
 function initialPort() {
-    return Math.max(1024, Math.floor(Math.random() * 10000));
+    return Math.max(5001, Math.floor(Math.random() * 60000));
 }
 class SandboxServer {
     constructor(config) {
