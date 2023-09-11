@@ -63,6 +63,7 @@ function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
   } else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
     rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
   }
+
   return {
     network,
     rpcAddr,

@@ -1,5 +1,6 @@
 // eslint-disable unicorn/no-object-as-default-parameter
 import {Buffer} from 'buffer';
+import process from 'process';
 import {NEAR} from 'near-units';
 import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
 import {Records} from './record';
@@ -29,8 +30,8 @@ export class JsonRpcProvider extends JSONRpc {
 
   static fromNetwork(network: Network): JsonRpcProvider {
     switch (network) {
-      case 'mainnet': return process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL? JsonRpcProvider.from(process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) : MainnetRpc;
-      case 'testnet': return process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL? JsonRpcProvider.from(process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) : TestnetRpc;
+      case 'mainnet': return process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL ? JsonRpcProvider.from(process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) : MainnetRpc;
+      case 'testnet': return process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL ? JsonRpcProvider.from(process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) : TestnetRpc;
       default: throw new TypeError('Invalid network only mainnet or testnet');
     }
   }
