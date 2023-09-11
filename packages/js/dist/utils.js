@@ -82,7 +82,6 @@ function configFromDomain(network) {
     else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
         rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
     }
-    console.log();
     return {
         network,
         rpcAddr,
