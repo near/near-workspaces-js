@@ -292,3 +292,18 @@ Pro Tips
   * specify which port to run on
 
   * and more!
+
+Env variables
+========
+```text
+NEAR_CLI_MAINNET_RPC_SERVER_URL
+NEAR_CLI_TESTNET_RPC_SERVER_URL
+```
+Clear them in case you want to get back to the default RPC server.
+
+Example:
+
+```shell
+export NEAR_CLI_MAINNET_RPC_SERVER_URL=<put_your_rpc_server_url_here>
+```
+here is a testcase: [jsonrpc.ava.js](./packages/js/__tests__/jsonrpc.ava.js)

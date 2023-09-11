@@ -80,6 +80,7 @@ export abstract class Transaction {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
+      // @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
     }: {gas?: BN | string; attachedDeposit?: BN | string} = {},
