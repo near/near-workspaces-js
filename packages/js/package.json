@@ -15,6 +15,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "async-lock": "^1.4.0",
     "base64url": "^3.0.1",
     "bn.js": "^5.2.0",
     "borsh": "^0.5.0",
@@ -54,6 +55,7 @@
     "npm": ">= 6.0.0"
   },
   "devDependencies": {
+    "@types/async-lock": "^1.4.0",
     "@types/bs58": "^4.0.1"
   },
   "gitHead": "20b58f0acd60d76517479f3b295f4c7ab938061f"

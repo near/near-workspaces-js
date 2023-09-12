@@ -7,6 +7,7 @@ import * as http from 'http';
 import tmpDir from 'temp-dir';
 import * as portCheck from 'node-port-check';
 import UUID from 'pure-uuid';
+import AsyncLock from 'async-lock';
 import {
   debug,
   asyncSpawn,
@@ -17,6 +18,9 @@ import {
   ensureBinary,
 } from '../internal-utils';
 import {Config, ChildProcessPromise} from '../types';
+
+const lock = new AsyncLock();
+const portKey = 'select-port-key';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',
@@ -69,13 +73,44 @@ async function sandboxStarted(port: number, timeout = 60_000): Promise<void> {
   throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 
-// 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
-function initialPort(): number {
-  return Math.max(5001, Math.floor(Math.random() * 60_000));
+async function initialPort(): Promise<number> {
+  let returnValuePort = 1024;
+  debug('initialPort start========');
+  let isFinish = false;
+  await lock.acquire(portKey, () => {
+    const port = Math.max(1024, Math.floor(Math.random() * 60_000));
+    portCheck.nextAvailable(port, '0.0.0.0').then(nextAvailablePort => {
+      if (port === nextAvailablePort) {
+        debug('initialPort check port not in used, next available port is init port', port);
+        returnValuePort = port;
+      } else {
+        debug('initialPort check port:', port, ' in used, init port reset to next available port:', nextAvailablePort);
+        returnValuePort = nextAvailablePort;
+      }
+
+      isFinish = true;
+    }).catch(error => {
+      debug('initialPort err:', error);
+    });
+  });
+
+  while (true) {
+    if (isFinish) {
+      break;
+    }
+
+    await new Promise(resolve => { // eslint-disable-line no-await-in-loop
+      setTimeout(() => resolve(true), 100); // eslint-disable-line @typescript-eslint/no-confusing-void-expression
+    });
+  }
+
+  debug('return retPort: ', returnValuePort);
+
+  return returnValuePort;
 }
 
 export class SandboxServer {
-  private static lastPort: number = initialPort();
+  private static lastPort = 0;
   private static binPath: string;
 
   private subprocess!: ChildProcess;
@@ -88,6 +123,11 @@ export class SandboxServer {
   }
 
   static async nextPort(): Promise<number> {
+    if (this.lastPort === 0) {
+      this.lastPort = await initialPort();
+      return this.lastPort;
+    }
+
     this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
     return this.lastPort;
   }

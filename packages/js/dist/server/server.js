@@ -31,7 +31,10 @@ const http = __importStar(require("http"));
 const temp_dir_1 = __importDefault(require("temp-dir"));
 const portCheck = __importStar(require("node-port-check"));
 const pure_uuid_1 = __importDefault(require("pure-uuid"));
+const async_lock_1 = __importDefault(require("async-lock"));
 const internal_utils_1 = require("../internal-utils");
+const lock = new async_lock_1.default();
+const portKey = 'select-port-key';
 const pollData = JSON.stringify({
     jsonrpc: '2.0',
     id: 'dontcare',
@@ -78,9 +81,36 @@ async function sandboxStarted(port, timeout = 60000) {
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
-// 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
-function initialPort() {
-    return Math.max(5001, Math.floor(Math.random() * 60000));
+async function initialPort() {
+    let returnValuePort = 1024;
+    (0, internal_utils_1.debug)('initialPort start========');
+    let isFinish = false;
+    await lock.acquire(portKey, () => {
+        const port = Math.max(1024, Math.floor(Math.random() * 60000));
+        portCheck.nextAvailable(port, '0.0.0.0').then(nextAvailablePort => {
+            if (port === nextAvailablePort) {
+                (0, internal_utils_1.debug)('initialPort check port not in used, next available port is init port', port);
+                returnValuePort = port;
+            }
+            else {
+                (0, internal_utils_1.debug)('initialPort check port:', port, ' in used, init port reset to next available port:', nextAvailablePort);
+                returnValuePort = nextAvailablePort;
+            }
+            isFinish = true;
+        }).catch(error => {
+            (0, internal_utils_1.debug)('initialPort err:', error);
+        });
+    });
+    while (true) {
+        if (isFinish) {
+            break;
+        }
+        await new Promise(resolve => {
+            setTimeout(() => resolve(true), 100); // eslint-disable-line @typescript-eslint/no-confusing-void-expression
+        });
+    }
+    (0, internal_utils_1.debug)('return retPort: ', returnValuePort);
+    return returnValuePort;
 }
 class SandboxServer {
     constructor(config) {
@@ -89,6 +119,10 @@ class SandboxServer {
         this.config = config;
     }
     static async nextPort() {
+        if (this.lastPort === 0) {
+            this.lastPort = await initialPort();
+            return this.lastPort;
+        }
         this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
         return this.lastPort;
     }
@@ -176,5 +210,5 @@ class SandboxServer {
     }
 }
 exports.SandboxServer = SandboxServer;
-SandboxServer.lastPort = initialPort();
+SandboxServer.lastPort = 0;
 //# sourceMappingURL=server.js.map
