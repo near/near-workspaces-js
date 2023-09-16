@@ -7,6 +7,7 @@ export declare class SandboxServer {
     private readonly config;
     private constructor();
     static nextPort(): Promise<number>;
+    static lockfilePath(filename: string): string;
     static randomHomeDir(): string;
     static init(config: Config): Promise<SandboxServer>;
     get homeDir(): string;
