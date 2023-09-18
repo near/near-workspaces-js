@@ -27,6 +27,7 @@
     "near-units": "^0.1.9",
     "node-port-check": "^2.0.1",
     "promisify-child-process": "^4.1.1",
+    "proper-lockfile": "^4.1.2",
     "pure-uuid": "^1.6.2",
     "rimraf": "^3.0.2",
     "temp-dir": "^2.0.0"
@@ -54,7 +55,8 @@
     "npm": ">= 6.0.0"
   },
   "devDependencies": {
-    "@types/bs58": "^4.0.1"
+    "@types/bs58": "^4.0.1",
+    "@types/proper-lockfile": "^4.1.2"
   },
   "gitHead": "20b58f0acd60d76517479f3b295f4c7ab938061f"
 }

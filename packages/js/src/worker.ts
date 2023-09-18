@@ -1,4 +1,6 @@
+import fs from 'fs';
 import {NEAR} from 'near-units';
+import {lock} from 'proper-lockfile';
 import {getNetworkFromEnv, urlConfigFromNetwork} from './utils';
 import {Config, ClientConfig} from './types';
 import {AccountManager, NearAccount, NearAccountManager} from './account';
@@ -96,10 +98,32 @@ export class SandboxWorker extends Worker {
 
   static async init(config: Partial<Config>): Promise<SandboxWorker> {
     debug('Lifecycle.SandboxWorker.create()', 'config:', config);
+    const syncFilename = SandboxServer.lockfilePath('near-sandbox-worker-sync.txt');
+    try {
+      fs.accessSync(syncFilename, fs.constants.F_OK);
+    } catch {
+      debug('catch err in access file:', syncFilename);
+      fs.writeFileSync(syncFilename, 'workspace-js test port sync');
+    }
+
+    const retryOptions = {
+      retries: {
+        retries: 100,
+        factor: 3,
+        minTimeout: 200,
+        maxTimeout: 2 * 1000,
+        randomize: true,
+      },
+    };
+
+    // Add file lock in assign port and run near node process
+    const release = await lock(syncFilename, retryOptions);
     const defaultConfig = await this.defaultConfig();
     const worker = new SandboxWorker({...defaultConfig, ...config});
     worker.server = await SandboxServer.init(worker.config);
     await worker.server.start();
+    // Release file lock after near node start
+    await release();
     await worker.manager.init();
     return worker;
   }

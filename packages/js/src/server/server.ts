@@ -88,8 +88,12 @@ export class SandboxServer {
   }
 
   static async nextPort(): Promise<number> {
-    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
+    this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
     return this.lastPort;
+  }
+
+  static lockfilePath(filename: string): string {
+    return join(tmpDir, filename);
   }
 
   static randomHomeDir(): string {

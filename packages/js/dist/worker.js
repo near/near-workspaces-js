@@ -1,7 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxWorker = exports.TestnetWorker = exports.Worker = void 0;
+const fs_1 = __importDefault(require("fs"));
 const near_units_1 = require("near-units");
+const proper_lockfile_1 = require("proper-lockfile");
 const utils_1 = require("./utils");
 const account_1 = require("./account");
 const jsonrpc_1 = require("./jsonrpc");
@@ -80,10 +85,31 @@ exports.TestnetWorker = TestnetWorker;
 class SandboxWorker extends Worker {
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.SandboxWorker.create()', 'config:', config);
+        const syncFilename = server_1.SandboxServer.lockfilePath('near-sandbox-worker-sync.txt');
+        try {
+            fs_1.default.accessSync(syncFilename, fs_1.default.constants.F_OK);
+        }
+        catch {
+            (0, internal_utils_1.debug)('catch err in access file:', syncFilename);
+            fs_1.default.writeFileSync(syncFilename, 'workspace-js test port sync');
+        }
+        const retryOptions = {
+            retries: {
+                retries: 100,
+                factor: 3,
+                minTimeout: 200,
+                maxTimeout: 2 * 1000,
+                randomize: true,
+            },
+        };
+        // Add file lock in assign port and run near node process
+        const release = await (0, proper_lockfile_1.lock)(syncFilename, retryOptions);
         const defaultConfig = await this.defaultConfig();
         const worker = new SandboxWorker({ ...defaultConfig, ...config });
         worker.server = await server_1.SandboxServer.init(worker.config);
         await worker.server.start();
+        // Release file lock after near node start
+        await release();
         await worker.manager.init();
         return worker;
     }

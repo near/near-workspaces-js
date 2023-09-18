@@ -89,8 +89,11 @@ class SandboxServer {
         this.config = config;
     }
     static async nextPort() {
-        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
+        this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
         return this.lastPort;
+    }
+    static lockfilePath(filename) {
+        return (0, path_1.join)(temp_dir_1.default, filename);
     }
     static randomHomeDir() {
         return (0, path_1.join)(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));
