@@ -64,7 +64,7 @@ class Transaction {
         return this;
     }
     functionCall(methodName, args, { 
-    // @typescript-eslint/no-unsafe-assignment
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
         this.actions.push((0, types_1.functionCall)(methodName, args, (0, utils_1.parseGas)(gas), (0, utils_1.parseNEAR)(attachedDeposit)));
         return this;

@@ -157,7 +157,6 @@ export abstract class AccountManager implements NearAccountManager {
 
     try {
       const start = Date.now();
-      // @ts-expect-error access shouldn't be protected
       const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions, returnError: true});
       const end = Date.now();
       if (oldKey) {
@@ -217,7 +216,7 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   protected get connection(): nearAPI.Connection {
-    return new nearAPI.Connection(this.networkId, this.provider, this.signer);
+    return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
   }
 }
 

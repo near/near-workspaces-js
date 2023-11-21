@@ -62,5 +62,5 @@ export declare class TransactionError extends Error {
     constructor(result: TransactionResult);
     parse(): ExecutionOutcome;
 }
-export type TxResult = TransactionResult;
+export declare type TxResult = TransactionResult;
 //# sourceMappingURL=transaction-result.d.ts.map
