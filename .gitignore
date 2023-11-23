@@ -5,3 +5,5 @@ coverage
 **/dist/tsconfig.tsbuildinfo
 lerna-debug.log
 yarn-error.log
+.idea
+package-lock.json
