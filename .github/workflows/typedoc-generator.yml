@@ -1,0 +1,43 @@
+name: Deploy TypeDoc on GitHub pages
+
+on:
+    push:
+      branches:
+        main  
+
+env:
+  NODE_VERSION: 18.x.x
+  ENTRY_FILE: 'packages'
+  CONFIG_PATH: 'tsconfig.base.json'
+  USES_PNPM: 'true'
+  
+jobs:
+  deploy:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build project
+        run:  yarn build
+
+      - name: Build documentation
+        run:  yarn docs:generate
+
+      - name: Deploy to GitHub pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: docs
+          clean: true

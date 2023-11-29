@@ -17,7 +17,8 @@
     "test": "yarn test:sandbox && yarn test:testnet",
     "prepare": "husky install",
     "release": "yarn lerna publish",
-    "release:prerelease": "yarn release --dist-tag next"
+    "release:prerelease": "yarn release --dist-tag next",
+    "docs:generate": "typedoc"
   },
   "devDependencies": {
     "@ava/typescript": "^2.0.0",
@@ -29,7 +30,8 @@
     "husky": "^7.0.1",
     "lerna": "^5.2.0",
     "ts-node": "^10.1.0",
-    "typescript": "^4.3.5",
+    "typedoc": "^0.25.4",
+    "typescript": "^4.6.X",
     "xo": "^0.44.0"
   },
   "engines": {
