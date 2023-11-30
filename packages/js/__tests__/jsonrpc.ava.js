@@ -2,7 +2,7 @@ import process from 'process';
 
 import test from 'ava';
 
-import {JsonRpcProvider} from '..';
+import {JsonRpcProvider} from '../dist/index.js';
 
 test('check url', t => {
   const provider = JsonRpcProvider.fromNetwork('mainnet');
