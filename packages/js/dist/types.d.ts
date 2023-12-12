@@ -16,7 +16,7 @@ export { DEFAULT_FUNCTION_CALL_GAS } from 'near-api-js/lib/constants';
 export declare class BN extends _BN {
     toJSON(): string;
 }
-export declare type Args = Record<string, any> | Uint8Array;
+export type Args = Record<string, any> | Uint8Array;
 export interface NamedAccount {
     accountId: string;
 }
@@ -25,14 +25,14 @@ export interface CallOptions {
     attachedDeposit?: string | BN;
     signWithKey?: KeyPair;
 }
-export declare type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
+export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
 export interface AccountBalance {
     total: NEAR;
     stateStaked: NEAR;
     staked: NEAR;
     available: NEAR;
 }
-export declare type Network = 'testnet' | 'mainnet' | 'sandbox';
+export type Network = 'testnet' | 'mainnet' | 'sandbox';
 export interface ClientConfig {
     network: Network;
     rootAccountId?: string;
@@ -58,5 +58,5 @@ export interface StateItem {
     value: string;
     proof: string[];
 }
-export declare type Empty = {};
+export type Empty = {};
 //# sourceMappingURL=types.d.ts.map

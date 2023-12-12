@@ -14,7 +14,7 @@ export interface NearAccount {
   readonly accountId: string;
 
   /**
-   * Returns infomation about the account.
+   * Returns information about the account.
    * @see {@link https://docs.near.org/docs/develop/front-end/rpc#view-account}
    */
   accountView(): Promise<AccountView>;

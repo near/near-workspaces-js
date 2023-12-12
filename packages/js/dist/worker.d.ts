@@ -7,6 +7,7 @@ import { JsonRpcProvider } from './jsonrpc';
 export declare abstract class Worker {
     protected config: Config;
     protected manager: NearAccountManager;
+    protected tx_callbacks?: Array<(burnt: number) => void>;
     constructor(config: Config);
     /**
      * Initialize a new worker.
@@ -23,6 +24,12 @@ export declare abstract class Worker {
      * @returns an instance of the Worker class
      */
     static init(config?: Partial<Config>): Promise<Worker>;
+    /**
+     * Registers a callback function to be triggered
+     * whenever a transaction completes.
+     * @param fn is added to the tx_callbacks
+     */
+    add_callback(fn: (burnt: number) => void): void;
     get rootAccount(): NearAccount;
     abstract get provider(): JsonRpcProvider;
     abstract tearDown(): Promise<void>;

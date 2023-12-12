@@ -244,7 +244,7 @@ export class Account implements NearAccount {
     const result = await tx.transact();
 
     if (result.Failure) {
-      throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+      throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
     }
 
     return this.getAccount(accountId);

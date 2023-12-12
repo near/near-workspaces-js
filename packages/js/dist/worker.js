@@ -48,6 +48,18 @@ class Worker {
                     + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'');
         }
     }
+    /**
+     * Registers a callback function to be triggered
+     * whenever a transaction completes.
+     * @param fn is added to the tx_callbacks
+     */
+    add_callback(fn) {
+        if (this.tx_callbacks === undefined) {
+            this.tx_callbacks = [fn];
+            return;
+        }
+        this.tx_callbacks.push(fn);
+    }
     get rootAccount() {
         return this.manager.root;
     }
@@ -65,7 +77,7 @@ class TestnetWorker extends Worker {
         return jsonrpc_1.JsonRpcProvider.from(TestnetWorker.clientConfig);
     }
     async tearDown() {
-        // We are not stoping any server here because we are using Testnet
+        // We are not stopping any server here because we are using Testnet
         return Promise.resolve();
     }
     static get defaultConfig() {

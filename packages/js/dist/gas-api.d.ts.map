@@ -1,0 +1,1 @@
+{"version":3,"file":"gas-api.d.ts","sourceRoot":"","sources":["../src/gas-api.ts"],"names":[],"mappings":"AACA,OAAO,EAAC,MAAM,EAAC,MAAM,UAAU,CAAC;AAEhC;;;GAGG;AACH,qBAAa,QAAQ;IACnB,OAAO,CAAC,QAAQ,CAAK;gBAET,MAAM,EAAE,MAAM;IAY1B,IAAI,OAAO,WAEV;IAED,KAAK,IAAI,IAAI;CAGd"}

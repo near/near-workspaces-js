@@ -16,6 +16,8 @@ export abstract class Worker {
 
   protected manager!: NearAccountManager;
 
+  protected tx_callbacks?: Array<(burnt: number) => void>;
+
   constructor(config: Config) {
     debug('Lifecycle.Worker.constructor', 'config:', config);
     this.config = config;
@@ -51,6 +53,20 @@ export abstract class Worker {
     }
   }
 
+  /**
+   * Registers a callback function to be triggered
+   * whenever a transaction completes.
+   * @param fn is added to the tx_callbacks
+   */
+  add_callback(fn: (burnt: number) => void) {
+    if (this.tx_callbacks === undefined) {
+      this.tx_callbacks = [fn];
+      return;
+    }
+
+    this.tx_callbacks.push(fn);
+  }
+
   get rootAccount(): NearAccount {
     return this.manager.root;
   }
@@ -74,7 +90,7 @@ export class TestnetWorker extends Worker {
   }
 
   async tearDown(): Promise<void> {
-    // We are not stoping any server here because we are using Testnet
+    // We are not stopping any server here because we are using Testnet
     return Promise.resolve();
   }
 
