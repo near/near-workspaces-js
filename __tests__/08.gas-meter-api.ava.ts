@@ -29,7 +29,7 @@ test.beforeEach(async t => {
   const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('3 N').toJSON()});
 
   // Assert some gas was burnt on account creation
-  t.notDeepEqual(meter.elapsed, Gas.from(0), 'gas must be consumed on account creation');
+  t.notDeepEqual(meter.elapsed, Gas.from(0), `meter.elapsed: ${meter.elapsed.toString()}`);
 
   // Reset the meter
   meter.reset();

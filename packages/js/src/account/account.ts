@@ -87,12 +87,12 @@ export class Account implements NearAccount {
       throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
     }
 
-    const results = [];
-    for (const fn of this.manager.tx_callbacks ?? []) {
-      results.push(fn(result.gas_burnt));
-    }
+    // Const results = [];
+    // for (const fn of this.manager.tx_callbacks ?? []) {
+    //   results.push(fn(result.gas_burnt));
+    // }
 
-    await Promise.all(results);
+    // await Promise.all(results);
 
     return this.getAccount(accountId);
   }

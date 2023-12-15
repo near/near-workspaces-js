@@ -66,7 +66,6 @@ class Account {
         return (await this.manager.setKey(this.accountId, keyPair)).getPublicKey();
     }
     async createAccount(accountId, { keyPair, initialBalance, } = {}) {
-        var _a;
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
@@ -76,11 +75,11 @@ class Account {
         if (result.Failure) {
             throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
         }
-        const results = [];
-        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
-            results.push(fn(result.gas_burnt));
-        }
-        await Promise.all(results);
+        // Const results = [];
+        // for (const fn of this.manager.tx_callbacks ?? []) {
+        //   results.push(fn(result.gas_burnt));
+        // }
+        // await Promise.all(results);
         return this.getAccount(accountId);
     }
     async createSubAccount(accountId, { keyPair, initialBalance, } = {}) {

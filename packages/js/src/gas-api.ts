@@ -10,17 +10,30 @@ export class GasMeter {
 
   tx_callback(): (burnt: Gas) => Promise<void> {
     return async (burnt: Gas) => {
+      console.log('GasMeter.tx_callback()', burnt.toString());
       await this._mutex;
-      this._elapsed.add(burnt);
+
+      // FIXME: add op fails to work
+      {
+        const trial = Gas.from(0);
+        trial.add(burnt);
+        console.log(`Gas burnt is ${burnt.toString()} while trial has been updated to ${trial.toString()}`);
+      }
+
+      this._elapsed = Gas.from(this._elapsed.toNumber() + burnt.toNumber());
+
+      console.log('GasMeter.tx_callback() updated', this._elapsed.toString());
       this._mutex = Promise.resolve();
     };
   }
 
   get elapsed() {
+    console.log('GasMeter.elapsed()', this._elapsed.toString());
     return this._elapsed;
   }
 
   reset(): void {
+    console.log('GasMeter.reset()');
     this._elapsed = Gas.from(0);
   }
 }
