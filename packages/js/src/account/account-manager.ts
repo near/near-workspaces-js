@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
-import {NEAR} from 'near-units';
+import {Gas, NEAR} from 'near-units';
 import {asId, isTopLevelAccount, randomAccountId} from '../utils';
 import {Config, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
 import {debug, txDebug} from '../internal-utils';
@@ -14,6 +14,7 @@ import {getKeyFromFile} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
 export abstract class AccountManager implements NearAccountManager {
+  tx_callbacks?: Array<(burnt: Gas) => Promise<void>> = this.config.tx_callbacks;
   accountsCreated: Set<string> = new Set();
   private _root?: NearAccount;
   constructor(
@@ -111,7 +112,16 @@ export abstract class AccountManager implements NearAccountManager {
 
   async deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
     try {
-      return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
+      const executionResult = await this.getAccount(accountId).delete(beneficiaryId, keyPair);
+
+      const results = [];
+      for (const fn of this.tx_callbacks ?? []) {
+        results.push(fn(executionResult.gas_burnt));
+      }
+
+      await Promise.all(results);
+
+      return executionResult;
     } catch (error: unknown) {
       if (keyPair) {
         debug(`Failed to delete ${accountId} with different keyPair`);
@@ -167,6 +177,14 @@ export abstract class AccountManager implements NearAccountManager {
       }
 
       const result = new TransactionResult(outcome, start, end, this.config);
+
+      const results = [];
+      for (const fn of this.tx_callbacks ?? []) {
+        results.push(fn(result.gas_burnt));
+      }
+
+      await Promise.all(results);
+
       txDebug(result.summary());
       return result;
     } catch (error: unknown) {
@@ -411,6 +429,16 @@ export class ManagedTransaction extends Transaction {
    */
   async transact(keyPair?: KeyPair): Promise<TransactionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
+
+    if (executionResult.succeeded) {
+      const results = [];
+      for (const fn of this.manager.tx_callbacks ?? []) {
+        results.push(fn(executionResult.gas_burnt));
+      }
+
+      await Promise.all(results);
+    }
+
     if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);
     }

@@ -1,23 +1,19 @@
-import {debug} from './internal-utils';
-import {Worker} from './worker';
+import {Gas} from 'near-units';
 
 /**
  * A gas meter keeps track of the amount of gas seen by the worker.
- * It must be added to the worker before any transactions are run.
+ * The tx_callback should be added to the Worker on construction.
  */
 export class GasMeter {
-  private _elapsed = 0;
+  private _elapsed = Gas.from(0);
+  private _mutex = Promise.resolve();
 
-  constructor(worker: Worker) {
-    const meter_ref = new WeakRef(this);
-    worker.add_callback((burnt: number) => {
-      const meter = meter_ref.deref();
-      if (meter !== undefined) {
-        meter._elapsed += burnt;
-      }
-    });
-
-    debug('Lifecycle.GasMeter.created()');
+  tx_callback(): (burnt: Gas) => Promise<void> {
+    return async (burnt: Gas) => {
+      await this._mutex;
+      this._elapsed.add(burnt);
+      this._mutex = Promise.resolve();
+    };
   }
 
   get elapsed() {
@@ -25,6 +21,6 @@ export class GasMeter {
   }
 
   reset(): void {
-    this._elapsed = 0;
+    this._elapsed = Gas.from(0);
   }
 }

@@ -48,18 +48,6 @@ class Worker {
                     + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'');
         }
     }
-    /**
-     * Registers a callback function to be triggered
-     * whenever a transaction completes.
-     * @param fn is added to the tx_callbacks
-     */
-    add_callback(fn) {
-        if (this.tx_callbacks === undefined) {
-            this.tx_callbacks = [fn];
-            return;
-        }
-        this.tx_callbacks.push(fn);
-    }
     get rootAccount() {
         return this.manager.root;
     }

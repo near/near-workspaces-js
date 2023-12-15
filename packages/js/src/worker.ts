@@ -16,8 +16,6 @@ export abstract class Worker {
 
   protected manager!: NearAccountManager;
 
-  protected tx_callbacks?: Array<(burnt: number) => void>;
-
   constructor(config: Config) {
     debug('Lifecycle.Worker.constructor', 'config:', config);
     this.config = config;
@@ -51,20 +49,6 @@ export abstract class Worker {
             + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'',
         );
     }
-  }
-
-  /**
-   * Registers a callback function to be triggered
-   * whenever a transaction completes.
-   * @param fn is added to the tx_callbacks
-   */
-  add_callback(fn: (burnt: number) => void) {
-    if (this.tx_callbacks === undefined) {
-      this.tx_callbacks = [fn];
-      return;
-    }
-
-    this.tx_callbacks.push(fn);
   }
 
   get rootAccount(): NearAccount {

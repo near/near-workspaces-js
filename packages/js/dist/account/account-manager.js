@@ -39,6 +39,7 @@ const utils_2 = require("./utils");
 class AccountManager {
     constructor(config) {
         this.config = config;
+        this.tx_callbacks = this.config.tx_callbacks;
         this.accountsCreated = new Set();
     }
     static create(config) {
@@ -113,8 +114,15 @@ class AccountManager {
         await this.keyStore.removeKey(this.networkId, accountId);
     }
     async deleteAccount(accountId, beneficiaryId, keyPair) {
+        var _a;
         try {
-            return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
+            const executionResult = await this.getAccount(accountId).delete(beneficiaryId, keyPair);
+            const results = [];
+            for (const fn of (_a = this.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+                results.push(fn(executionResult.gas_burnt));
+            }
+            await Promise.all(results);
+            return executionResult;
         }
         catch (error) {
             if (keyPair) {
@@ -144,7 +152,7 @@ class AccountManager {
         return amount.lt(await this.availableBalance(account));
     }
     async executeTransaction(tx, keyPair) {
-        var _a;
+        var _a, _b;
         const account = new nearAPI.Account(this.connection, tx.senderId);
         let oldKey = null;
         if (keyPair) {
@@ -163,6 +171,11 @@ class AccountManager {
                 await this.deleteKey(tx.senderId);
             }
             const result = new transaction_result_1.TransactionResult(outcome, start, end, this.config);
+            const results = [];
+            for (const fn of (_a = this.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+                results.push(fn(result.gas_burnt));
+            }
+            await Promise.all(results);
             (0, internal_utils_1.txDebug)(result.summary());
             return result;
         }
@@ -173,7 +186,7 @@ class AccountManager {
             }
             if (error instanceof Error) {
                 const key = await this.getPublicKey(tx.receiverId);
-                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
+                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_b = key === null || key === void 0 ? void 0 : key.toString()) !== null && _b !== void 0 ? _b : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
                 (0, internal_utils_1.debug)(error);
             }
             throw error;
@@ -354,7 +367,15 @@ class ManagedTransaction extends transaction_1.Transaction {
      * @returns
      */
     async transact(keyPair) {
+        var _a;
         const executionResult = await this.manager.executeTransaction(this, keyPair);
+        if (executionResult.succeeded) {
+            const results = [];
+            for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+                results.push(fn(executionResult.gas_burnt));
+            }
+            await Promise.all(results);
+        }
         if (executionResult.succeeded && this.delete) {
             await this.manager.deleteKey(this.receiverId);
         }
