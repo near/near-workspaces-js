@@ -87,12 +87,12 @@ export class Account implements NearAccount {
       throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
     }
 
-    // Const results = [];
-    // for (const fn of this.manager.tx_callbacks ?? []) {
-    //   results.push(fn(result.gas_burnt));
-    // }
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(result.gas_burnt));
+    }
 
-    // await Promise.all(results);
+    await Promise.all(results);
 
     return this.getAccount(accountId);
   }
@@ -198,7 +198,16 @@ export class Account implements NearAccount {
 
   async deploy(code: string | URL | Uint8Array | Buffer): Promise<TransactionResult> {
     const tx = await this.batch(this).deployContractFile(code);
-    return tx.transact();
+    const txResult = await tx.transact();
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(txResult.gas_burnt));
+    }
+
+    await Promise.all(results);
+
+    return txResult;
   }
 
   async devCreateAccount({
@@ -215,6 +224,13 @@ export class Account implements NearAccount {
     });
 
     const result = await tx.transact();
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(result.gas_burnt));
+    }
+
+    await Promise.all(results);
 
     if (result.Failure) {
       throw new Error(`Failure during account creation, details: ${JSON.stringify(result)}`);
@@ -257,6 +273,13 @@ export class Account implements NearAccount {
 
     const result = await tx.transact();
 
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(result.gas_burnt));
+    }
+
+    await Promise.all(results);
+
     if (result.Failure) {
       throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
     }
@@ -279,9 +302,18 @@ export class Account implements NearAccount {
       signWithKey?: KeyPair;
     } = {},
   ): Promise<TransactionResult> {
-    return this.batch(contractId)
+    const txResult = await this.batch(contractId)
       .functionCall(methodName, args, {gas, attachedDeposit})
       .transact(signWithKey);
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(txResult.gas_burnt));
+    }
+
+    await Promise.all(results);
+
+    return txResult;
   }
 
   async call<T>(
@@ -313,6 +345,13 @@ export class Account implements NearAccount {
     if (txResult.failed) {
       throw new TransactionError(txResult);
     }
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(txResult.gas_burnt));
+    }
+
+    await Promise.all(results);
 
     return txResult.parseResult<T>();
   }
@@ -380,6 +419,14 @@ export class Account implements NearAccount {
     const result = await this.batch(this)
       .deleteAccount(beneficiaryId)
       .transact(keyPair);
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(result.gas_burnt));
+    }
+
+    await Promise.all(results);
+
     if (result.succeeded && await this.getKey() !== null) {
       await this.manager.deleteKey(this.accountId);
     }
@@ -421,7 +468,16 @@ export class Account implements NearAccount {
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
-    return this.batch(accountId).transfer(amount).transact();
+    const txResult = await this.batch(accountId).transfer(amount).transact();
+
+    const results = [];
+    for (const fn of this.manager.tx_callbacks ?? []) {
+      results.push(fn(txResult.gas_burnt));
+    }
+
+    await Promise.all(results);
+
+    return txResult;
   }
 
   protected async internalCreateAccount(

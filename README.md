@@ -272,6 +272,25 @@ It is true that you can alter contract code, accounts, and access keys using nor
 
 To see an example of how to do this, see the [patch-state test](https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts).
 
+Metering Gas Burnt
+==================
+
+You can meter the amount of gas burnt by transactions using `GasMeter`. This can be useful for testing gas consumption of your contracts. For example, you can test that a contract call consumes less gas than a certain amount.
+
+It can be used like so:
+
+```ts
+  const meter = new GasMeter();
+  const worker = await Worker.init({tx_callbacks: [meter.tx_callback()]});
+
+  const root = worker.rootAccount;
+  const alice = await root.createSubAccount('alice'); // this transaction will be metered
+
+
+  // checking the gas burnt for SubAccount creation
+  const elapsed = meter.elapsed();
+```
+
 Pro Tips
 ========
 

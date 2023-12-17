@@ -112,16 +112,7 @@ export abstract class AccountManager implements NearAccountManager {
 
   async deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult> {
     try {
-      const executionResult = await this.getAccount(accountId).delete(beneficiaryId, keyPair);
-
-      const results = [];
-      for (const fn of this.tx_callbacks ?? []) {
-        results.push(fn(executionResult.gas_burnt));
-      }
-
-      await Promise.all(results);
-
-      return executionResult;
+      return await this.getAccount(accountId).delete(beneficiaryId, keyPair);
     } catch (error: unknown) {
       if (keyPair) {
         debug(`Failed to delete ${accountId} with different keyPair`);
@@ -177,14 +168,6 @@ export abstract class AccountManager implements NearAccountManager {
       }
 
       const result = new TransactionResult(outcome, start, end, this.config);
-
-      const results = [];
-      for (const fn of this.tx_callbacks ?? []) {
-        results.push(fn(result.gas_burnt));
-      }
-
-      await Promise.all(results);
-
       txDebug(result.summary());
       return result;
     } catch (error: unknown) {
@@ -429,16 +412,6 @@ export class ManagedTransaction extends Transaction {
    */
   async transact(keyPair?: KeyPair): Promise<TransactionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
-
-    if (executionResult.succeeded) {
-      const results = [];
-      for (const fn of this.manager.tx_callbacks ?? []) {
-        results.push(fn(executionResult.gas_burnt));
-      }
-
-      await Promise.all(results);
-    }
-
     if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);
     }

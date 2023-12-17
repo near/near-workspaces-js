@@ -8,6 +8,6 @@ export declare class GasMeter {
     private _mutex;
     tx_callback(): (burnt: Gas) => Promise<void>;
     get elapsed(): Gas;
-    reset(): void;
+    reset(): Promise<void>;
 }
 //# sourceMappingURL=gas-api.d.ts.map

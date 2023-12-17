@@ -32,7 +32,7 @@ test.beforeEach(async t => {
   t.notDeepEqual(meter.elapsed, Gas.from(0), `meter.elapsed: ${meter.elapsed.toString()}`);
 
   // Reset the meter
-  meter.reset();
+  await meter.reset();
 
   // Save state for test runs, it is unique for each test
   t.context.worker = worker;
@@ -42,7 +42,7 @@ test.beforeEach(async t => {
 
 test.afterEach.always(async t => {
   // Reset the meter
-  t.context.meter.reset();
+  await t.context.meter.reset();
 
   // Stop Sandbox server
   await t.context.worker.tearDown().catch(error => {
