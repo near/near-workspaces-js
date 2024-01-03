@@ -183,6 +183,16 @@ export class JsonRpcProvider extends JSONRpc {
   async patchStateRecords(records: Records): Promise<Empty> {
     return this.sendJsonRpc('sandbox_patch_state', records);
   }
+
+  /**
+   * Allows to forward the state of the blockchain to the future of the given height.
+   * Note: This does not speed up transactions.
+   * @param deltaHeight
+   * @returns Promise<Empty>
+   */
+  async fastForward(deltaHeight: number): Promise<Empty> {
+    return this.sendJsonRpc('sandbox_fast_forward', {delta_height: deltaHeight});
+  }
 }
 
 export const TestnetRpc = JsonRpcProvider.from(TESTNET_RPC_ADDR);

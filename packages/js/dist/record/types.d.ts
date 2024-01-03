@@ -39,7 +39,7 @@ export interface Data {
         value: string;
     };
 }
-export declare type StateRecord = Data | Account | AccessKey | Contract;
+export type StateRecord = Data | Account | AccessKey | Contract;
 export interface Records {
     records: StateRecord[];
 }

@@ -121,6 +121,13 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns Promise<Empty>
      */
     patchStateRecords(records: Records): Promise<Empty>;
+    /**
+     * Allows to forward the state of the blockchain to the future of the given height.
+     * Note: This does not speed up transactions.
+     * @param deltaHeight
+     * @returns Promise<Empty>
+     */
+    fastForward(deltaHeight: number): Promise<Empty>;
 }
 export declare const TestnetRpc: JsonRpcProvider;
 export declare const MainnetRpc: JsonRpcProvider;
