@@ -170,13 +170,30 @@ class JsonRpcProvider extends types_1.JSONRpc {
         return this.sendJsonRpc('sandbox_patch_state', records);
     }
     /**
-     * Allows to forward the state of the blockchain to the future of the given height.
-     * Note: This does not speed up transactions.
+     * Fast forward to a point in the future. The delta block height is supplied to tell the
+     * network to advanced a certain amount of blocks. This comes with the advantage only having
+     * to wait a fraction of the time it takes to produce the same number of blocks.
+     *
+     * Estimate as to how long it takes: if our delta_height crosses `X` epochs, then it would
+     * roughly take `X * 5` seconds for the fast forward request to be processed.
+     *
+     * Note: This is not to be confused with speeding up the current in-flight transactions;
+     * the state being forwarded in this case refers to time-related state (the block height, timestamp and epoch).
      * @param deltaHeight
      * @returns Promise<Empty>
      */
     async fastForward(deltaHeight) {
         return this.sendJsonRpc('sandbox_fast_forward', { delta_height: deltaHeight });
+    }
+    /**
+     * Get details about specific blocks or chunks.
+     * The `block` can be a block height or a block hash, defaulting to
+     * finality param to return latest block.
+     * @param block
+     * @returns Promise<BlockResult>
+     */
+    async viewBlock(block) {
+        return this.sendJsonRpc('block', block ? { block_id: block } : { finality: 'final' });
     }
 }
 exports.JsonRpcProvider = JsonRpcProvider;

@@ -23,6 +23,7 @@
     "fs-extra": "^10.0.0",
     "js-sha256": "^0.9.0",
     "near-api-js": "^v2.1.4",
+    "near-js/types": "^0.0.4",
     "near-sandbox": "^0.0.15",
     "near-units": "^0.1.9",
     "node-port-check": "^2.0.1",
