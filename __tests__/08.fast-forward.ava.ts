@@ -2,8 +2,8 @@ import {NearAccount, getNetworkFromEnv} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
 import {Worker} from 'near-workspaces/dist/worker';
 
-// This contract provides contains only one view call, which returns the
-// block_timestamp and epoch_height of the current block.
+// The contract provided contains only one view call, returning the
+// block_timestamp and epoch_height of the current block as a tuple.
 // Source is here <https://github.com/near/near-workspaces-rs/blob/main/examples/simple-contract/src/lib.rs>
 const contract_wasm = '__tests__/build/debug/simple_contract.wasm';
 
