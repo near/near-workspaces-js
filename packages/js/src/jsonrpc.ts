@@ -4,7 +4,7 @@ import process from 'process';
 import {NEAR} from 'near-units';
 import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
 import {Records} from './record';
-import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network, AccessKeyView, AccessKeyList, BlockHash, BlockHeight, BlockResult} from './types';
+import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network, AccessKeyView, AccessKeyList} from './types';
 
 const OPTIMISTIC: {finality: 'optimistic'} = {finality: 'optimistic'};
 /**
@@ -199,17 +199,6 @@ export class JsonRpcProvider extends JSONRpc {
    */
   async fastForward(deltaHeight: number): Promise<Empty> {
     return this.sendJsonRpc('sandbox_fast_forward', {delta_height: deltaHeight});
-  }
-
-  /**
-   * Get details about specific blocks or chunks.
-   * The `block` can be a block height or a block hash, defaulting to
-   * finality param to return latest block.
-   * @param block
-   * @returns Promise<BlockResult>
-   */
-  async viewBlock(block?: BlockHash | BlockHeight): Promise<BlockResult> {
-    return this.sendJsonRpc('block', block ? {block_id: block} : {finality: 'final'});
   }
 }
 

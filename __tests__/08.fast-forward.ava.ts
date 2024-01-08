@@ -46,7 +46,7 @@ if (getNetworkFromEnv() === 'sandbox') {
     const env_after = after as EnvData;
     console.log(`After: timestamp = ${env_after[0]}, epoch_height = ${env_after[1]}`);
 
-    const block = await t.context.worker.provider.viewBlock();
+    const block = await t.context.worker.provider.block({finality: 'final'});
 
     // Rounding off to nearest hundred, providing wiggle room incase not perfectly `forward_height`
     t.true(Math.ceil(block.header.height / 100) * 100 === forward_height);

@@ -185,16 +185,6 @@ class JsonRpcProvider extends types_1.JSONRpc {
     async fastForward(deltaHeight) {
         return this.sendJsonRpc('sandbox_fast_forward', { delta_height: deltaHeight });
     }
-    /**
-     * Get details about specific blocks or chunks.
-     * The `block` can be a block height or a block hash, defaulting to
-     * finality param to return latest block.
-     * @param block
-     * @returns Promise<BlockResult>
-     */
-    async viewBlock(block) {
-        return this.sendJsonRpc('block', block ? { block_id: block } : { finality: 'final' });
-    }
 }
 exports.JsonRpcProvider = JsonRpcProvider;
 JsonRpcProvider.providers = new Map();

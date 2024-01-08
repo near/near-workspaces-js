@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import { Records } from './record';
-import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network, AccessKeyView, AccessKeyList, BlockHash, BlockHeight, BlockResult } from './types';
+import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network, AccessKeyView, AccessKeyList } from './types';
 /**
  * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.
@@ -135,14 +135,6 @@ export declare class JsonRpcProvider extends JSONRpc {
      * @returns Promise<Empty>
      */
     fastForward(deltaHeight: number): Promise<Empty>;
-    /**
-     * Get details about specific blocks or chunks.
-     * The `block` can be a block height or a block hash, defaulting to
-     * finality param to return latest block.
-     * @param block
-     * @returns Promise<BlockResult>
-     */
-    viewBlock(block?: BlockHash | BlockHeight): Promise<BlockResult>;
 }
 export declare const TestnetRpc: JsonRpcProvider;
 export declare const MainnetRpc: JsonRpcProvider;
