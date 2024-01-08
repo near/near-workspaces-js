@@ -43,10 +43,12 @@ export abstract class Worker {
         return TestnetWorker.init(config);
       case 'sandbox':
         return SandboxWorker.init(config);
+      case 'custom':
+        return CustomnetWorker.init(config);
       default:
         throw new Error(
           `config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
-            + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'',
+            + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'',
         );
     }
   }
@@ -58,6 +60,41 @@ export abstract class Worker {
   abstract get provider(): JsonRpcProvider;
 
   abstract tearDown(): Promise<void>;
+}
+
+// Connect to a custom network.
+// Note: the burden of ensuring the methods that are able to be called are left up to the user.
+export class CustomnetWorker extends Worker {
+  static async init(config: Partial<Config>): Promise<CustomnetWorker> {
+    debug('Lifecycle.CustomnetWorker.create()', 'config:', config);
+    const fullConfig = {...this.defaultConfig, ...config};
+    const worker = new CustomnetWorker(fullConfig);
+    await worker.manager.init();
+    return worker;
+  }
+
+  get provider(): JsonRpcProvider {
+    return JsonRpcProvider.from(CustomnetWorker.clientConfig);
+  }
+
+  async tearDown(): Promise<void> {
+    // We are not stopping any server here because we are using Testnet
+    return Promise.resolve();
+  }
+
+  static get defaultConfig(): Config {
+    return {
+      homeDir: 'ignored',
+      port: 3030,
+      rm: false,
+      refDir: null,
+      ...this.clientConfig,
+    };
+  }
+
+  private static get clientConfig(): ClientConfig {
+    return urlConfigFromNetwork('custom');
+  }
 }
 
 export class TestnetWorker extends Worker {

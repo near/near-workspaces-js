@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SandboxWorker = exports.TestnetWorker = exports.Worker = void 0;
+exports.SandboxWorker = exports.TestnetWorker = exports.CustomnetWorker = exports.Worker = void 0;
 const fs_1 = __importDefault(require("fs"));
 const near_units_1 = require("near-units");
 const proper_lockfile_1 = require("proper-lockfile");
@@ -43,9 +43,11 @@ class Worker {
                 return TestnetWorker.init(config);
             case 'sandbox':
                 return SandboxWorker.init(config);
+            case 'custom':
+                return CustomnetWorker.init(config);
             default:
                 throw new Error(`config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
-                    + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'');
+                    + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'');
         }
     }
     get rootAccount() {
@@ -53,6 +55,37 @@ class Worker {
     }
 }
 exports.Worker = Worker;
+// Connect to a custom network.
+// Note: the burden of ensuring the methods that are able to be called are left up to the user.
+class CustomnetWorker extends Worker {
+    static async init(config) {
+        (0, internal_utils_1.debug)('Lifecycle.CustomnetWorker.create()', 'config:', config);
+        const fullConfig = { ...this.defaultConfig, ...config };
+        const worker = new CustomnetWorker(fullConfig);
+        await worker.manager.init();
+        return worker;
+    }
+    get provider() {
+        return jsonrpc_1.JsonRpcProvider.from(CustomnetWorker.clientConfig);
+    }
+    async tearDown() {
+        // We are not stopping any server here because we are using Testnet
+        return Promise.resolve();
+    }
+    static get defaultConfig() {
+        return {
+            homeDir: 'ignored',
+            port: 3030,
+            rm: false,
+            refDir: null,
+            ...this.clientConfig,
+        };
+    }
+    static get clientConfig() {
+        return (0, utils_1.urlConfigFromNetwork)('custom');
+    }
+}
+exports.CustomnetWorker = CustomnetWorker;
 class TestnetWorker extends Worker {
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.TestnetWorker.create()', 'config:', config);

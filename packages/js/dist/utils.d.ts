@@ -25,7 +25,7 @@ export declare const EMPTY_CONTRACT_HASH = "11111111111111111111111111111111";
  *
  * @returns network to connect to. Default 'sandbox'
  */
-export declare function getNetworkFromEnv(): 'sandbox' | 'testnet';
+export declare function getNetworkFromEnv(): 'sandbox' | 'testnet' | 'custom';
 export declare function homeKeyStore(): KeyStore;
 export declare function timeSuffix(prefix: string, length?: number): string;
 export declare function parseGas(s: string | BN): Gas;

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -82,6 +86,9 @@ function configFromDomain(network) {
     else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
         rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
     }
+    else if (network === 'custom' && process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL) {
+        rpcAddr = process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL;
+    }
     return {
         network,
         rpcAddr,
@@ -100,9 +107,10 @@ function urlConfigFromNetwork(network) {
                 rpcAddr: 'http://localhost',
             };
         case 'testnet':
-        case 'mainnet': return configFromDomain(networkName);
+        case 'mainnet':
+        case 'custom': return configFromDomain(networkName);
         default:
-            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
     }
 }
 exports.urlConfigFromNetwork = urlConfigFromNetwork;
@@ -127,12 +135,13 @@ function getNetworkFromEnv() {
     switch (network) {
         case 'sandbox':
         case 'testnet':
+        case 'custom':
             return network;
         case undefined:
             return 'sandbox';
         default:
             throw new Error(`environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
-                + 'use \'testnet\', or \'sandbox\' (the default)');
+                + 'use \'testnet\', \'custom\', or \'sandbox\' (the default)');
     }
 }
 exports.getNetworkFromEnv = getNetworkFromEnv;

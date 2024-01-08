@@ -27,6 +27,13 @@ export declare abstract class Worker {
     abstract get provider(): JsonRpcProvider;
     abstract tearDown(): Promise<void>;
 }
+export declare class CustomnetWorker extends Worker {
+    static init(config: Partial<Config>): Promise<CustomnetWorker>;
+    get provider(): JsonRpcProvider;
+    tearDown(): Promise<void>;
+    static get defaultConfig(): Config;
+    private static get clientConfig();
+}
 export declare class TestnetWorker extends Worker {
     static init(config: Partial<Config>): Promise<TestnetWorker>;
     get provider(): JsonRpcProvider;
