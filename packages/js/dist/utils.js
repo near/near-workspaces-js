@@ -86,9 +86,6 @@ function configFromDomain(network) {
     else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
         rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
     }
-    else if (network === 'custom' && process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL) {
-        rpcAddr = process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL;
-    }
     return {
         network,
         rpcAddr,
@@ -100,15 +97,20 @@ function configFromDomain(network) {
 }
 function urlConfigFromNetwork(network) {
     const networkName = typeof network === 'string' ? network : network.network;
+    const rpcAddr = typeof network === 'string' ? undefined : network.rpcAddr;
     switch (networkName) {
         case 'sandbox':
             return {
                 network: 'sandbox',
                 rpcAddr: 'http://localhost',
             };
+        case 'custom':
+            return {
+                network: 'custom',
+                rpcAddr: rpcAddr,
+            };
         case 'testnet':
-        case 'mainnet':
-        case 'custom': return configFromDomain(networkName);
+        case 'mainnet': return configFromDomain(networkName);
         default:
             throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
     }

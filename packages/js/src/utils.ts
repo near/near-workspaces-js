@@ -62,8 +62,6 @@ function configFromDomain(network: 'testnet' | 'mainnet' | 'custom'): ClientConf
     rpcAddr = process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL;
   } else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
     rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
-  } else if (network === 'custom' && process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL) {
-    rpcAddr = process.env.NEAR_CLI_CUSTOM_RPC_SERVER_URL;
   }
 
   return {
@@ -76,8 +74,9 @@ function configFromDomain(network: 'testnet' | 'mainnet' | 'custom'): ClientConf
   };
 }
 
-export function urlConfigFromNetwork(network: string | {network: string}): ClientConfig {
+export function urlConfigFromNetwork(network: string | {network: string; rpcAddr?: string}): ClientConfig {
   const networkName = typeof network === 'string' ? network : network.network;
+  const rpcAddr = typeof network === 'string' ? undefined : network.rpcAddr;
   switch (networkName) {
     case 'sandbox':
       return {
@@ -85,9 +84,14 @@ export function urlConfigFromNetwork(network: string | {network: string}): Clien
         rpcAddr: 'http://localhost',
       };
 
+    case 'custom':
+      return {
+        network: 'custom',
+        rpcAddr: rpcAddr!,
+      };
+
     case 'testnet':
-    case 'mainnet':
-    case 'custom': return configFromDomain(networkName);
+    case 'mainnet': return configFromDomain(networkName);
     default:
       throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
   }

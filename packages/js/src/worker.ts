@@ -8,6 +8,8 @@ import {JsonRpcProvider} from './jsonrpc';
 import {debug} from './internal-utils';
 import {SandboxServer} from './server/server';
 
+const API_KEY_HEADER = 'x-api-key';
+
 /**
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
  */
@@ -65,24 +67,40 @@ export abstract class Worker {
 // Connect to a custom network.
 // Note: the burden of ensuring the methods that are able to be called are left up to the user.
 export class CustomnetWorker extends Worker {
+  private readonly clientConfig: ClientConfig = urlConfigFromNetwork({network: 'custom', rpcAddr: this.config.rpcAddr});
+
   static async init(config: Partial<Config>): Promise<CustomnetWorker> {
     debug('Lifecycle.CustomnetWorker.create()', 'config:', config);
-    const fullConfig = {...this.defaultConfig, ...config};
+    const fullConfig = {
+      homeDir: 'ignored',
+      port: 3030,
+      rm: false,
+      refDir: null,
+      ...urlConfigFromNetwork({network: 'custom', rpcAddr: config.rpcAddr}), // Copied over, can't access member clientConfig here
+      ...config,
+    };
+
     const worker = new CustomnetWorker(fullConfig);
+    if (config.apiKey) {
+      worker.provider.connection.headers = {
+        ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+      };
+    }
+
     await worker.manager.init();
     return worker;
   }
 
   get provider(): JsonRpcProvider {
-    return JsonRpcProvider.from(CustomnetWorker.clientConfig);
+    return JsonRpcProvider.from(this.clientConfig);
   }
 
   async tearDown(): Promise<void> {
-    // We are not stopping any server here because we are using Testnet
+    // We are not stopping any server here because it is an external network.
     return Promise.resolve();
   }
 
-  static get defaultConfig(): Config {
+  get defaultConfig(): Config {
     return {
       homeDir: 'ignored',
       port: 3030,
@@ -91,17 +109,20 @@ export class CustomnetWorker extends Worker {
       ...this.clientConfig,
     };
   }
-
-  private static get clientConfig(): ClientConfig {
-    return urlConfigFromNetwork('custom');
-  }
 }
 
 export class TestnetWorker extends Worker {
   static async init(config: Partial<Config>): Promise<TestnetWorker> {
     debug('Lifecycle.TestnetWorker.create()', 'config:', config);
     const fullConfig = {...this.defaultConfig, ...config};
+
     const worker = new TestnetWorker(fullConfig);
+    if (config.apiKey) {
+      worker.provider.connection.headers = {
+        ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+      };
+    }
+
     await worker.manager.init();
     return worker;
   }
@@ -157,6 +178,12 @@ export class SandboxWorker extends Worker {
     const release = await lock(syncFilename, retryOptions);
     const defaultConfig = await this.defaultConfig();
     const worker = new SandboxWorker({...defaultConfig, ...config});
+    if (config.apiKey) {
+      worker.provider.connection.headers = {
+        ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+      };
+    }
+
     worker.server = await SandboxServer.init(worker.config);
     await worker.server.start();
     // Release file lock after near node start

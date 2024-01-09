@@ -12,6 +12,7 @@ const account_1 = require("./account");
 const jsonrpc_1 = require("./jsonrpc");
 const internal_utils_1 = require("./internal-utils");
 const server_1 = require("./server/server");
+const API_KEY_HEADER = 'x-api-key';
 /**
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
  */
@@ -58,21 +59,37 @@ exports.Worker = Worker;
 // Connect to a custom network.
 // Note: the burden of ensuring the methods that are able to be called are left up to the user.
 class CustomnetWorker extends Worker {
+    constructor() {
+        super(...arguments);
+        this.clientConfig = (0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: this.config.rpcAddr });
+    }
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.CustomnetWorker.create()', 'config:', config);
-        const fullConfig = { ...this.defaultConfig, ...config };
+        const fullConfig = {
+            homeDir: 'ignored',
+            port: 3030,
+            rm: false,
+            refDir: null,
+            ...(0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: config.rpcAddr }),
+            ...config,
+        };
         const worker = new CustomnetWorker(fullConfig);
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
         await worker.manager.init();
         return worker;
     }
     get provider() {
-        return jsonrpc_1.JsonRpcProvider.from(CustomnetWorker.clientConfig);
+        return jsonrpc_1.JsonRpcProvider.from(this.clientConfig);
     }
     async tearDown() {
-        // We are not stopping any server here because we are using Testnet
+        // We are not stopping any server here because it is an external network.
         return Promise.resolve();
     }
-    static get defaultConfig() {
+    get defaultConfig() {
         return {
             homeDir: 'ignored',
             port: 3030,
@@ -81,9 +98,6 @@ class CustomnetWorker extends Worker {
             ...this.clientConfig,
         };
     }
-    static get clientConfig() {
-        return (0, utils_1.urlConfigFromNetwork)('custom');
-    }
 }
 exports.CustomnetWorker = CustomnetWorker;
 class TestnetWorker extends Worker {
@@ -91,6 +105,11 @@ class TestnetWorker extends Worker {
         (0, internal_utils_1.debug)('Lifecycle.TestnetWorker.create()', 'config:', config);
         const fullConfig = { ...this.defaultConfig, ...config };
         const worker = new TestnetWorker(fullConfig);
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
         await worker.manager.init();
         return worker;
     }
@@ -139,6 +158,11 @@ class SandboxWorker extends Worker {
         const release = await (0, proper_lockfile_1.lock)(syncFilename, retryOptions);
         const defaultConfig = await this.defaultConfig();
         const worker = new SandboxWorker({ ...defaultConfig, ...config });
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
         worker.server = await server_1.SandboxServer.init(worker.config);
         await worker.server.start();
         // Release file lock after near node start

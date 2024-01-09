@@ -4,6 +4,8 @@ import anyTest, {TestFn} from 'ava';
 
 // To run this test, you need to set the NEAR_RPC_API_KEY environment variable tied the Pagoda testnet network.
 // And the NEAR_WORKSPACES_NETWORK environment variable to 'custom'.
+//
+// Sample: NEAR_WORKSPACES_NETWORK=custom NEAR_RPC_API_KEY="xxx" yarn test...
 if (getNetworkFromEnv() === 'custom' && process.env.NEAR_RPC_API_KEY !== '') {
   const test = anyTest as TestFn<{
     worker: Worker;
@@ -25,8 +27,14 @@ if (getNetworkFromEnv() === 'custom' && process.env.NEAR_RPC_API_KEY !== '') {
   });
 
   test('Ping network', async t => {
-    await t.context.worker.provider.block({finality: 'final'});
-    console.log('Network is alive!');
+    try {
+      await t.context.worker.provider.block({finality: 'final'});
+    } catch (error: unknown) {
+      t.fail(`Failed to ping the network: ${error as string}`);
+      return;
+    }
+
+    t.pass('Network pinged successfully!');
   });
 }
 

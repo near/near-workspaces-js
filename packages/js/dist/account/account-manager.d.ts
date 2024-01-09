@@ -46,6 +46,14 @@ export declare abstract class AccountManager implements NearAccountManager {
     protected get networkId(): string;
     protected get connection(): nearAPI.Connection;
 }
+export declare class CustomnetManager extends AccountManager {
+    get DEFAULT_INITIAL_BALANCE(): string;
+    get defaultKeyStore(): KeyStore;
+    get connection(): nearAPI.Connection;
+    get networkId(): string;
+    init(): Promise<AccountManager>;
+    createFrom(config: Config): Promise<NearAccountManager>;
+}
 export declare class TestnetManager extends AccountManager {
     static readonly KEYSTORE_PATH: string;
     private static numTestAccounts;

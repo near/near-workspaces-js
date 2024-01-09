@@ -28,11 +28,11 @@ export declare abstract class Worker {
     abstract tearDown(): Promise<void>;
 }
 export declare class CustomnetWorker extends Worker {
+    private readonly clientConfig;
     static init(config: Partial<Config>): Promise<CustomnetWorker>;
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
-    static get defaultConfig(): Config;
-    private static get clientConfig();
+    get defaultConfig(): Config;
 }
 export declare class TestnetWorker extends Worker {
     static init(config: Partial<Config>): Promise<TestnetWorker>;

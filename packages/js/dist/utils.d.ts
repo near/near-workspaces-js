@@ -13,6 +13,7 @@ export declare function captureError(fn: () => Promise<any>): Promise<string>;
 export declare function isTopLevelAccount(accountId: string): boolean;
 export declare function urlConfigFromNetwork(network: string | {
     network: string;
+    rpcAddr?: string;
 }): ClientConfig;
 /**
  *
