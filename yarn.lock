@@ -5507,10 +5507,10 @@ near-api-js@^v2.1.4:
     node-fetch "^2.6.1"
     tweetnacl "^1.0.1"
 
-near-sandbox@^0.0.15:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.15.tgz#6dc267b3437968bda84392a1443a98e54cb9f474"
-  integrity sha512-scFdPDoT8G0GteHJID8KLZQNGtg7zpjBnRZUZTjXVO8atKzHYw8iawpc+ekylErn5bbWG49Tv4KySBUv4chIRA==
+near-sandbox@^0.0.17:
+  version "0.0.17"
+  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.0.17.tgz#cb65edb91d0fab7a21a71f62c93f40ca04ce7252"
+  integrity sha512-bL0We378hFZ0/xHAKP5mAWKS5OjzU6+VuvMlXpMwyFAwG2s5NwOnzRTezvYYwQNtG3iU+xvQ6jWvp7UO1STGLQ==
   dependencies:
     got "^11.8.2"
     tar "^6.1.0"
@@ -7400,7 +7400,7 @@ typescript@>=4.3:
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.3.2.tgz#00d1c7c1c46928c5845c1ee8d0cc2791031d4c43"
   integrity sha512-6l+RyNy7oAHDfxC4FzSJcz9vnjTKxrLpDG5M2Vu4SHRVNg6xzqZp6LYSR9zjqQTu8DU/f5xwxUdADOkbrIX2gQ==
 
-"typescript@^3 || ^4", typescript@^4.3.5, typescript@^4.6.X:
+"typescript@^3 || ^4", typescript@^4.3.5, typescript@^4.6:
   version "4.9.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
   integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
