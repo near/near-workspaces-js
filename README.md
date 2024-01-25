@@ -272,6 +272,18 @@ It is true that you can alter contract code, accounts, and access keys using nor
 
 To see an example of how to do this, see the [patch-state test](https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts).
 
+Time Traveling
+===============
+
+In Sandbox-mode, you can forward time-related state (the block height, timestamp and epoch height) with `fastForward`.
+
+This means contracts which require time sensitive data do not need to sit and wait the same amount of time for blocks on the sandbox to be produced.
+We can simply just call the api to get us further in time.
+
+For an example, see the [fast-forward test](./__tests__/08.fast-forward.ava.ts)
+
+Note: `fastForward` does not speed up an in-flight transactions.
+
 Pro Tips
 ========
 
