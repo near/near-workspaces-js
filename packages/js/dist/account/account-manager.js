@@ -39,6 +39,7 @@ const utils_2 = require("./utils");
 class AccountManager {
     constructor(config) {
         this.config = config;
+        this.tx_callbacks = this.config.tx_callbacks;
         this.accountsCreated = new Set();
     }
     static create(config) {

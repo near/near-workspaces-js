@@ -1,5 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { NEAR } from 'near-units';
+import { Gas, NEAR } from 'near-units';
 import { Config, KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JsonRpcProvider } from '../jsonrpc';
@@ -8,6 +8,7 @@ import { NearAccount } from './near-account';
 import { NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
     protected config: Config;
+    tx_callbacks?: Array<(burnt: Gas) => Promise<void>>;
     accountsCreated: Set<string>;
     private _root?;
     constructor(config: Config);

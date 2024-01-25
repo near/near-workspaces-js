@@ -1,5 +1,5 @@
 import {KeyPair} from 'near-api-js';
-import {NEAR} from 'near-units';
+import {Gas, NEAR} from 'near-units';
 import {TransactionResult} from '../transaction-result';
 import {JsonRpcProvider} from '../jsonrpc';
 import {Transaction} from '../transaction';
@@ -10,6 +10,7 @@ export interface NearAccountManager {
   readonly provider: JsonRpcProvider;
   readonly initialBalance: string;
   readonly root: NearAccount;
+  readonly tx_callbacks?: Array<(burnt: Gas) => Promise<void>>;
   accountView(accountId: string): Promise<AccountView>;
   availableBalance(account: string | NearAccount): Promise<NEAR>;
   balance(accountId: string | NearAccount): Promise<AccountBalance>;

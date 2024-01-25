@@ -142,7 +142,7 @@ export class JsonRpcProvider extends JSONRpc {
    * Download the state of a contract given a prefix of a key.
    *
    * @param accountId contract account to lookup
-   * @param prefix string or byte prefix of keys to loodup
+   * @param prefix string or byte prefix of keys to lookup
    * @param blockQuery state at what block, defaults to most recent final block
    * @returns raw RPC response
    */
@@ -159,7 +159,7 @@ export class JsonRpcProvider extends JSONRpc {
    * Download the state of a contract given a prefix of a key without decoding from base64.
    *
    * @param accountId contract account to lookup
-   * @param prefix string or byte prefix of keys to loodup
+   * @param prefix string or byte prefix of keys to lookup
    * @param blockQuery state at what block, defaults to most recent final block
    * @returns raw RPC response
    */
@@ -176,7 +176,7 @@ export class JsonRpcProvider extends JSONRpc {
 
   /**
    * Updates records without using a transaction.
-   * Note: only avaialable on Sandbox endpoints.
+   * Note: only available on Sandbox endpoints.
    * @param records
    * @returns Promise<Empty>
    */

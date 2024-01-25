@@ -284,6 +284,25 @@ For an example, see the [fast-forward test](./__tests__/08.fast-forward.ava.ts)
 
 Note: `fastForward` does not speed up an in-flight transactions.
 
+Metering Gas Burnt
+==================
+
+You can meter the amount of gas burnt by transactions using `GasMeter`. This can be useful for testing gas consumption of your contracts. For example, you can test that a contract call consumes less gas than a certain amount.
+
+It can be used like so:
+
+```ts
+  const meter = new GasMeter();
+  const worker = await Worker.init({tx_callbacks: [meter.tx_callback()]});
+
+  const root = worker.rootAccount;
+  const alice = await root.createSubAccount('alice'); // this transaction will be metered
+
+
+  // checking the gas burnt for SubAccount creation
+  const elapsed = meter.elapsed();
+```
+
 Pro Tips
 ========
 

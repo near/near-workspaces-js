@@ -66,6 +66,7 @@ class Account {
         return (await this.manager.setKey(this.accountId, keyPair)).getPublicKey();
     }
     async createAccount(accountId, { keyPair, initialBalance, } = {}) {
+        var _a;
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
@@ -73,11 +74,17 @@ class Account {
         });
         const result = await tx.transact();
         if (result.Failure) {
-            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+            throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
         }
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(result.gas_burnt));
+        }
+        await Promise.all(results);
         return this.getAccount(accountId);
     }
     async createSubAccount(accountId, { keyPair, initialBalance, } = {}) {
+        var _a;
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
@@ -85,8 +92,13 @@ class Account {
         });
         const result = await tx.transact();
         if (result.Failure) {
-            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+            throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
         }
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(result.gas_burnt));
+        }
+        await Promise.all(results);
         return this.getSubAccount(accountId);
     }
     async importContract({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
@@ -135,16 +147,29 @@ class Account {
         return new Account(accountId, this.manager);
     }
     async deploy(code) {
+        var _a;
         const tx = await this.batch(this).deployContractFile(code);
-        return tx.transact();
+        const txResult = await tx.transact();
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(txResult.gas_burnt));
+        }
+        await Promise.all(results);
+        return txResult;
     }
     async devCreateAccount({ initialBalance, keyPair, } = {}) {
+        var _a;
         const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         const tx = await this.internalCreateAccount(accountId, {
             keyPair,
             initialBalance,
         });
         const result = await tx.transact();
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(result.gas_burnt));
+        }
+        await Promise.all(results);
         if (result.Failure) {
             throw new Error(`Failure during account creation, details: ${JSON.stringify(result)}`);
         }
@@ -153,6 +178,7 @@ class Account {
     async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
+        var _a;
         const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
@@ -164,21 +190,34 @@ class Account {
             tx.functionCall(method, args, { gas, attachedDeposit });
         }
         const result = await tx.transact();
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(result.gas_burnt));
+        }
+        await Promise.all(results);
         if (result.Failure) {
-            throw new Error(`Failure during trasaction excecution, details: ${JSON.stringify(result)}`);
+            throw new Error(`Failure during transaction execution, details: ${JSON.stringify(result)}`);
         }
         return this.getAccount(accountId);
     }
     async callRaw(contractId, methodName, args, { 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
-        return this.batch(contractId)
+        var _a;
+        const txResult = await this.batch(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .transact(signWithKey);
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(txResult.gas_burnt));
+        }
+        await Promise.all(results);
+        return txResult;
     }
     async call(contractId, methodName, args, { 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+        var _a;
         const txResult = await this.callRaw(contractId, methodName, args, {
             gas,
             attachedDeposit,
@@ -191,6 +230,11 @@ class Account {
         if (txResult.failed) {
             throw new transaction_result_1.TransactionError(txResult);
         }
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(txResult.gas_burnt));
+        }
+        await Promise.all(results);
         return txResult.parseResult();
     }
     async viewRaw(method, args = {}) {
@@ -239,9 +283,15 @@ class Account {
         return this.provider.patchStateRecords(records);
     }
     async delete(beneficiaryId, keyPair) {
+        var _a;
         const result = await this.batch(this)
             .deleteAccount(beneficiaryId)
             .transact(keyPair);
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(result.gas_burnt));
+        }
+        await Promise.all(results);
         if (result.succeeded && await this.getKey() !== null) {
             await this.manager.deleteKey(this.accountId);
         }
@@ -274,7 +324,14 @@ class Account {
         return this.patchStateRecords(this.recordBuilder().data(key_string, value_string));
     }
     async transfer(accountId, amount) {
-        return this.batch(accountId).transfer(amount).transact();
+        var _a;
+        const txResult = await this.batch(accountId).transfer(amount).transact();
+        const results = [];
+        for (const fn of (_a = this.manager.tx_callbacks) !== null && _a !== void 0 ? _a : []) {
+            results.push(fn(txResult.gas_burnt));
+        }
+        await Promise.all(results);
+        return txResult;
     }
     async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;

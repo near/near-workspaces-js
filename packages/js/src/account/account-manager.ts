@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
-import {NEAR} from 'near-units';
+import {Gas, NEAR} from 'near-units';
 import {asId, isTopLevelAccount, randomAccountId} from '../utils';
 import {Config, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
 import {debug, txDebug} from '../internal-utils';
@@ -14,6 +14,7 @@ import {getKeyFromFile} from './utils';
 import {NearAccountManager} from './near-account-manager';
 
 export abstract class AccountManager implements NearAccountManager {
+  tx_callbacks?: Array<(burnt: Gas) => Promise<void>> = this.config.tx_callbacks;
   accountsCreated: Set<string> = new Set();
   private _root?: NearAccount;
   constructor(

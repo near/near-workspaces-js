@@ -65,7 +65,7 @@ class TestnetWorker extends Worker {
         return jsonrpc_1.JsonRpcProvider.from(TestnetWorker.clientConfig);
     }
     async tearDown() {
-        // We are not stoping any server here because we are using Testnet
+        // We are not stopping any server here because we are using Testnet
         return Promise.resolve();
     }
     static get defaultConfig() {

@@ -74,7 +74,7 @@ export class TestnetWorker extends Worker {
   }
 
   async tearDown(): Promise<void> {
-    // We are not stoping any server here because we are using Testnet
+    // We are not stopping any server here because we are using Testnet
     return Promise.resolve();
   }
 

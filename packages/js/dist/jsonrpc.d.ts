@@ -89,7 +89,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * Download the state of a contract given a prefix of a key.
      *
      * @param accountId contract account to lookup
-     * @param prefix string or byte prefix of keys to loodup
+     * @param prefix string or byte prefix of keys to lookup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
@@ -105,7 +105,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * Download the state of a contract given a prefix of a key without decoding from base64.
      *
      * @param accountId contract account to lookup
-     * @param prefix string or byte prefix of keys to loodup
+     * @param prefix string or byte prefix of keys to lookup
      * @param blockQuery state at what block, defaults to most recent final block
      * @returns raw RPC response
      */
@@ -116,7 +116,7 @@ export declare class JsonRpcProvider extends JSONRpc {
     }): Promise<StateItem[]>;
     /**
      * Updates records without using a transaction.
-     * Note: only avaialable on Sandbox endpoints.
+     * Note: only available on Sandbox endpoints.
      * @param records
      * @returns Promise<Empty>
      */
@@ -127,7 +127,7 @@ export declare class JsonRpcProvider extends JSONRpc {
      * to wait a fraction of the time it takes to produce the same number of blocks.
      *
      * Estimate as to how long it takes: if our delta_height crosses `X` epochs, then it would
-     * roughly take `X * 5` seconds for the fast forward request to be processed.
+     * roughly take `X * 5` milliseconds for the fast forward request to be processed.
      *
      * Note: This is not to be confused with speeding up the current in-flight transactions;
      * the state being forwarded in this case refers to time-related state (the block height, timestamp and epoch).
