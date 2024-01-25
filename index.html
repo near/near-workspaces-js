@@ -122,6 +122,11 @@
 <p>You cannot perform arbitrary mutation on contract state with transactions since transactions can only include contract calls that mutate state in a contract-programmed way. For example, with an NFT contract, you can perform some operation with NFTs you have ownership of, but you cannot manipulate NFTs that are owned by other accounts since the smart contract is coded with checks to reject that. This is the expected behavior of the NFT contract. However, you may want to change another person&#39;s NFT for a test setup. This is called &quot;arbitrary mutation on contract state&quot; and can be done with <code>patchState</code>. Alternatively you can stop the node, dump state at genesis, edit genesis, and restart the node. The later approach is more complicated to do and also cannot be performed without restarting the node.</p>
 <p>It is true that you can alter contract code, accounts, and access keys using normal transactions via the <code>DeployContract</code>, <code>CreateAccount</code>, and <code>AddKey</code> <a href="https://nomicon.io/RuntimeSpec/Actions.html?highlight=actions#actions">actions</a>. But this limits you to altering your own account or sub-account. <code>patchState</code> allows you to perform these operations on any account.</p>
 <p>To see an example of how to do this, see the <a href="https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts">patch-state test</a>.</p>
+<a id="md:time-traveling" class="tsd-anchor"></a><h1><a href="#md:time-traveling">Time Traveling</a></h1><p>In Sandbox-mode, you can forward time-related state (the block height, timestamp and epoch height) with <code>fastForward</code>.</p>
+<p>This means contracts which require time sensitive data do not need to sit and wait the same amount of time for blocks on the sandbox to be produced.
+We can simply just call the api to get us further in time.</p>
+<p>For an example, see the <a href="./__tests__/08.fast-forward.ava.ts">fast-forward test</a></p>
+<p>Note: <code>fastForward</code> does not speed up an in-flight transactions.</p>
 <a id="md:pro-tips" class="tsd-anchor"></a><h1><a href="#md:pro-tips">Pro Tips</a></h1><ul>
 <li><p><code>NEAR_WORKSPACES_DEBUG=true</code> – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.</p>
 </li>
@@ -179,6 +184,7 @@ NEAR_CLI_TESTNET_RPC_SERVER_URL
 <li><a href="#md:stepping-through-a-testnet-example"><span>Stepping through a testnet example</span></a></li>
 <li><a href="#md:running-tests-only-in-sandbox"><span>Running tests only in <wbr/>Sandbox</span></a></li></ul></li>
 <li><a href="#md:patch-state-on-the-fly"><span>Patch <wbr/>State on the <wbr/>Fly</span></a></li>
+<li><a href="#md:time-traveling"><span>Time <wbr/>Traveling</span></a></li>
 <li><a href="#md:pro-tips"><span>Pro <wbr/>Tips</span></a></li>
 <li><a href="#md:env-variables"><span>Env variables</span></a></li></ul></li></ul></div></details></div>
 <div class="site-menu">
