@@ -183,6 +183,23 @@ export class JsonRpcProvider extends JSONRpc {
   async patchStateRecords(records: Records): Promise<Empty> {
     return this.sendJsonRpc('sandbox_patch_state', records);
   }
+
+  /**
+   * Fast forward to a point in the future. The delta block height is supplied to tell the
+   * network to advanced a certain amount of blocks. This comes with the advantage only having
+   * to wait a fraction of the time it takes to produce the same number of blocks.
+   *
+   * Estimate as to how long it takes: if our delta_height crosses `X` epochs, then it would
+   * roughly take `X * 5` milliseconds for the fast forward request to be processed.
+   *
+   * Note: This is not to be confused with speeding up the current in-flight transactions;
+   * the state being forwarded in this case refers to time-related state (the block height, timestamp and epoch).
+   * @param deltaHeight
+   * @returns Promise<Empty>
+   */
+  async fastForward(deltaHeight: number): Promise<Empty> {
+    return this.sendJsonRpc('sandbox_fast_forward', {delta_height: deltaHeight});
+  }
 }
 
 export const TestnetRpc = JsonRpcProvider.from(TESTNET_RPC_ADDR);
