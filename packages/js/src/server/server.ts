@@ -131,7 +131,7 @@ export class SandboxServer {
   }
 
   get rpcAddr(): string {
-    return `http://localhost:${this.port}`;
+    return `http://127.0.0.1:${this.port}`;
   }
 
   async start(): Promise<SandboxServer> {

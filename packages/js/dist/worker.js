@@ -121,7 +121,7 @@ class SandboxWorker extends Worker {
             port,
             rm: false,
             refDir: null,
-            rpcAddr: `http://localhost:${port}`,
+            rpcAddr: `http://127.0.0.1:${port}`,
         };
     }
     get provider() {
@@ -144,7 +144,7 @@ class SandboxWorker extends Worker {
         };
     }
     get rpcAddr() {
-        return `http://localhost:${this.config.port}`;
+        return `http://127.0.0.1:${this.config.port}`;
     }
 }
 exports.SandboxWorker = SandboxWorker;
