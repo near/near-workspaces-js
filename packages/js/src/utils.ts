@@ -8,6 +8,10 @@ import bs58 from 'bs58';
 import {Gas, NEAR} from 'near-units';
 import {NamedAccount, KeyPair, ClientConfig, KeyStore, BN} from './types';
 
+// Fix for node > v17
+import { setDefaultResultOrder } from 'dns';
+setDefaultResultOrder('ipv4first');
+
 export const ONE_NEAR = NEAR.parse('1N');
 
 export function toYocto(amount: string): string {
