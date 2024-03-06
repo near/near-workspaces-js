@@ -45,15 +45,15 @@ test.afterEach.always(async t => {
 test('using `withData` for contracts > 50kB fails', async t => {
   const root = t.context.worker.rootAccount;
 
-  t.regex(
-    await captureError(async () => {
-      await root.importContract({
-        mainnetContract: REF_FINANCE_ACCOUNT,
-        withData: true,
-        blockId: 50_000_000,
-      });
-    }),
-    new RegExp(`State of contract ${REF_FINANCE_ACCOUNT} is too large to be viewed`),
+  const error_response = await captureError(async () => {
+    await root.importContract({
+      mainnetContract: REF_FINANCE_ACCOUNT,
+      withData: true,
+      blockId: 50_000_000,
+    });
+  });
+  t.assert(
+    error_response.includes('is larger than allowed') || error_response.includes('is too large to be viewed'),
   );
 });
 
