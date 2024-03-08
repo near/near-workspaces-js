@@ -24,7 +24,6 @@ if (getNetworkFromEnv() === 'sandbox') {
   }>;
 
   test.beforeEach(async t => {
-    console.log('run beforeEach');
     const worker = await Worker.init();
     const root = worker.rootAccount;
     const contract = await root.devDeploy('__tests__/build/debug/status_message.wasm');

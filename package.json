@@ -14,6 +14,7 @@
     "test:testnet:ci": "yarn build && TESTNET_MASTER_ACCOUNT_ID='ro3evqruqecmi7q4uwux1651245117258' ava --config ./ava.testnet.config.cjs",
     "test:sandbox": "yarn test:sandbox:ci --verbose",
     "test:sandbox:ci": "yarn build && ava",
+    "test:sandbox:ci-with-ignore": "yarn build && ava __tests__/0* && cd examples/simple-project/ && ava && cd ../../packages/js && ava",
     "test": "yarn test:sandbox && yarn test:testnet",
     "prepare": "husky install",
     "release": "yarn lerna publish",
