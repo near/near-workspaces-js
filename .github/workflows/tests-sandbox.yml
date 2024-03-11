@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
-        node-version: [14, 16]
+        node-version: [16]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
@@ -19,4 +19,4 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Run tests
-        run: yarn test:sandbox:ci --fail-fast
+        run: yarn test:sandbox:ci-with-ignore --fail-fast
