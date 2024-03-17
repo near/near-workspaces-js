@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SandboxWorker = exports.TestnetWorker = exports.Worker = void 0;
+exports.SandboxWorker = exports.TestnetWorker = exports.CustomnetWorker = exports.Worker = void 0;
 const fs_1 = __importDefault(require("fs"));
 const near_units_1 = require("near-units");
 const proper_lockfile_1 = require("proper-lockfile");
@@ -12,6 +12,7 @@ const account_1 = require("./account");
 const jsonrpc_1 = require("./jsonrpc");
 const internal_utils_1 = require("./internal-utils");
 const server_1 = require("./server/server");
+const API_KEY_HEADER = 'x-api-key';
 /**
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
  */
@@ -43,9 +44,11 @@ class Worker {
                 return TestnetWorker.init(config);
             case 'sandbox':
                 return SandboxWorker.init(config);
+            case 'custom':
+                return CustomnetWorker.init(config);
             default:
                 throw new Error(`config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
-                    + 'must be \'testnet\' or \'sandbox\' (the default). Soon \'mainnet\'');
+                    + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'');
         }
     }
     get rootAccount() {
@@ -53,11 +56,60 @@ class Worker {
     }
 }
 exports.Worker = Worker;
+// Connect to a custom network.
+// Note: the burden of ensuring the methods that are able to be called are left up to the user.
+class CustomnetWorker extends Worker {
+    constructor() {
+        super(...arguments);
+        this.clientConfig = (0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: this.config.rpcAddr });
+    }
+    static async init(config) {
+        (0, internal_utils_1.debug)('Lifecycle.CustomnetWorker.create()', 'config:', config);
+        const fullConfig = {
+            homeDir: 'ignored',
+            port: 3030,
+            rm: false,
+            refDir: null,
+            ...(0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: config.rpcAddr }),
+            ...config,
+        };
+        const worker = new CustomnetWorker(fullConfig);
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
+        await worker.manager.init();
+        return worker;
+    }
+    get provider() {
+        return jsonrpc_1.JsonRpcProvider.from(this.clientConfig);
+    }
+    async tearDown() {
+        // We are not stopping any server here because it is an external network.
+        return Promise.resolve();
+    }
+    get defaultConfig() {
+        return {
+            homeDir: 'ignored',
+            port: 3030,
+            rm: false,
+            refDir: null,
+            ...this.clientConfig,
+        };
+    }
+}
+exports.CustomnetWorker = CustomnetWorker;
 class TestnetWorker extends Worker {
     static async init(config) {
         (0, internal_utils_1.debug)('Lifecycle.TestnetWorker.create()', 'config:', config);
         const fullConfig = { ...this.defaultConfig, ...config };
         const worker = new TestnetWorker(fullConfig);
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
         await worker.manager.init();
         return worker;
     }
@@ -106,6 +158,11 @@ class SandboxWorker extends Worker {
         const release = await (0, proper_lockfile_1.lock)(syncFilename, retryOptions);
         const defaultConfig = await this.defaultConfig();
         const worker = new SandboxWorker({ ...defaultConfig, ...config });
+        if (config.apiKey) {
+            worker.provider.connection.headers = {
+                ...worker.provider.connection.headers, [API_KEY_HEADER]: config.apiKey,
+            };
+        }
         worker.server = await server_1.SandboxServer.init(worker.config);
         await worker.server.start();
         // Release file lock after near node start

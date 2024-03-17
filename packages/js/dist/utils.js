@@ -97,16 +97,22 @@ function configFromDomain(network) {
 }
 function urlConfigFromNetwork(network) {
     const networkName = typeof network === 'string' ? network : network.network;
+    const rpcAddr = typeof network === 'string' ? undefined : network.rpcAddr;
     switch (networkName) {
         case 'sandbox':
             return {
                 network: 'sandbox',
                 rpcAddr: 'http://localhost',
             };
+        case 'custom':
+            return {
+                network: 'custom',
+                rpcAddr: rpcAddr,
+            };
         case 'testnet':
         case 'mainnet': return configFromDomain(networkName);
         default:
-            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
     }
 }
 exports.urlConfigFromNetwork = urlConfigFromNetwork;
@@ -131,12 +137,13 @@ function getNetworkFromEnv() {
     switch (network) {
         case 'sandbox':
         case 'testnet':
+        case 'custom':
             return network;
         case undefined:
             return 'sandbox';
         default:
             throw new Error(`environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
-                + 'use \'testnet\', or \'sandbox\' (the default)');
+                + 'use \'testnet\', \'custom\', or \'sandbox\' (the default)');
     }
 }
 exports.getNetworkFromEnv = getNetworkFromEnv;
