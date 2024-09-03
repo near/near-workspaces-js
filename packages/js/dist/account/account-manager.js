@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = exports.AccountManager = void 0;
+exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = exports.CustomnetManager = exports.AccountManager = void 0;
 const path = __importStar(require("path"));
 const process = __importStar(require("process"));
 const nearAPI = __importStar(require("near-api-js"));
@@ -44,7 +48,9 @@ class AccountManager {
                 return new SandboxManager(config);
             case 'testnet':
                 return new TestnetManager(config);
-            default: throw new Error(`Bad network id: "${network}"; expected "testnet" or "sandbox"`);
+            case 'custom':
+                return new CustomnetManager(config);
+            default: throw new Error(`Bad network id: "${network}"; expected "testnet", "custom" or "sandbox"`);
         }
     }
     async accountView(accountId) {
@@ -149,7 +155,6 @@ class AccountManager {
         }
         try {
             const start = Date.now();
-            // @ts-expect-error access shouldn't be protected
             const outcome = await account.signAndSendTransaction({ receiverId: tx.receiverId, actions: tx.actions, returnError: true });
             const end = Date.now();
             if (oldKey) {
@@ -197,10 +202,31 @@ class AccountManager {
         return this.config.network;
     }
     get connection() {
-        return new nearAPI.Connection(this.networkId, this.provider, this.signer);
+        return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
     }
 }
 exports.AccountManager = AccountManager;
+class CustomnetManager extends AccountManager {
+    get DEFAULT_INITIAL_BALANCE() {
+        return near_units_1.NEAR.parse('10 N').toJSON();
+    }
+    get defaultKeyStore() {
+        return new nearAPI.keyStores.InMemoryKeyStore();
+    }
+    get connection() {
+        return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
+    }
+    get networkId() {
+        return this.config.network;
+    }
+    async init() {
+        return this;
+    }
+    async createFrom(config) {
+        return new CustomnetManager(config);
+    }
+}
+exports.CustomnetManager = CustomnetManager;
 class TestnetManager extends AccountManager {
     static get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.KEYSTORE_PATH);

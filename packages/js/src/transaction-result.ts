@@ -221,7 +221,8 @@ export class TransactionResult {
   }
 
   get gas_burnt(): Gas {
-    return Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
+    const receipts_gas = this.receipts_outcomes.reduce((acc, cur) => acc + cur.outcome.gas_burnt, 0);
+    return Gas.from(this.result.transaction_outcome.outcome.gas_burnt + receipts_gas);
   }
 
   receiptFailureMessagesContain(pattern: string | RegExp): boolean {

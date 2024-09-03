@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -78,8 +82,9 @@ async function sandboxStarted(port, timeout = 60000) {
     } while (Date.now() < checkUntil);
     throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
+// 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
 function initialPort() {
-    return Math.max(1024, Math.floor(Math.random() * 10000));
+    return Math.max(5001, Math.floor(Math.random() * 60000));
 }
 class SandboxServer {
     constructor(config) {
@@ -88,8 +93,11 @@ class SandboxServer {
         this.config = config;
     }
     static async nextPort() {
-        this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
+        this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
         return this.lastPort;
+    }
+    static lockfilePath(filename) {
+        return (0, path_1.join)(temp_dir_1.default, filename);
     }
     static randomHomeDir() {
         return (0, path_1.join)(temp_dir_1.default, 'sandbox', (new pure_uuid_1.default(4).toString()));

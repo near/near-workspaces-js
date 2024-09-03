@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MainnetRpc = exports.TestnetRpc = exports.JsonRpcProvider = void 0;
 // eslint-disable unicorn/no-object-as-default-parameter
 const buffer_1 = require("buffer");
+const process_1 = __importDefault(require("process"));
 const near_units_1 = require("near-units");
 const transaction_1 = require("near-api-js/lib/transaction");
 const types_1 = require("./types");
@@ -26,8 +30,8 @@ class JsonRpcProvider extends types_1.JSONRpc {
     }
     static fromNetwork(network) {
         switch (network) {
-            case 'mainnet': return exports.MainnetRpc;
-            case 'testnet': return exports.TestnetRpc;
+            case 'mainnet': return process_1.default.env.NEAR_CLI_MAINNET_RPC_SERVER_URL ? JsonRpcProvider.from(process_1.default.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) : exports.MainnetRpc;
+            case 'testnet': return process_1.default.env.NEAR_CLI_TESTNET_RPC_SERVER_URL ? JsonRpcProvider.from(process_1.default.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) : exports.TestnetRpc;
             default: throw new TypeError('Invalid network only mainnet or testnet');
         }
     }
@@ -164,6 +168,22 @@ class JsonRpcProvider extends types_1.JSONRpc {
      */
     async patchStateRecords(records) {
         return this.sendJsonRpc('sandbox_patch_state', records);
+    }
+    /**
+     * Fast forward to a point in the future. The delta block height is supplied to tell the
+     * network to advanced a certain amount of blocks. This comes with the advantage only having
+     * to wait a fraction of the time it takes to produce the same number of blocks.
+     *
+     * Estimate as to how long it takes: if our delta_height crosses `X` epochs, then it would
+     * roughly take `X * 5` milliseconds for the fast forward request to be processed.
+     *
+     * Note: This is not to be confused with speeding up the current in-flight transactions;
+     * the state being forwarded in this case refers to time-related state (the block height, timestamp and epoch).
+     * @param deltaHeight
+     * @returns Promise<Empty>
+     */
+    async fastForward(deltaHeight) {
+        return this.sendJsonRpc('sandbox_fast_forward', { delta_height: deltaHeight });
     }
 }
 exports.JsonRpcProvider = JsonRpcProvider;

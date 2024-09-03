@@ -56,10 +56,17 @@ export function isTopLevelAccount(accountId: string): boolean {
   return !accountId.includes('.');
 }
 
-function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
+function configFromDomain(network: 'testnet' | 'mainnet' | 'custom'): ClientConfig {
+  let rpcAddr = `https://archival-rpc.${network}.near.org`;
+  if (network === 'mainnet' && process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) {
+    rpcAddr = process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL;
+  } else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
+    rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
+  }
+
   return {
     network,
-    rpcAddr: `https://archival-rpc.${network}.near.org`,
+    rpcAddr,
     walletUrl: `https://wallet.${network}.near.org`,
     helperUrl: `https://helper.${network}.near.org`,
     explorerUrl: `https://explorer.${network}.near.org`,
@@ -67,8 +74,9 @@ function configFromDomain(network: 'testnet' | 'mainnet'): ClientConfig {
   };
 }
 
-export function urlConfigFromNetwork(network: string | {network: string}): ClientConfig {
+export function urlConfigFromNetwork(network: string | {network: string; rpcAddr?: string}): ClientConfig {
   const networkName = typeof network === 'string' ? network : network.network;
+  const rpcAddr = typeof network === 'string' ? undefined : network.rpcAddr;
   switch (networkName) {
     case 'sandbox':
       return {
@@ -76,10 +84,16 @@ export function urlConfigFromNetwork(network: string | {network: string}): Clien
         rpcAddr: 'http://127.0.0.1',
       };
 
+    case 'custom':
+      return {
+        network: 'custom',
+        rpcAddr: rpcAddr!,
+      };
+
     case 'testnet':
     case 'mainnet': return configFromDomain(networkName);
     default:
-      throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+      throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
   }
 }
 
@@ -100,18 +114,19 @@ export const EMPTY_CONTRACT_HASH = '11111111111111111111111111111111';
  *
  * @returns network to connect to. Default 'sandbox'
  */
-export function getNetworkFromEnv(): 'sandbox' | 'testnet' {
+export function getNetworkFromEnv(): 'sandbox' | 'testnet' | 'custom' {
   const network = process.env.NEAR_WORKSPACES_NETWORK;
   switch (network) {
     case 'sandbox':
     case 'testnet':
+    case 'custom':
       return network;
     case undefined:
       return 'sandbox';
     default:
       throw new Error(
         `environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
-        + 'use \'testnet\', or \'sandbox\' (the default)',
+        + 'use \'testnet\', \'custom\', or \'sandbox\' (the default)',
       );
   }
 }

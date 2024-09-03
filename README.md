@@ -272,6 +272,18 @@ It is true that you can alter contract code, accounts, and access keys using nor
 
 To see an example of how to do this, see the [patch-state test](https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts).
 
+Time Traveling
+===============
+
+In Sandbox-mode, you can forward time-related state (the block height, timestamp and epoch height) with `fastForward`.
+
+This means contracts which require time sensitive data do not need to sit and wait the same amount of time for blocks on the sandbox to be produced.
+We can simply just call the api to get us further in time.
+
+For an example, see the [fast-forward test](./__tests__/08.fast-forward.ava.ts)
+
+Note: `fastForward` does not speed up an in-flight transactions.
+
 Pro Tips
 ========
 
@@ -292,3 +304,18 @@ Pro Tips
   * specify which port to run on
 
   * and more!
+
+Env variables
+========
+```text
+NEAR_CLI_MAINNET_RPC_SERVER_URL
+NEAR_CLI_TESTNET_RPC_SERVER_URL
+```
+Clear them in case you want to get back to the default RPC server.
+
+Example:
+
+```shell
+export NEAR_CLI_MAINNET_RPC_SERVER_URL=<put_your_rpc_server_url_here>
+```
+here is a testcase: [jsonrpc.ava.js](./packages/js/__tests__/jsonrpc.ava.js)

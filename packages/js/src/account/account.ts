@@ -214,6 +214,7 @@ export class Account implements NearAccount {
     {
       attachedDeposit = NO_DEPOSIT,
       args = {},
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       initialBalance,
       keyPair,
@@ -254,6 +255,7 @@ export class Account implements NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
@@ -273,6 +275,7 @@ export class Account implements NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,

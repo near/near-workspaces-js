@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { PathLike } from 'fs';
 import { spawn as _spawn } from 'child_process';
 import { URL } from 'url';

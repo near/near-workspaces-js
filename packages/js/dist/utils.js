@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -75,9 +79,16 @@ function isTopLevelAccount(accountId) {
 }
 exports.isTopLevelAccount = isTopLevelAccount;
 function configFromDomain(network) {
+    let rpcAddr = `https://archival-rpc.${network}.near.org`;
+    if (network === 'mainnet' && process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) {
+        rpcAddr = process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL;
+    }
+    else if (network === 'testnet' && process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) {
+        rpcAddr = process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL;
+    }
     return {
         network,
-        rpcAddr: `https://archival-rpc.${network}.near.org`,
+        rpcAddr,
         walletUrl: `https://wallet.${network}.near.org`,
         helperUrl: `https://helper.${network}.near.org`,
         explorerUrl: `https://explorer.${network}.near.org`,
@@ -86,16 +97,22 @@ function configFromDomain(network) {
 }
 function urlConfigFromNetwork(network) {
     const networkName = typeof network === 'string' ? network : network.network;
+    const rpcAddr = typeof network === 'string' ? undefined : network.rpcAddr;
     switch (networkName) {
         case 'sandbox':
             return {
                 network: 'sandbox',
                 rpcAddr: 'http://127.0.0.1',
             };
+        case 'custom':
+            return {
+                network: 'custom',
+                rpcAddr: rpcAddr,
+            };
         case 'testnet':
         case 'mainnet': return configFromDomain(networkName);
         default:
-            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', and 'mainnet'`);
+            throw new Error(`Got network ${networkName}, but only accept 'sandbox', 'testnet', 'mainnet' and 'custom'`);
     }
 }
 exports.urlConfigFromNetwork = urlConfigFromNetwork;
@@ -120,12 +137,13 @@ function getNetworkFromEnv() {
     switch (network) {
         case 'sandbox':
         case 'testnet':
+        case 'custom':
             return network;
         case undefined:
             return 'sandbox';
         default:
             throw new Error(`environment variable NEAR_WORKSPACES_NETWORK=${network} invalid; `
-                + 'use \'testnet\', or \'sandbox\' (the default)');
+                + 'use \'testnet\', \'custom\', or \'sandbox\' (the default)');
     }
 }
 exports.getNetworkFromEnv = getNetworkFromEnv;

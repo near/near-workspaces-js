@@ -29,7 +29,9 @@ export abstract class AccountManager implements NearAccountManager {
         return new SandboxManager(config);
       case 'testnet':
         return new TestnetManager(config);
-      default: throw new Error(`Bad network id: "${network as string}"; expected "testnet" or "sandbox"`);
+      case 'custom':
+        return new CustomnetManager(config);
+      default: throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
     }
   }
 
@@ -157,7 +159,6 @@ export abstract class AccountManager implements NearAccountManager {
 
     try {
       const start = Date.now();
-      // @ts-expect-error access shouldn't be protected
       const outcome: FinalExecutionOutcome = await account.signAndSendTransaction({receiverId: tx.receiverId, actions: tx.actions, returnError: true});
       const end = Date.now();
       if (oldKey) {
@@ -217,7 +218,33 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   protected get connection(): nearAPI.Connection {
-    return new nearAPI.Connection(this.networkId, this.provider, this.signer);
+    return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
+  }
+}
+
+export class CustomnetManager extends AccountManager {
+  get DEFAULT_INITIAL_BALANCE(): string {
+    return NEAR.parse('10 N').toJSON();
+  }
+
+  get defaultKeyStore(): KeyStore {
+    return new nearAPI.keyStores.InMemoryKeyStore();
+  }
+
+  get connection(): nearAPI.Connection {
+    return new nearAPI.Connection(this.networkId, this.provider, this.signer, `jsvm.${this.networkId}`);
+  }
+
+  get networkId(): string {
+    return this.config.network;
+  }
+
+  async init(): Promise<AccountManager> {
+    return this;
+  }
+
+  async createFrom(config: Config): Promise<NearAccountManager> {
+    return new CustomnetManager(config);
   }
 }
 

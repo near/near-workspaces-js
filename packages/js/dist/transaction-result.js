@@ -165,7 +165,8 @@ class TransactionResult {
         return this.receiptFailures.map(failure => JSON.stringify(failure));
     }
     get gas_burnt() {
-        return near_units_1.Gas.from(this.result.transaction_outcome.outcome.gas_burnt);
+        const receipts_gas = this.receipts_outcomes.reduce((acc, cur) => acc + cur.outcome.gas_burnt, 0);
+        return near_units_1.Gas.from(this.result.transaction_outcome.outcome.gas_burnt + receipts_gas);
     }
     receiptFailureMessagesContain(pattern) {
         return this.receiptFailureMessages.some(includes(pattern));

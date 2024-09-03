@@ -69,8 +69,9 @@ async function sandboxStarted(port: number, timeout = 60_000): Promise<void> {
   throw new Error(`Sandbox Server with port: ${port} failed to start after ${timeout}ms`);
 }
 
+// 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
 function initialPort(): number {
-  return Math.max(1024, Math.floor(Math.random() * 10_000));
+  return Math.max(5001, Math.floor(Math.random() * 60_000));
 }
 
 export class SandboxServer {
@@ -87,8 +88,12 @@ export class SandboxServer {
   }
 
   static async nextPort(): Promise<number> {
-    this.lastPort = await portCheck.nextAvailable(this.lastPort + 1, '0.0.0.0');
+    this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
     return this.lastPort;
+  }
+
+  static lockfilePath(filename: string): string {
+    return join(tmpDir, filename);
   }
 
   static randomHomeDir(): string {

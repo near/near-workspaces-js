@@ -55,13 +55,14 @@ export interface AccountBalance {
   available: NEAR;
 }
 
-export type Network = 'testnet' | 'mainnet' | 'sandbox';
+export type Network = 'testnet' | 'mainnet' | 'sandbox' | 'custom';
 
 export interface ClientConfig {
   network: Network;
   rootAccountId?: string;
   testnetMasterAccountId?: string;
   rpcAddr: string;
+  apiKey?: string;
   helperUrl?: string;
   explorerUrl?: string;
   initialBalance?: string;
