@@ -81,7 +81,7 @@ export function urlConfigFromNetwork(network: string | {network: string; rpcAddr
     case 'sandbox':
       return {
         network: 'sandbox',
-        rpcAddr: 'http://localhost',
+        rpcAddr: 'http://127.0.0.1',
       };
 
     case 'custom':
