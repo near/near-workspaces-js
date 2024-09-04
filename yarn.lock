@@ -5522,10 +5522,10 @@ near-api-js@^v3.0.3:
     near-abi "0.1.1"
     node-fetch "2.6.7"
 
-near-sandbox@^0.0.18:
-  version "0.0.18"
-  resolved "https://registry.npmjs.org/near-sandbox/-/near-sandbox-0.0.18.tgz"
-  integrity sha512-6/AjLOzGLQsSzTHavrRe7CVMU5+CUnTg/7g66a7+jkP22ff5CupnwXrUE14iJ2QyyhRZr7VuQQj/G+glUmaNQg==
+near-sandbox@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/near-sandbox/-/near-sandbox-0.1.0.tgz#c3c5666b0d7f122d131a30d7a004f34f7a40b4b4"
+  integrity sha512-xF3qN4CCmqN7pYl5asRURdI0ulPXq+KPy4FPePno8zO+3PTv0LRRf3iKAK5jS3GCtXdpSxVKTbpwAMBj4jZnsQ==
   dependencies:
     got "^11.8.6"
     tar "^6.2.0"
