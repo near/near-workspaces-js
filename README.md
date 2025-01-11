@@ -270,7 +270,7 @@ You cannot perform arbitrary mutation on contract state with transactions since 
 
 It is true that you can alter contract code, accounts, and access keys using normal transactions via the `DeployContract`, `CreateAccount`, and `AddKey` [actions](https://nomicon.io/RuntimeSpec/Actions.html?highlight=actions#actions). But this limits you to altering your own account or sub-account. `patchState` allows you to perform these operations on any account.
 
-To see an example of how to do this, see the [patch-state test](https://github.com/near/workspaces-js/blob/main/__tests__/02.patch-state.ava.ts).
+To see an example of how to do this, see the [patch-state test](https://github.com/near/near-workspaces-js/blob/main/__tests__/ci-ignore-02.patch-state.ava.ts).
 
 Time Traveling
 ===============
@@ -280,7 +280,7 @@ In Sandbox-mode, you can forward time-related state (the block height, timestamp
 This means contracts which require time sensitive data do not need to sit and wait the same amount of time for blocks on the sandbox to be produced.
 We can simply just call the api to get us further in time.
 
-For an example, see the [fast-forward test](./__tests__/08.fast-forward.ava.ts)
+For an example, see the [fast-forward test](./__tests__/09.fast-forward.ava.ts)
 
 Note: `fastForward` does not speed up an in-flight transactions.
 
@@ -289,7 +289,7 @@ Pro Tips
 
 * `NEAR_WORKSPACES_DEBUG=true` – run tests with this environment variable set to get copious debug output and a full log file for each Sandbox instance.
 
-* `Worker.init` [config](https://github.com/near/workspaces-js/blob/main/packages/js/src/interfaces.ts) – you can pass a config object as the first argument to `Worker.init`. This lets you do things like:
+* `Worker.init` [config](https://github.com/near/near-workspaces-js/blob/1ed7aa1579af53c87086f09f92cc0c3df02743d4/packages/js/src/types.ts#L73) – you can pass a config object as the first argument to `Worker.init`. This lets you do things like:
 
   * skip initialization if specified data directory already exists (the default behavior)
 
