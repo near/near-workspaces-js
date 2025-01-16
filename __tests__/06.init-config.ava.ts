@@ -1,5 +1,5 @@
-import {getNetworkFromEnv, NearAccount, Worker} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
+import {getNetworkFromEnv, NearAccount, Worker} from '../packages/js';
 
 if (getNetworkFromEnv() === 'testnet') {
   const test = anyTest as TestFn<{

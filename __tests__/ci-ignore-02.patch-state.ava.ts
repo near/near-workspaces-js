@@ -12,10 +12,10 @@
  */
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
-import * as borsh from 'borsh';
-import {Worker, getNetworkFromEnv, NearAccount} from 'near-workspaces';
-import {NEAR} from 'near-units';
 import anyTest, {TestFn} from 'ava';
+import * as borsh from '../packages/js/node_modules/borsh';
+import {Worker, getNetworkFromEnv, NearAccount} from '../packages/js';
+import {NEAR} from '../packages/js/node_modules/near-units';
 
 if (getNetworkFromEnv() === 'sandbox') {
   const test = anyTest as TestFn<{

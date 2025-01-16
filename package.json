@@ -6,19 +6,19 @@
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
   "scripts": {
-    "build": "yarn workspaces run build",
+    "build": "pnpm -r run build",
     "clean:accounts": "ts-node packages/js/scripts/delete-accounts.ts",
     "lint": "xo",
     "lint:fix": "xo --fix",
-    "test:testnet": "yarn test:testnet:ci --verbose",
-    "test:testnet:ci": "yarn build && TESTNET_MASTER_ACCOUNT_ID='ro3evqruqecmi7q4uwux1651245117258' ava --config ./ava.testnet.config.cjs",
-    "test:sandbox": "yarn test:sandbox:ci --verbose",
-    "test:sandbox:ci": "yarn build && ava",
-    "test:sandbox:ci-with-ignore": "yarn build && ava __tests__/0* && cd examples/simple-project/ && ava && cd ../../packages/js && ava",
-    "test": "yarn test:sandbox && yarn test:testnet",
+    "test:testnet": "pnpm test:testnet:ci --verbose",
+    "test:testnet:ci": "pnpm build && TESTNET_MASTER_ACCOUNT_ID='ro3evqruqecmi7q4uwux1651245117258' ava --config ./ava.testnet.config.cjs",
+    "test:sandbox": "pnpm test:sandbox:ci --verbose",
+    "test:sandbox:ci": "pnpm build && ava",
+    "test:sandbox:ci-with-ignore": "pnpm build && ava __tests__/0* && cd examples/simple-project/ && ava && cd ../../packages/js && ava",
+    "test": "pnpm test:sandbox && pnpm test:testnet",
     "prepare": "husky install",
-    "release": "yarn lerna publish",
-    "release:prerelease": "yarn release --dist-tag next",
+    "release": "pnpm lerna publish",
+    "release:prerelease": "pnpm release --dist-tag next",
     "docs:generate": "typedoc"
   },
   "devDependencies": {
@@ -37,7 +37,7 @@
   },
   "engines": {
     "node": "^14.17.0 || >=16.0.0",
-    "npm": ">= 6.0.0"
+    "pnpm": ">= 9.15"
   },
   "xo": {
     "space": true,
@@ -69,8 +69,5 @@
       }
     ]
   },
-  "private": true,
-  "workspaces": [
-    "packages/js"
-  ]
+  "private": true
 }
