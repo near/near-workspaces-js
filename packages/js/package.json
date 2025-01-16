@@ -51,8 +51,8 @@
     "scripts/*.js"
   ],
   "engines": {
-    "node": ">= 14.0.0",
-    "npm": ">= 6.0.0"
+    "node": ">=20.15.0",
+    "pnpm": ">= 9.15"
   },
   "devDependencies": {
     "@types/bs58": "^4.0.1",
