@@ -51,7 +51,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       bn.js:
-        specifier: ^5.2.1
+        specifier: ^5.2.0
         version: 5.2.1
       borsh:
         specifier: ^0.5.0
@@ -60,19 +60,19 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       callsites:
-        specifier: ^4.2.0
+        specifier: ^4.0.0
         version: 4.2.0
       fs-extra:
-        specifier: ^10.1.0
+        specifier: ^10.0.0
         version: 10.1.0
       js-sha256:
         specifier: ^0.9.0
         version: 0.9.0
       near-api-js:
-        specifier: ^3.0.4
+        specifier: ^v3.0.3
         version: 3.0.4(encoding@0.1.13)
       near-sandbox:
-        specifier: ^0.1.3
+        specifier: ^0.1.1
         version: 0.1.3
       near-units:
         specifier: ^0.1.9
@@ -81,13 +81,13 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       promisify-child-process:
-        specifier: ^4.1.2
+        specifier: ^4.1.1
         version: 4.1.2
       proper-lockfile:
         specifier: ^4.1.2
         version: 4.1.2
       pure-uuid:
-        specifier: ^1.8.1
+        specifier: ^1.6.2
         version: 1.8.1
       rimraf:
         specifier: ^3.0.2
@@ -97,10 +97,10 @@ importers:
         version: 2.0.0
     devDependencies:
       '@types/bs58':
-        specifier: ^4.0.4
+        specifier: ^4.0.1
         version: 4.0.4
       '@types/proper-lockfile':
-        specifier: ^4.1.4
+        specifier: ^4.1.2
         version: 4.1.4
 
 packages:
@@ -6858,12 +6858,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1):
+  eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1)(webpack@5.97.1):
     dependencies:
       array.prototype.find: 2.2.2
       debug: 3.2.7
       enhanced-resolve: 0.9.1
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1))(eslint@7.32.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8)(eslint@7.32.0)
       find-root: 1.1.0
       hasown: 2.0.1
       interpret: 1.4.0
@@ -6876,14 +6876,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.8.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1))(eslint@7.32.0):
+  eslint-module-utils@2.8.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-webpack@0.13.8)(eslint@7.32.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 4.33.0(eslint@7.32.0)(typescript@4.9.5)
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-webpack: 0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1)
+      eslint-import-resolver-webpack: 0.13.8(eslint-plugin-import@2.29.1)(webpack@5.97.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -6912,7 +6912,7 @@ snapshots:
       eslint: 7.32.0
       ignore: 5.3.1
 
-  eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1))(eslint@7.32.0):
+  eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8)(eslint@7.32.0):
     dependencies:
       array-includes: 3.1.7
       array.prototype.findlastindex: 1.2.4
@@ -6922,7 +6922,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1))(eslint@7.32.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-webpack@0.13.8)(eslint@7.32.0)
       hasown: 2.0.1
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -9640,10 +9640,10 @@ snapshots:
       eslint-config-xo: 0.38.0(eslint@7.32.0)
       eslint-config-xo-typescript: 0.44.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0)(typescript@4.9.5)
       eslint-formatter-pretty: 4.1.0
-      eslint-import-resolver-webpack: 0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1)
+      eslint-import-resolver-webpack: 0.13.8(eslint-plugin-import@2.29.1)(webpack@5.97.1)
       eslint-plugin-ava: 12.0.0(eslint@7.32.0)
       eslint-plugin-eslint-comments: 3.2.0(eslint@7.32.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8(eslint-plugin-import@2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint@7.32.0))(webpack@5.97.1))(eslint@7.32.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@4.33.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-webpack@0.13.8)(eslint@7.32.0)
       eslint-plugin-no-use-extend-native: 0.5.0
       eslint-plugin-node: 11.1.0(eslint@7.32.0)
       eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8)
