@@ -13,8 +13,8 @@
  *   tests below initiate chains of transactions using near-workspaces's transaction
  *   builder. Search for `batch` below.
  */
-import {Worker, NearAccount, captureError, BN, NEAR} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
+import {Worker, NearAccount, captureError, BN, NEAR} from '../packages/js';
 
 const STORAGE_BYTE_COST = '1.5 mN';
 

@@ -18,8 +18,8 @@
  * contracts can give you a huge confidence boost that your contracts will work
  * as expected once actually deployed.
  */
-import {Gas, NEAR, NearAccount, Worker, captureError} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
+import {Gas, NEAR, NearAccount, Worker, captureError} from '../packages/js';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 

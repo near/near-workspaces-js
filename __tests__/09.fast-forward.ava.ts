@@ -1,6 +1,5 @@
-import {NearAccount, getNetworkFromEnv} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
-import {Worker} from 'near-workspaces/dist/worker';
+import {NearAccount, Worker, getNetworkFromEnv} from '../packages/js';
 
 // The contract provided contains only one view call, returning the
 // block_timestamp and epoch_height of the current block as a tuple.

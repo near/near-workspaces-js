@@ -1,11 +1,11 @@
 import process from 'process';
-import {Worker, getNetworkFromEnv} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
+import {Worker, getNetworkFromEnv} from '../packages/js';
 
 // To run this test, you need to set the NEAR_RPC_API_KEY environment variable tied the Pagoda testnet network.
 // And the NEAR_WORKSPACES_NETWORK environment variable to 'custom'.
 //
-// Sample: NEAR_WORKSPACES_NETWORK=custom NEAR_RPC_API_KEY="xxx" yarn test...
+// Sample: NEAR_WORKSPACES_NETWORK=custom NEAR_RPC_API_KEY="xxx" pnpm test...
 if (getNetworkFromEnv() === 'custom' && process.env.NEAR_RPC_API_KEY !== '') {
   const test = anyTest as TestFn<{
     worker: Worker;

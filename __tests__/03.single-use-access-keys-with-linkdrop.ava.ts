@@ -11,8 +11,8 @@
  *
  * You can see this functionality in action below using `signWithKey`.
  */
-import {Worker, createKeyPair, NEAR, NearAccount} from 'near-workspaces';
 import anyTest, {TestFn} from 'ava';
+import {Worker, createKeyPair, NEAR, NearAccount} from '../packages/js';
 
 /* Contract API for reference
 impl Linkdrop {
