@@ -30,9 +30,12 @@ const types_1 = require("./types");
 const internal_utils_1 = require("./internal-utils");
 const utils_1 = require("./utils");
 class Transaction {
+    receiverId;
+    senderId;
+    actions = [];
+    accountToBeCreated = false;
+    _transferAmount;
     constructor(sender, receiver) {
-        this.actions = [];
-        this.accountToBeCreated = false;
         this.senderId = typeof sender === 'string' ? sender : sender.accountId;
         this.receiverId = typeof receiver === 'string' ? receiver : receiver.accountId;
     }
@@ -86,8 +89,7 @@ class Transaction {
         return this.accountToBeCreated;
     }
     get transferAmount() {
-        var _a;
-        return (_a = this._transferAmount) !== null && _a !== void 0 ? _a : near_units_1.NEAR.from('0');
+        return this._transferAmount ?? near_units_1.NEAR.from('0');
     }
 }
 exports.Transaction = Transaction;

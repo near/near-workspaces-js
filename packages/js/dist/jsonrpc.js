@@ -16,6 +16,7 @@ const OPTIMISTIC = { finality: 'optimistic' };
  * interacting with an endpoint.
  */
 class JsonRpcProvider extends types_1.JSONRpc {
+    static providers = new Map();
     /**
      * Create a JsonRpcProvider from config or rpcAddr
      * @param config rpc endpoint URL or a configuration that includes one.
@@ -154,7 +155,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
     async viewStateRaw(accountId, prefix, blockQuery) {
         const { values } = await this.query({
             request_type: 'view_state',
-            ...(blockQuery !== null && blockQuery !== void 0 ? blockQuery : { finality: 'optimistic' }),
+            ...(blockQuery ?? { finality: 'optimistic' }),
             account_id: accountId,
             prefix_base64: buffer_1.Buffer.from(prefix).toString('base64'),
         });
@@ -187,7 +188,6 @@ class JsonRpcProvider extends types_1.JSONRpc {
     }
 }
 exports.JsonRpcProvider = JsonRpcProvider;
-JsonRpcProvider.providers = new Map();
 exports.TestnetRpc = JsonRpcProvider.from(types_1.TESTNET_RPC_ADDR);
 exports.MainnetRpc = JsonRpcProvider.from(types_1.MAINNET_RPC_ADDR);
 //# sourceMappingURL=jsonrpc.js.map

@@ -70,7 +70,7 @@ async function pingServer(port) {
         request.end();
     });
 }
-async function sandboxStarted(port, timeout = 60000) {
+async function sandboxStarted(port, timeout = 60_000) {
     const checkUntil = Date.now() + timeout + 250;
     do {
         if (await pingServer(port)) { // eslint-disable-line no-await-in-loop
@@ -84,11 +84,15 @@ async function sandboxStarted(port, timeout = 60000) {
 }
 // 5001-60000, increase the range of initialPort to decrease the possibility of port conflict
 function initialPort() {
-    return Math.max(5001, Math.floor(Math.random() * 60000));
+    return Math.max(5001, Math.floor(Math.random() * 60_000));
 }
 class SandboxServer {
+    static lastPort = initialPort();
+    static binPath;
+    subprocess;
+    readyToDie = false;
+    config;
     constructor(config) {
-        this.readyToDie = false;
         (0, internal_utils_1.debug)('Lifecycle.SandboxServer.constructor', 'config:', config);
         this.config = config;
     }
@@ -167,11 +171,10 @@ class SandboxServer {
         return this;
     }
     async close() {
-        var _a;
         (0, internal_utils_1.debug)('Lifecycle.SandboxServer.close()');
         this.readyToDie = true;
         if (!this.subprocess.kill('SIGINT')) {
-            console.error(`Failed to kill child process with PID: ${(_a = this.subprocess.pid) !== null && _a !== void 0 ? _a : 'undefined'}`);
+            console.error(`Failed to kill child process with PID: ${this.subprocess.pid ?? 'undefined'}`);
         }
         if (this.config.rm) {
             await (0, internal_utils_1.rm)(this.homeDir);
@@ -183,5 +186,4 @@ class SandboxServer {
     }
 }
 exports.SandboxServer = SandboxServer;
-SandboxServer.lastPort = initialPort();
 //# sourceMappingURL=server.js.map

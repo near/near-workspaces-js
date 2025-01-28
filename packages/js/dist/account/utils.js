@@ -49,12 +49,11 @@ function callsites() {
 }
 exports.callsites = callsites;
 async function getKeyFromFile(filePath, create = true) {
-    var _a;
     try {
         const keyFile = require(filePath); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
         return types_1.KeyPair.fromString(
         // @ts-expect-error `x` does not exist on KeyFile
-        (_a = keyFile.secret_key) !== null && _a !== void 0 ? _a : keyFile.private_key);
+        keyFile.secret_key ?? keyFile.private_key);
     }
     catch (error) {
         if (!create) {

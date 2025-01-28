@@ -37,9 +37,11 @@ const transaction_result_1 = require("../transaction-result");
 const account_1 = require("./account");
 const utils_2 = require("./utils");
 class AccountManager {
+    config;
+    accountsCreated = new Set();
+    _root;
     constructor(config) {
         this.config = config;
-        this.accountsCreated = new Set();
     }
     static create(config) {
         const { network } = config;
@@ -85,8 +87,7 @@ class AccountManager {
         return this._root;
     }
     get initialBalance() {
-        var _a;
-        return (_a = this.config.initialBalance) !== null && _a !== void 0 ? _a : this.DEFAULT_INITIAL_BALANCE;
+        return this.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
     }
     get doubleInitialBalance() {
         return new types_1.BN(this.initialBalance).mul(new types_1.BN('2'));
@@ -101,12 +102,11 @@ class AccountManager {
         return this.keyStore.getKey(this.networkId, accountId);
     }
     async getPublicKey(accountId) {
-        var _a, _b;
-        return (_b = (_a = (await this.getKey(accountId))) === null || _a === void 0 ? void 0 : _a.getPublicKey()) !== null && _b !== void 0 ? _b : null;
+        return (await this.getKey(accountId))?.getPublicKey() ?? null;
     }
     /** Sets the provided key to store, otherwise creates a new one */
     async setKey(accountId, keyPair) {
-        const key = keyPair !== null && keyPair !== void 0 ? keyPair : types_1.KeyPairEd25519.fromRandom();
+        const key = keyPair ?? types_1.KeyPairEd25519.fromRandom();
         await this.keyStore.setKey(this.networkId, accountId, key);
         (0, internal_utils_1.debug)(`Setting keys for ${accountId}`);
         return (await this.getKey(accountId));
@@ -146,7 +146,6 @@ class AccountManager {
         return amount.lt(await this.availableBalance(account));
     }
     async executeTransaction(tx, keyPair) {
-        var _a;
         const account = new nearAPI.Account(this.connection, tx.senderId);
         let oldKey = null;
         if (keyPair) {
@@ -175,7 +174,7 @@ class AccountManager {
             }
             if (error instanceof Error) {
                 const key = await this.getPublicKey(tx.receiverId);
-                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${(_a = key === null || key === void 0 ? void 0 : key.toString()) !== null && _a !== void 0 ? _a : 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
+                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
                 (0, internal_utils_1.debug)(error);
             }
             throw error;
@@ -192,8 +191,7 @@ class AccountManager {
         this.config.rootAccountId = value;
     }
     get keyStore() {
-        var _a;
-        return (_a = this.config.keyStore) !== null && _a !== void 0 ? _a : this.defaultKeyStore;
+        return this.config.keyStore ?? this.defaultKeyStore;
     }
     get signer() {
         return new nearAPI.InMemorySigner(this.keyStore);
@@ -228,13 +226,15 @@ class CustomnetManager extends AccountManager {
 }
 exports.CustomnetManager = CustomnetManager;
 class TestnetManager extends AccountManager {
+    static KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'workspaces');
+    static numTestAccounts = 0;
+    _testnetRoot;
     static get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.KEYSTORE_PATH);
         return keyStore;
     }
     get masterAccountId() {
-        var _a;
-        const passedAccountId = (_a = this.config.testnetMasterAccountId) !== null && _a !== void 0 ? _a : process.env.TESTNET_MASTER_ACCOUNT_ID;
+        const passedAccountId = this.config.testnetMasterAccountId ?? process.env.TESTNET_MASTER_ACCOUNT_ID;
         if (!passedAccountId) {
             throw new Error('Master account is not provided. You can set it in config while calling Worker.init(config); or with TESTNET_MASTER_ACCOUNT_ID env variable');
         }
@@ -277,7 +277,7 @@ class TestnetManager extends AccountManager {
             this.accountsCreated.delete(accountId);
         }
         else {
-            await this.createTopLevelAccountWithHelper(accountId, keyPair !== null && keyPair !== void 0 ? keyPair : await this.getRootKey());
+            await this.createTopLevelAccountWithHelper(accountId, keyPair ?? await this.getRootKey());
             (0, internal_utils_1.debug)(`Created account ${accountId} with account creator`);
         }
         return this.getAccount(accountId);
@@ -307,8 +307,7 @@ class TestnetManager extends AccountManager {
         await parent.transfer(accountId, amount);
     }
     async deleteAccounts(accounts, beneficiaryId) {
-        var _a;
-        const keyPair = (_a = await this.getKey(this.rootAccountId)) !== null && _a !== void 0 ? _a : undefined;
+        const keyPair = await this.getKey(this.rootAccountId) ?? undefined;
         return Promise.all(accounts.map(async (accountId) => {
             await this.deleteAccount(accountId, beneficiaryId, keyPair);
             await this.deleteKey(accountId);
@@ -333,8 +332,6 @@ class TestnetManager extends AccountManager {
     }
 }
 exports.TestnetManager = TestnetManager;
-TestnetManager.KEYSTORE_PATH = path.join(process.cwd(), '.near-credentials', 'workspaces');
-TestnetManager.numTestAccounts = 0;
 class SandboxManager extends AccountManager {
     async init() {
         if (!await this.getKey(this.rootAccountId)) {
@@ -358,10 +355,11 @@ class SandboxManager extends AccountManager {
 }
 exports.SandboxManager = SandboxManager;
 class ManagedTransaction extends transaction_1.Transaction {
+    manager;
+    delete = false;
     constructor(manager, sender, receiver) {
         super(sender, receiver);
         this.manager = manager;
-        this.delete = false;
     }
     createAccount() {
         this.manager.addAccountCreated(this.receiverId, this.senderId);

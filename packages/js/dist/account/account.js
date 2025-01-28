@@ -34,6 +34,8 @@ const utils_1 = require("../utils");
 const transaction_result_1 = require("../transaction-result");
 const record_1 = require("../record");
 class Account {
+    _accountId;
+    manager;
     constructor(_accountId, manager) {
         this._accountId = _accountId;
         this.manager = manager;
@@ -94,13 +96,13 @@ class Account {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }
         const network = mainnetContract ? 'mainnet' : 'testnet';
-        const refContract = (mainnetContract !== null && mainnetContract !== void 0 ? mainnetContract : testnetContract);
+        const refContract = (mainnetContract ?? testnetContract);
         const rpc = jsonrpc_1.JsonRpcProvider.fromNetwork(network);
         const blockQuery = blockId ? { block_id: blockId } : undefined;
         const account = this.getAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);
-        accountView.amount = initialBalance !== null && initialBalance !== void 0 ? initialBalance : accountView.amount;
+        accountView.amount = initialBalance ?? accountView.amount;
         const pubKey = await account.setKey(keyPair);
         const records = account.recordBuilder()
             .account(accountView)
@@ -279,15 +281,14 @@ class Account {
     async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
         const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
-        const amount = (initialBalance !== null && initialBalance !== void 0 ? initialBalance : this.manager.initialBalance).toString();
+        const amount = (initialBalance ?? this.manager.initialBalance).toString();
         return this.batch(newAccountId)
             .createAccount()
             .transfer(amount)
             .addKey(pubKey);
     }
     async getOrCreateKey(accountId, keyPair) {
-        var _a;
-        return (_a = (await this.manager.getKey(accountId))) !== null && _a !== void 0 ? _a : this.manager.setKey(accountId, keyPair);
+        return (await this.manager.getKey(accountId)) ?? this.manager.setKey(accountId, keyPair);
     }
     recordBuilder() {
         return record_1.RecordBuilder.fromAccount(this);

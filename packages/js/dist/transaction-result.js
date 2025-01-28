@@ -19,6 +19,7 @@ function parseValue(value) {
     }
 }
 class ReceiptOutcome {
+    outcome;
     constructor(outcome) {
         this.outcome = outcome;
     }
@@ -62,12 +63,10 @@ class ReceiptOutcome {
         return undefined;
     }
     get failureMessage() {
-        var _a;
-        return (_a = this.executionFailure) === null || _a === void 0 ? void 0 : _a.error_message;
+        return this.executionFailure?.error_message;
     }
     get failureType() {
-        var _a;
-        return (_a = this.executionFailure) === null || _a === void 0 ? void 0 : _a.error_type;
+        return this.executionFailure?.error_type;
     }
     get logs() {
         return this.outcome.logs;
@@ -78,6 +77,10 @@ class ReceiptOutcome {
 }
 exports.ReceiptOutcome = ReceiptOutcome;
 class TransactionResult {
+    result;
+    startMs;
+    endMs;
+    config;
     constructor(result, startMs, endMs, config) {
         this.result = result;
         this.startMs = startMs;
@@ -156,10 +159,10 @@ class TransactionResult {
         return this.status;
     }
     get receiptFailures() {
-        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.executionFailure) !== null && _a !== void 0 ? _a : []; });
+        return this.receipts_outcomes.flatMap(o => o.executionFailure ?? []);
     }
     get receiptSuccessValues() {
-        return this.receipts_outcomes.flatMap(o => { var _a; return (_a = o.SuccessValue) !== null && _a !== void 0 ? _a : []; });
+        return this.receipts_outcomes.flatMap(o => o.SuccessValue ?? []);
     }
     get receiptFailureMessages() {
         return this.receiptFailures.map(failure => JSON.stringify(failure));

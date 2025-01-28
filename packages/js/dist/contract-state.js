@@ -27,6 +27,7 @@ exports.ContractState = void 0;
 const buffer_1 = require("buffer");
 const borsh = __importStar(require("borsh"));
 class ContractState {
+    data;
     constructor(dataArray) {
         this.data = new Map();
         for (const { key, value } of dataArray) {
@@ -34,8 +35,7 @@ class ContractState {
         }
     }
     getRaw(key) {
-        var _a;
-        return (_a = this.data.get(key)) !== null && _a !== void 0 ? _a : buffer_1.Buffer.from('');
+        return this.data.get(key) ?? buffer_1.Buffer.from('');
     }
     get(key, borshSchema) {
         const value = this.getRaw(key);

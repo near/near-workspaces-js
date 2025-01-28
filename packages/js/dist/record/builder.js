@@ -4,9 +4,7 @@ exports.AccountBuilder = exports.RecordBuilder = void 0;
 const types_1 = require("../types");
 const utils_1 = require("../utils");
 class RecordBuilder {
-    constructor() {
-        this.records = [];
-    }
+    records = [];
     static fromAccount(accountId) {
         return new AccountBuilder(accountId);
     }
@@ -35,6 +33,7 @@ function isNamedAccount(something) {
         && typeof something.accountId === 'string';
 }
 class AccountBuilder extends RecordBuilder {
+    account_id;
     constructor(accountOrId) {
         super();
         if (typeof accountOrId === 'string') {

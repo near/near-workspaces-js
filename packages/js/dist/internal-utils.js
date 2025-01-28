@@ -52,7 +52,7 @@ async function exists(d) {
         return false;
     }
     finally {
-        await (file === null || file === void 0 ? void 0 : file.close());
+        await file?.close();
     }
     return true;
 }
