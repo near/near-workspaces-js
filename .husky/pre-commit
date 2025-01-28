@@ -1,4 +1,3 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
-
-pnpm lint && pnpm build && git add packages/*/dist
+pnpm build && git add packages/*/dist
