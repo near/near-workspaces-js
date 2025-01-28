@@ -22,12 +22,12 @@
     "docs:generate": "typedoc"
   },
   "devDependencies": {
-    "@ava/typescript": "^2.0.0",
+    "@ava/typescript": "^5.0.0",
     "@types/bn.js": "^5.1.0",
     "@types/fs-extra": "^9.0.12",
     "@types/node": "20.0.0",
     "@types/rimraf": "^3.0.1",
-    "ava": "^4.0.1",
+    "ava": "^6.2.0",
     "husky": "^7.0.1",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24",
