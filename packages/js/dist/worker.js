@@ -48,7 +48,7 @@ class Worker {
             case 'custom':
                 return CustomnetWorker.init(config);
             default:
-                throw new Error(`config.network = '${config.network}' invalid; ` // eslint-disable-line @typescript-eslint/restrict-template-expressions
+                throw new Error(`config.network = '${config.network}' invalid; `
                     + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'');
         }
     }

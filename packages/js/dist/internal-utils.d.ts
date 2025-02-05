@@ -1,4 +1,6 @@
 /// <reference types="node" />
+/// <reference types="node" />
+/// <reference types="node" />
 import { type PathLike } from 'fs';
 import { spawn as _spawn } from 'child_process';
 import { URL } from 'url';
@@ -11,7 +13,7 @@ export declare function asyncSpawn(bin: string, ...args: string[]): ChildProcess
 export { _spawn as spawn };
 export declare function debug(...args: any[]): void;
 export declare function txDebug(tx: string): void;
-export declare const copyDir: (arg1: string, arg2: string) => Promise<void>;
+export declare const copyDirection: (arg1: string, arg2: string) => Promise<void>;
 export declare function ensureBinary(): Promise<string>;
 export declare function isPathLike(something: any): something is URL | string;
 /**

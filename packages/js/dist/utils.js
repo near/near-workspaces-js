@@ -62,9 +62,9 @@ function asId(id) {
 }
 exports.asId = asId;
 exports.NO_DEPOSIT = near_units_1.NEAR.from(0);
-async function captureError(fn) {
+async function captureError(function_) {
     try {
-        await fn();
+        await function_();
     }
     catch (error) {
         if (error instanceof Error) {

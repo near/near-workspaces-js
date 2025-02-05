@@ -73,7 +73,7 @@ test.beforeEach(async t => {
 
   t.context.worker = worker;
   t.context.accounts = {
-    root, ft, defi, ali
+    root, ft, defi, ali,
   };
 });
 

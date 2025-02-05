@@ -50,12 +50,12 @@ class JsonRpcProvider extends types_1.JSONRpc {
      * @returns Base64 string of Wasm binary
      */
     async viewCodeRaw(accountId, blockQuery = OPTIMISTIC) {
-        const { code_base64 } = await this.query({
+        const { code_base64: codeBase64 } = await this.query({
             request_type: 'view_code',
             account_id: accountId,
             ...blockQuery,
         });
-        return code_base64;
+        return codeBase64;
     }
     async viewAccount(accountId, blockQuery = OPTIMISTIC) {
         return this.query({
@@ -109,8 +109,8 @@ class JsonRpcProvider extends types_1.JSONRpc {
         };
     }
     async viewCall(accountId, methodName, args, blockQuery) {
-        const args_buffer = (0, transaction_1.stringifyJsonOrBytes)(args);
-        return this.viewCallRaw(accountId, methodName, args_buffer.toString('base64'), blockQuery);
+        const argsBuffer = (0, transaction_1.stringifyJsonOrBytes)(args);
+        return this.viewCallRaw(accountId, methodName, argsBuffer.toString('base64'), blockQuery);
     }
     /**
      * Get full response from RPC about result of view method
@@ -188,6 +188,8 @@ class JsonRpcProvider extends types_1.JSONRpc {
     }
 }
 exports.JsonRpcProvider = JsonRpcProvider;
+//eslint-disable-next-line @typescript-eslint/naming-convention
 exports.TestnetRpc = JsonRpcProvider.from(types_1.TESTNET_RPC_ADDR);
+//eslint-disable-next-line @typescript-eslint/naming-convention
 exports.MainnetRpc = JsonRpcProvider.from(types_1.MAINNET_RPC_ADDR);
 //# sourceMappingURL=jsonrpc.js.map

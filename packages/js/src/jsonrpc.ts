@@ -69,12 +69,12 @@ export class JsonRpcProvider extends JSONRpc {
    * @returns Base64 string of Wasm binary
    */
   async viewCodeRaw(accountId: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<string> {
-    const {code_base64}: ContractCodeView = await this.query({
+    const {code_base64: codeBase64}: ContractCodeView = await this.query({
       request_type: 'view_code',
       account_id: accountId,
       ...blockQuery,
     });
-    return code_base64;
+    return codeBase64;
   }
 
   async viewAccount(accountId: string, blockQuery: {block_id: BlockId} | {finality: Finality} = OPTIMISTIC): Promise<AccountView> {
@@ -134,8 +134,8 @@ export class JsonRpcProvider extends JSONRpc {
   }
 
   async viewCall(accountId: string, methodName: string, args: Record<string, unknown> | Uint8Array, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<CodeResult> {
-    const args_buffer = stringifyJsonOrBytes(args);
-    return this.viewCallRaw(accountId, methodName, args_buffer.toString('base64'), blockQuery);
+    const argsBuffer = stringifyJsonOrBytes(args);
+    return this.viewCallRaw(accountId, methodName, argsBuffer.toString('base64'), blockQuery);
   }
 
   /**
@@ -219,6 +219,7 @@ export class JsonRpcProvider extends JSONRpc {
     return this.sendJsonRpc('sandbox_fast_forward', {delta_height: deltaHeight});
   }
 }
-
+//eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestnetRpc = JsonRpcProvider.from(TESTNET_RPC_ADDR);
+//eslint-disable-next-line @typescript-eslint/naming-convention
 export const MainnetRpc = JsonRpcProvider.from(MAINNET_RPC_ADDR);

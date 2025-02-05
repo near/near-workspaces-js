@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { type Buffer } from 'buffer';
 import { type URL } from 'url';
 import { NEAR } from 'near-units';

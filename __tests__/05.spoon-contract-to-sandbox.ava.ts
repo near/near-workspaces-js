@@ -143,7 +143,7 @@ test('integrate own FT with Ref.Finance', async t => {
       amount_in: NEAR.parse('1 N'),
       token_out: wNEAR,
       min_amount_out: '1',
-    }]
+    }],
   }, {
     attachedDeposit: '1',
   });

@@ -13,7 +13,7 @@ import {
   exists,
   rm,
   spawn,
-  copyDir,
+  copyDirection,
   ensureBinary,
 } from '../internal-utils';
 import {type Config, type ChildProcessPromise} from '../types';
@@ -106,7 +106,7 @@ export class SandboxServer {
     const server = new SandboxServer(config);
     if (server.config.refDir) {
       await rm(server.homeDir);
-      await copyDir(server.config.refDir, server.config.homeDir);
+      await copyDirection(server.config.refDir, server.config.homeDir);
     }
 
     if ((await exists(server.homeDir))) {

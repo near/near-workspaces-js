@@ -48,7 +48,7 @@ export function txDebug(tx: string): void {
   }
 }
 
-export const copyDir = promisify(fs_extra.copy);
+export const copyDirection = promisify(fs_extra.copy);
 
 export async function ensureBinary(): Promise<string> {
   const binary = await sandboxBinary();

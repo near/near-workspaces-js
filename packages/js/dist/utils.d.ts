@@ -9,7 +9,7 @@ export declare function tGas(x: string | number): string;
 export declare function randomAccountId(prefix?: string, dateLength?: number, suffixLength?: number): string;
 export declare function asId(id: string | NamedAccount): string;
 export declare const NO_DEPOSIT: NEAR;
-export declare function captureError(fn: () => Promise<any>): Promise<string>;
+export declare function captureError(function_: () => Promise<any>): Promise<string>;
 export declare function isTopLevelAccount(accountId: string): boolean;
 export declare function urlConfigFromNetwork(network: string | {
     network: string;

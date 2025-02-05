@@ -187,8 +187,8 @@ class Account {
             signWithKey,
         });
         if (!process_1.env.NEAR_WORKSPACES_NO_LOGS && txResult.logs.length > 0) {
-            const accId = typeof contractId === 'string' ? contractId : contractId.accountId;
-            console.log(`Contract logs from ${accId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
+            const accountId = typeof contractId === 'string' ? contractId : contractId.accountId;
+            console.log(`Contract logs from ${accountId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
         }
         if (txResult.failed) {
             throw new transaction_result_1.TransactionError(txResult);
@@ -271,9 +271,9 @@ class Account {
         return this.patchStateRecords(rb.contract(binary));
     }
     async updateData(key, value) {
-        const key_string = key instanceof buffer_1.Buffer ? key.toString('base64') : key;
-        const value_string = value instanceof buffer_1.Buffer ? value.toString('base64') : value;
-        return this.patchStateRecords(this.recordBuilder().data(key_string, value_string));
+        const keyString = key instanceof buffer_1.Buffer ? key.toString('base64') : key;
+        const valueString = value instanceof buffer_1.Buffer ? value.toString('base64') : value;
+        return this.patchStateRecords(this.recordBuilder().data(keyString, valueString));
     }
     async transfer(accountId, amount) {
         return this.batch(accountId).transfer(amount).transact();

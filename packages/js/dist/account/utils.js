@@ -36,8 +36,8 @@ function findCallerFile() {
     const sites = callsites();
     const files = sites.filter(s => s.getFileName());
     // Need better way to find file
-    const i = files.length - 1;
-    return [files[i].getFileName(), files[i].getLineNumber()];
+    const index = files.length - 1;
+    return [files[index].getFileName(), files[index].getLineNumber()];
 }
 exports.findCallerFile = findCallerFile;
 function callsites() {

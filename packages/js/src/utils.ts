@@ -46,9 +46,9 @@ export function asId(id: string | NamedAccount): string {
 
 export const NO_DEPOSIT = NEAR.from(0);
 
-export async function captureError(fn: () => Promise<any>): Promise<string> {
+export async function captureError(function_: () => Promise<any>): Promise<string> {
   try {
-    await fn();
+    await function_();
   } catch (error: unknown) {
     if (error instanceof Error) {
       return error.message;

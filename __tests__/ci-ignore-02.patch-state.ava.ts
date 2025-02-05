@@ -11,7 +11,7 @@
  * testnet. That's why they're wrapped with `if (getNetworkFromEnv() === 'sandbox')`.
  */
 
-/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-argument */
 import anyTest, {type TestFn} from 'ava';
 import * as borsh from '../packages/js/node_modules/borsh';
 import {Worker, getNetworkFromEnv, type NearAccount} from '../packages/js';

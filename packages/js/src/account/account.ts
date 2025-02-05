@@ -298,8 +298,8 @@ export class Account implements NearAccount {
     });
 
     if (!env.NEAR_WORKSPACES_NO_LOGS && txResult.logs.length > 0) {
-      const accId = typeof contractId === 'string' ? contractId : contractId.accountId;
-      console.log(`Contract logs from ${accId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
+      const accountId = typeof contractId === 'string' ? contractId : contractId.accountId;
+      console.log(`Contract logs from ${accountId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
     }
 
     if (txResult.failed) {
@@ -407,9 +407,9 @@ export class Account implements NearAccount {
   }
 
   async updateData(key: string | Buffer, value: string | Buffer): Promise<Empty> {
-    const key_string = key instanceof Buffer ? key.toString('base64') : key;
-    const value_string = value instanceof Buffer ? value.toString('base64') : value;
-    return this.patchStateRecords(this.recordBuilder().data(key_string, value_string));
+    const keyString = key instanceof Buffer ? key.toString('base64') : key;
+    const valueString = value instanceof Buffer ? value.toString('base64') : value;
+    return this.patchStateRecords(this.recordBuilder().data(keyString, valueString));
   }
 
   async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {

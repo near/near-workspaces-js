@@ -63,14 +63,14 @@ export class AccountBuilder extends RecordBuilder {
   }
 
   accessKey(key: string | PublicKey | KeyPair, access_key = DEFAULT_ACCESS_KEY_PERMISSION): this {
-    const public_key
+    const publicKey
       = typeof key === 'string' ? key
         : (key instanceof PublicKey ? key.toString()
           : key.getPublicKey().toString());
     return this.push({
       AccessKey: {
         account_id: this.account_id,
-        public_key,
+        public_key: publicKey,
         access_key,
       },
     });

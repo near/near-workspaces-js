@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { type URL } from 'url';
 import { Buffer } from 'buffer';
 import type BN from 'bn.js';

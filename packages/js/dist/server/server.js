@@ -112,7 +112,7 @@ class SandboxServer {
         const server = new SandboxServer(config);
         if (server.config.refDir) {
             await (0, internal_utils_1.rm)(server.homeDir);
-            await (0, internal_utils_1.copyDir)(server.config.refDir, server.config.homeDir);
+            await (0, internal_utils_1.copyDirection)(server.config.refDir, server.config.homeDir);
         }
         if ((await (0, internal_utils_1.exists)(server.homeDir))) {
             await (0, internal_utils_1.rm)(server.homeDir);
