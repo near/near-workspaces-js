@@ -99,7 +99,7 @@ export function urlConfigFromNetwork(network: string | {network: string; rpcAddr
     }
 
     case 'testnet':
-    case 'mainnet': { 
+    case 'mainnet': {
       return configFromDomain(networkName);
     }
 

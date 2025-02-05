@@ -42,7 +42,7 @@ export abstract class Worker {
       case 'custom': {
         return CustomnetWorker.init(config);
       }
-      
+
       default: {
         throw new Error(
           `config.network = '${config.network}' invalid; `

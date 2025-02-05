@@ -86,9 +86,7 @@ class AccountManager {
         return this;
     }
     get root() {
-        if (!this._root) {
-            this._root = new account_1.Account(this.rootAccountId, this);
-        }
+        this._root ||= new account_1.Account(this.rootAccountId, this);
         return this._root;
     }
     get initialBalance() {
@@ -107,7 +105,8 @@ class AccountManager {
         return this.keyStore.getKey(this.networkId, accountId);
     }
     async getPublicKey(accountId) {
-        return (await this.getKey(accountId))?.getPublicKey() ?? null;
+        const keyPair = await this.getKey(accountId);
+        return keyPair?.getPublicKey() ?? null;
     }
     /** Sets the provided key to store, otherwise creates a new one */
     async setKey(accountId, keyPair) {
@@ -142,7 +141,8 @@ class AccountManager {
         return this.provider.accountBalance((0, utils_1.asId)(account));
     }
     async availableBalance(account) {
-        return (await this.balance(account)).available;
+        const balance = await this.balance(account);
+        return balance.available;
     }
     async exists(accountId) {
         return this.provider.accountExists((0, utils_1.asId)(accountId));
@@ -249,9 +249,7 @@ class TestnetManager extends AccountManager {
         return this.rootAccountId + '.' + this.masterAccountId;
     }
     get root() {
-        if (!this._testnetRoot) {
-            this._testnetRoot = new account_1.Account(this.fullRootAccountId, this);
-        }
+        this._testnetRoot ||= new account_1.Account(this.fullRootAccountId, this);
         return this._testnetRoot;
     }
     get DEFAULT_INITIAL_BALANCE() {
@@ -265,9 +263,7 @@ class TestnetManager extends AccountManager {
         this.config.helperUrl);
     }
     async init() {
-        if (!this.rootAccountId) {
-            this.rootAccountId = (0, utils_1.randomAccountId)('r-', 5, 5);
-        }
+        this.rootAccountId ||= (0, utils_1.randomAccountId)('r-', 5, 5);
         if (!(await this.exists(this.fullRootAccountId))) {
             await this.getAccount(this.masterAccountId).createSubAccount(this.rootAccountId);
         }

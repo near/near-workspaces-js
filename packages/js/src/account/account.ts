@@ -71,7 +71,8 @@ export class Account implements NearAccount {
   }
 
   async setKey(keyPair?: KeyPair): Promise<PublicKey> {
-    return (await this.manager.setKey(this.accountId, keyPair)).getPublicKey();
+    const keyPairResult = await this.manager.setKey(this.accountId, keyPair);
+    return keyPairResult.getPublicKey();
   }
 
   async createAccount(
@@ -133,7 +134,7 @@ export class Account implements NearAccount {
     initialBalance?: string;
     blockId?: number | string;
   }): Promise<NearAccount> {
-    if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
+    if ((testnetContract && mainnetContract) ?? !(testnetContract ?? mainnetContract)) {
       throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
     }
 
@@ -425,7 +426,8 @@ export class Account implements NearAccount {
     }: {keyPair?: KeyPair; initialBalance?: string | BN; isSubAccount?: boolean} = {},
   ): Promise<Transaction> {
     const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
-    const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
+    const keyPairResult = await this.getOrCreateKey(newAccountId, keyPair);
+    const pubKey = keyPairResult.getPublicKey();
     const amount = (initialBalance ?? this.manager.initialBalance).toString();
     return this.batch(newAccountId)
       .createAccount()

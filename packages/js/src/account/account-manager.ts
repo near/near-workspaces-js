@@ -43,7 +43,7 @@ export abstract class AccountManager implements NearAccountManager {
       }
 
       default: {
-      throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
+        throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
       }
     }
   }
@@ -87,9 +87,7 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   get root(): NearAccount {
-    if (!this._root) {
-      this._root = new Account(this.rootAccountId, this);
-    }
+    this._root ||= new Account(this.rootAccountId, this);
 
     return this._root;
   }
@@ -115,7 +113,8 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   async getPublicKey(accountId: string): Promise<PublicKey | null> {
-    return (await this.getKey(accountId))?.getPublicKey() ?? null;
+    const keyPair = await this.getKey(accountId);
+    return keyPair?.getPublicKey() ?? null;
   }
 
   /** Sets the provided key to store, otherwise creates a new one */
@@ -157,7 +156,8 @@ export abstract class AccountManager implements NearAccountManager {
   }
 
   async availableBalance(account: string | NearAccount): Promise<NEAR> {
-    return (await this.balance(account)).available;
+    const balance = await this.balance(account);
+    return balance.available;
   }
 
   async exists(accountId: string | NearAccount): Promise<boolean> {
@@ -296,9 +296,7 @@ export class TestnetManager extends AccountManager {
   }
 
   get root(): NearAccount {
-    if (!this._testnetRoot) {
-      this._testnetRoot = new Account(this.fullRootAccountId, this);
-    }
+    this._testnetRoot ||= new Account(this.fullRootAccountId, this);
 
     return this._testnetRoot;
   }
@@ -319,9 +317,7 @@ export class TestnetManager extends AccountManager {
   }
 
   async init(): Promise<AccountManager> {
-    if (!this.rootAccountId) {
-      this.rootAccountId = randomAccountId('r-', 5, 5);
-    }
+    this.rootAccountId ||= randomAccountId('r-', 5, 5);
 
     if (!(await this.exists(this.fullRootAccountId))) {
       await this.getAccount(this.masterAccountId).createSubAccount(this.rootAccountId);

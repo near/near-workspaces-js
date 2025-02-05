@@ -65,7 +65,8 @@ class Account {
         return this.manager.getKey(this.accountId);
     }
     async setKey(keyPair) {
-        return (await this.manager.setKey(this.accountId, keyPair)).getPublicKey();
+        const keyPairResult = await this.manager.setKey(this.accountId, keyPair);
+        return keyPairResult.getPublicKey();
     }
     async createAccount(accountId, { keyPair, initialBalance, } = {}) {
         const tx = await this.internalCreateAccount(accountId, {
@@ -92,7 +93,7 @@ class Account {
         return this.getSubAccount(accountId);
     }
     async importContract({ testnetContract, mainnetContract, withData = false, blockId, keyPair, initialBalance, }) {
-        if ((testnetContract && mainnetContract) || !(testnetContract || mainnetContract)) {
+        if ((testnetContract && mainnetContract) ?? !(testnetContract ?? mainnetContract)) {
             throw new TypeError('Provide `mainnetContract` or `testnetContract` but not both.');
         }
         const network = mainnetContract ? 'mainnet' : 'testnet';
@@ -280,7 +281,8 @@ class Account {
     }
     async internalCreateAccount(accountId, { keyPair, initialBalance, isSubAccount, } = {}) {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
-        const pubKey = (await this.getOrCreateKey(newAccountId, keyPair)).getPublicKey();
+        const keyPairResult = await this.getOrCreateKey(newAccountId, keyPair);
+        const pubKey = keyPairResult.getPublicKey();
         const amount = (initialBalance ?? this.manager.initialBalance).toString();
         return this.batch(newAccountId)
             .createAccount()
