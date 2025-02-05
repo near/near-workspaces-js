@@ -30,8 +30,6 @@ const OPTIMISTIC: {finality: 'optimistic'} = {finality: 'optimistic'};
  * interacting with an endpoint.
  */
 export class JsonRpcProvider extends JSONRpc {
-  private static readonly providers: Map<string, JsonRpcProvider> = new Map();
-
   /**
    * Create a JsonRpcProvider from config or rpcAddr
    * @param config rpc endpoint URL or a configuration that includes one.
@@ -53,6 +51,8 @@ export class JsonRpcProvider extends JSONRpc {
       default: throw new TypeError('Invalid network only mainnet or testnet');
     }
   }
+
+  private static readonly providers: Map<string, JsonRpcProvider> = new Map();
 
   /**
    * Download the binary of a given contract.

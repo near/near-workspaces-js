@@ -3,8 +3,8 @@ import { type Buffer } from 'buffer';
 import { type KeyPair, type NamedAccount, PublicKey } from '../types';
 import { type AccessKeyData, type Account, type AccountData, type StateRecord } from './types';
 export declare class RecordBuilder {
-    readonly records: StateRecord[];
     static fromAccount(accountId: string | Account | NamedAccount): AccountBuilder;
+    readonly records: StateRecord[];
     push(record: StateRecord): this;
 }
 export declare class AccountBuilder extends RecordBuilder {

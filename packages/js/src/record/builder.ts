@@ -9,11 +9,11 @@ import {
 } from './types';
 
 export class RecordBuilder {
-  readonly records: StateRecord[] = [];
-
   static fromAccount(accountId: string | Account | NamedAccount): AccountBuilder {
     return new AccountBuilder(accountId);
   }
+
+  readonly records: StateRecord[] = [];
 
   push(record: StateRecord): this {
     this.records.push(record);

@@ -8,10 +8,10 @@ import { type NearAccount } from './near-account';
 import { type NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
     protected config: Config;
+    static create(config: Config): AccountManager;
     accountsCreated: Set<string>;
     private _root?;
     constructor(config: Config);
-    static create(config: Config): AccountManager;
     accountView(accountId: string): Promise<AccountView>;
     getAccount(accountId: string): NearAccount;
     getParentAccount(accountId: string): NearAccount;

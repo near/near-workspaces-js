@@ -87,15 +87,6 @@ function initialPort() {
     return Math.max(5001, Math.floor(Math.random() * 60_000));
 }
 class SandboxServer {
-    static lastPort = initialPort();
-    static binPath;
-    subprocess;
-    readyToDie = false;
-    config;
-    constructor(config) {
-        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.constructor', 'config:', config);
-        this.config = config;
-    }
     static async nextPort() {
         this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
         return this.lastPort;
@@ -123,6 +114,15 @@ class SandboxServer {
             throw new Error('Failed to spawn sandbox server');
         }
         return server;
+    }
+    static lastPort = initialPort();
+    static binPath;
+    subprocess;
+    readyToDie = false;
+    config;
+    constructor(config) {
+        (0, internal_utils_1.debug)('Lifecycle.SandboxServer.constructor', 'config:', config);
+        this.config = config;
     }
     get homeDir() {
         return this.config.homeDir;

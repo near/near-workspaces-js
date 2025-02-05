@@ -16,7 +16,6 @@ const OPTIMISTIC = { finality: 'optimistic' };
  * interacting with an endpoint.
  */
 class JsonRpcProvider extends types_1.JSONRpc {
-    static providers = new Map();
     /**
      * Create a JsonRpcProvider from config or rpcAddr
      * @param config rpc endpoint URL or a configuration that includes one.
@@ -36,6 +35,7 @@ class JsonRpcProvider extends types_1.JSONRpc {
             default: throw new TypeError('Invalid network only mainnet or testnet');
         }
     }
+    static providers = new Map();
     /**
      * Download the binary of a given contract.
      * @param accountId contract account

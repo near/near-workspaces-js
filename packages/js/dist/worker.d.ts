@@ -5,9 +5,6 @@ import { JsonRpcProvider } from './jsonrpc';
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
  */
 export declare abstract class Worker {
-    protected config: Config;
-    protected manager: NearAccountManager;
-    constructor(config: Config);
     /**
      * Initialize a new worker.
      *
@@ -23,13 +20,16 @@ export declare abstract class Worker {
      * @returns an instance of the Worker class
      */
     static init(config?: Partial<Config>): Promise<Worker>;
+    protected config: Config;
+    protected manager: NearAccountManager;
+    constructor(config: Config);
     get rootAccount(): NearAccount;
     abstract get provider(): JsonRpcProvider;
     abstract tearDown(): Promise<void>;
 }
 export declare class CustomnetWorker extends Worker {
-    private readonly clientConfig;
     static init(config: Partial<Config>): Promise<CustomnetWorker>;
+    private readonly clientConfig;
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
     get defaultConfig(): Config;
@@ -42,9 +42,9 @@ export declare class TestnetWorker extends Worker {
     private static get clientConfig();
 }
 export declare class SandboxWorker extends Worker {
-    private server;
     static init(config: Partial<Config>): Promise<SandboxWorker>;
     static defaultConfig(): Promise<Config>;
+    private server;
     get provider(): JsonRpcProvider;
     tearDown(): Promise<void>;
     private static get clientConfig();

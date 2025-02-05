@@ -38,11 +38,6 @@ const account_1 = require("./account");
 const utils_2 = require("./utils");
 class AccountManager {
     config;
-    accountsCreated = new Set();
-    _root;
-    constructor(config) {
-        this.config = config;
-    }
     static create(config) {
         const { network } = config;
         switch (network) {
@@ -54,6 +49,11 @@ class AccountManager {
                 return new CustomnetManager(config);
             default: throw new Error(`Bad network id: "${network}"; expected "testnet", "custom" or "sandbox"`);
         }
+    }
+    accountsCreated = new Set();
+    _root;
+    constructor(config) {
+        this.config = config;
     }
     async accountView(accountId) {
         return this.provider.viewAccount(accountId);

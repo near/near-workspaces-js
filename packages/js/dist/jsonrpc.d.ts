@@ -7,7 +7,6 @@ import { JSONRpc, type AccountView, type NearProtocolConfig, type AccountBalance
  * interacting with an endpoint.
  */
 export declare class JsonRpcProvider extends JSONRpc {
-    private static readonly providers;
     /**
      * Create a JsonRpcProvider from config or rpcAddr
      * @param config rpc endpoint URL or a configuration that includes one.
@@ -17,6 +16,7 @@ export declare class JsonRpcProvider extends JSONRpc {
         rpcAddr: string;
     }): JsonRpcProvider;
     static fromNetwork(network: Network): JsonRpcProvider;
+    private static readonly providers;
     /**
      * Download the binary of a given contract.
      * @param accountId contract account

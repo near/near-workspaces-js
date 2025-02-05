@@ -14,16 +14,6 @@ const API_KEY_HEADER = 'x-api-key';
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.
  */
 export abstract class Worker {
-  protected config: Config;
-
-  protected manager!: NearAccountManager;
-
-  constructor(config: Config) {
-    debug('Lifecycle.Worker.constructor', 'config:', config);
-    this.config = config;
-    this.manager = AccountManager.create(config);
-  }
-
   /**
    * Initialize a new worker.
    *
@@ -55,6 +45,16 @@ export abstract class Worker {
     }
   }
 
+  protected config: Config;
+
+  protected manager!: NearAccountManager;
+
+  constructor(config: Config) {
+    debug('Lifecycle.Worker.constructor', 'config:', config);
+    this.config = config;
+    this.manager = AccountManager.create(config);
+  }
+
   get rootAccount(): NearAccount {
     return this.manager.root;
   }
@@ -67,8 +67,6 @@ export abstract class Worker {
 // Connect to a custom network.
 // Note: the burden of ensuring the methods that are able to be called are left up to the user.
 export class CustomnetWorker extends Worker {
-  private readonly clientConfig: ClientConfig = urlConfigFromNetwork({network: 'custom', rpcAddr: this.config.rpcAddr});
-
   static async init(config: Partial<Config>): Promise<CustomnetWorker> {
     debug('Lifecycle.CustomnetWorker.create()', 'config:', config);
     const fullConfig = {
@@ -90,6 +88,8 @@ export class CustomnetWorker extends Worker {
     await worker.manager.init();
     return worker;
   }
+
+  private readonly clientConfig: ClientConfig = urlConfigFromNetwork({network: 'custom', rpcAddr: this.config.rpcAddr});
 
   get provider(): JsonRpcProvider {
     return JsonRpcProvider.from(this.clientConfig);
@@ -152,8 +152,6 @@ export class TestnetWorker extends Worker {
 }
 
 export class SandboxWorker extends Worker {
-  private server!: SandboxServer;
-
   static async init(config: Partial<Config>): Promise<SandboxWorker> {
     debug('Lifecycle.SandboxWorker.create()', 'config:', config);
     const syncFilename = SandboxServer.lockfilePath('near-sandbox-worker-sync.txt');
@@ -203,6 +201,8 @@ export class SandboxWorker extends Worker {
       rpcAddr: `http://127.0.0.1:${port}`,
     };
   }
+
+  private server!: SandboxServer;
 
   get provider(): JsonRpcProvider {
     return JsonRpcProvider.from(this.rpcAddr);

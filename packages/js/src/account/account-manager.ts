@@ -25,12 +25,6 @@ import {getKeyFromFile} from './utils';
 import {type NearAccountManager} from './near-account-manager';
 
 export abstract class AccountManager implements NearAccountManager {
-  accountsCreated: Set<string> = new Set();
-  private _root?: NearAccount;
-  constructor(
-    protected config: Config,
-  ) {}
-
   static create(
     config: Config,
   ): AccountManager {
@@ -45,6 +39,12 @@ export abstract class AccountManager implements NearAccountManager {
       default: throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
     }
   }
+
+  accountsCreated: Set<string> = new Set();
+  private _root?: NearAccount;
+  constructor(
+    protected config: Config,
+  ) {}
 
   async accountView(accountId: string): Promise<AccountView> {
     return this.provider.viewAccount(accountId);

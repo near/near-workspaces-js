@@ -4,10 +4,10 @@ exports.AccountBuilder = exports.RecordBuilder = void 0;
 const types_1 = require("../types");
 const utils_1 = require("../utils");
 class RecordBuilder {
-    records = [];
     static fromAccount(accountId) {
         return new AccountBuilder(accountId);
     }
+    records = [];
     push(record) {
         this.records.push(record);
         return this;

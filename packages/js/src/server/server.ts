@@ -75,18 +75,6 @@ function initialPort(): number {
 }
 
 export class SandboxServer {
-  private static lastPort: number = initialPort();
-  private static binPath: string;
-
-  private subprocess!: ChildProcess;
-  private readyToDie = false;
-  private readonly config: Config;
-
-  private constructor(config: Config) {
-    debug('Lifecycle.SandboxServer.constructor', 'config:', config);
-    this.config = config;
-  }
-
   static async nextPort(): Promise<number> {
     this.lastPort = await portCheck.nextAvailable(this.lastPort + Math.max(1, Math.floor(Math.random() * 4)), '0.0.0.0');
     return this.lastPort;
@@ -120,6 +108,18 @@ export class SandboxServer {
     }
 
     return server;
+  }
+
+  private static lastPort: number = initialPort();
+  private static binPath: string;
+
+  private subprocess!: ChildProcess;
+  private readyToDie = false;
+  private readonly config: Config;
+
+  private constructor(config: Config) {
+    debug('Lifecycle.SandboxServer.constructor', 'config:', config);
+    this.config = config;
   }
 
   get homeDir(): string {
