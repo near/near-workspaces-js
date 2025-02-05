@@ -41,10 +41,12 @@
   "xo": {
     "space": true,
     "rules": {
+      "import/extensions": 0, 
+      "n/file-extension-in-import": 0,
       "unicorn/prefer-node-protocol": 0,
       "unicorn/prefer-module": 0,
       "unicorn/no-array-callback-reference": 0,
-      "node/prefer-global/url": 0,
+      "n/prefer-global/url": 0,
       "ava/no-ignored-test-files": 0,
       "@typescript-eslint/no-unsafe-return": 0
     },
