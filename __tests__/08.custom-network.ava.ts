@@ -21,7 +21,7 @@ if (getNetworkFromEnv() === 'custom' && process.env.NEAR_RPC_API_KEY !== '') {
   });
 
   test.after.always(async t => {
-    await t.context.worker.tearDown().catch(error => {
+    await t.context.worker.tearDown().catch((error: unknown) => {
       console.log('Failed to tear down the worker:', error);
     });
   });

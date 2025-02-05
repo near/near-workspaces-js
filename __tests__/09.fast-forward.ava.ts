@@ -25,7 +25,7 @@ if (getNetworkFromEnv() === 'sandbox') {
   });
 
   test.afterEach.always(async t => {
-    await t.context.worker.tearDown().catch(error => {
+    await t.context.worker.tearDown().catch((error: unknown) => {
       console.log('Failed to tear down the worker:', error);
     });
   });
