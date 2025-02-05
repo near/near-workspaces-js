@@ -1,5 +1,5 @@
-import anyTest, {TestFn} from 'ava';
-import {NearAccount, Worker, getNetworkFromEnv} from '../packages/js';
+import anyTest, {type TestFn} from 'ava';
+import {type NearAccount, Worker, getNetworkFromEnv} from '../packages/js';
 
 // The contract provided contains only one view call, returning the
 // block_timestamp and epoch_height of the current block as a tuple.

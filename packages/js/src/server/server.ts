@@ -1,4 +1,4 @@
-import {ChildProcess} from 'child_process';
+import {type ChildProcess} from 'child_process';
 import {Buffer} from 'buffer';
 import process from 'process';
 import {open} from 'fs/promises';
@@ -16,7 +16,7 @@ import {
   copyDir,
   ensureBinary,
 } from '../internal-utils';
-import {Config, ChildProcessPromise} from '../types';
+import {type Config, type ChildProcessPromise} from '../types';
 
 const pollData = JSON.stringify({
   jsonrpc: '2.0',

@@ -1,6 +1,6 @@
 import path from 'path';
-import anyTest, {TestFn} from 'ava';
-import {getNetworkFromEnv, NearAccount, Worker} from '..';
+import anyTest, {type TestFn} from 'ava';
+import {getNetworkFromEnv, type NearAccount, Worker} from '..';
 
 const test = anyTest as TestFn<{
   worker: Worker;

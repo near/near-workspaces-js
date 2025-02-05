@@ -1,30 +1,36 @@
-import {URL} from 'url';
+import {type URL} from 'url';
 import {Buffer} from 'buffer';
 import {env} from 'process';
-import BN from 'bn.js';
-import {NEAR} from 'near-units';
+import type BN from 'bn.js';
+import {type NEAR} from 'near-units';
 import * as borsh from 'borsh';
 import {
   DEFAULT_FUNCTION_CALL_GAS,
-  KeyPair,
-  PublicKey,
-  CodeResult,
-  AccountBalance,
-  Args,
-  AccountView,
-  Empty,
-  StateItem,
-  AccessKeyView,
-  AccessKeyList,
+  type KeyPair,
+  type PublicKey,
+  type CodeResult,
+  type AccountBalance,
+  type Args,
+  type AccountView,
+  type Empty,
+  type StateItem,
+  type AccessKeyView,
+  type AccessKeyList,
 } from '../types';
-import {Transaction} from '../transaction';
+import {type Transaction} from '../transaction';
 import {ContractState} from '../contract-state';
 import {JsonRpcProvider} from '../jsonrpc';
 import {EMPTY_CONTRACT_HASH, NO_DEPOSIT, randomAccountId} from '../utils';
-import {TransactionResult, TransactionError} from '../transaction-result';
-import {AccessKeyData, AccountBuilder, AccountData, RecordBuilder, Records} from '../record';
-import {NearAccount} from './near-account';
-import {NearAccountManager} from './near-account-manager';
+import {type TransactionResult, TransactionError} from '../transaction-result';
+import {
+  type AccessKeyData,
+  type AccountBuilder,
+  type AccountData,
+  RecordBuilder,
+  type Records,
+} from '../record';
+import {type NearAccount} from './near-account';
+import {type NearAccountManager} from './near-account-manager';
 
 export class Account implements NearAccount {
   constructor(

@@ -1,11 +1,11 @@
 import * as nearAPI from 'near-api-js';
 import { NEAR } from 'near-units';
-import { Config, KeyPair, BN, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView } from '../types';
+import { type Config, type KeyPair, BN, type KeyStore, type AccountBalance, type NamedAccount, type PublicKey, type AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JsonRpcProvider } from '../jsonrpc';
 import { TransactionResult } from '../transaction-result';
-import { NearAccount } from './near-account';
-import { NearAccountManager } from './near-account-manager';
+import { type NearAccount } from './near-account';
+import { type NearAccountManager } from './near-account-manager';
 export declare abstract class AccountManager implements NearAccountManager {
     protected config: Config;
     accountsCreated: Set<string>;

@@ -3,15 +3,26 @@ import * as process from 'process';
 import * as nearAPI from 'near-api-js';
 import {NEAR} from 'near-units';
 import {asId, isTopLevelAccount, randomAccountId} from '../utils';
-import {Config, KeyPair, BN, KeyPairEd25519, FinalExecutionOutcome, KeyStore, AccountBalance, NamedAccount, PublicKey, AccountView} from '../types';
+import {
+  type Config,
+  type KeyPair,
+  BN,
+  KeyPairEd25519,
+  type FinalExecutionOutcome,
+  type KeyStore,
+  type AccountBalance,
+  type NamedAccount,
+  type PublicKey,
+  type AccountView,
+} from '../types';
 import {debug, txDebug} from '../internal-utils';
 import {Transaction} from '../transaction';
 import {JsonRpcProvider} from '../jsonrpc';
 import {TransactionResult} from '../transaction-result';
 import {Account} from './account';
-import {NearAccount} from './near-account';
+import {type NearAccount} from './near-account';
 import {getKeyFromFile} from './utils';
-import {NearAccountManager} from './near-account-manager';
+import {type NearAccountManager} from './near-account-manager';
 
 export abstract class AccountManager implements NearAccountManager {
   accountsCreated: Set<string> = new Set();

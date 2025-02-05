@@ -2,7 +2,7 @@ import * as fs from 'fs/promises';
 import {Buffer} from 'buffer';
 import sha256 from 'js-sha256';
 import base64url from 'base64url';
-import {CallSite} from 'callsites';
+import {type CallSite} from 'callsites';
 import {KeyPair, KeyPairEd25519} from '../types';
 
 export function findCallerFile(): [string, number] {

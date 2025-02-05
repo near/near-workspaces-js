@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { Buffer } from 'buffer';
-import { KeyPair, NamedAccount, PublicKey } from '../types';
-import { AccessKeyData, Account, AccountData, StateRecord } from './types';
+import { type Buffer } from 'buffer';
+import { type KeyPair, type NamedAccount, PublicKey } from '../types';
+import { type AccessKeyData, type Account, type AccountData, type StateRecord } from './types';
 export declare class RecordBuilder {
     readonly records: StateRecord[];
     static fromAccount(accountId: string | Account | NamedAccount): AccountBuilder;

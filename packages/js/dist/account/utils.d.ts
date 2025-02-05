@@ -1,4 +1,4 @@
-import { CallSite } from 'callsites';
+import { type CallSite } from 'callsites';
 import { KeyPair } from '../types';
 export declare function findCallerFile(): [string, number];
 export declare function callsites(): CallSite[];

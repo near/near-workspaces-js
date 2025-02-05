@@ -1,7 +1,7 @@
 import path from 'path';
-import anyTest, {TestFn} from 'ava';
+import anyTest, {type TestFn} from 'ava';
 import {NEAR} from 'near-units';
-import {getNetworkFromEnv, NearAccount, Worker} from '..';
+import {getNetworkFromEnv, type NearAccount, Worker} from '..';
 import {RecordBuilder} from '../dist/record';
 
 const test = anyTest as TestFn<{

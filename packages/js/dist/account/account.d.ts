@@ -1,17 +1,16 @@
 /// <reference types="node" />
-/// <reference types="node" />
-import { URL } from 'url';
+import { type URL } from 'url';
 import { Buffer } from 'buffer';
-import BN from 'bn.js';
-import { NEAR } from 'near-units';
-import { KeyPair, PublicKey, CodeResult, AccountBalance, Args, AccountView, Empty, StateItem, AccessKeyView, AccessKeyList } from '../types';
-import { Transaction } from '../transaction';
+import type BN from 'bn.js';
+import { type NEAR } from 'near-units';
+import { type KeyPair, type PublicKey, type CodeResult, type AccountBalance, type Args, type AccountView, type Empty, type StateItem, type AccessKeyView, type AccessKeyList } from '../types';
+import { type Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
 import { JsonRpcProvider } from '../jsonrpc';
-import { TransactionResult } from '../transaction-result';
-import { AccessKeyData, AccountData, Records } from '../record';
-import { NearAccount } from './near-account';
-import { NearAccountManager } from './near-account-manager';
+import { type TransactionResult } from '../transaction-result';
+import { type AccessKeyData, type AccountData, type Records } from '../record';
+import { type NearAccount } from './near-account';
+import { type NearAccountManager } from './near-account-manager';
 export declare class Account implements NearAccount {
     private readonly _accountId;
     private readonly manager;

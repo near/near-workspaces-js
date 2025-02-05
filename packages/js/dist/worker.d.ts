@@ -1,5 +1,5 @@
-import { Config } from './types';
-import { NearAccount, NearAccountManager } from './account';
+import { type Config } from './types';
+import { type NearAccount, type NearAccountManager } from './account';
 import { JsonRpcProvider } from './jsonrpc';
 /**
  * The main interface to near-workspaces. Create a new worker instance with {@link Worker.init}, then run code on it.

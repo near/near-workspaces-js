@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
-import { Records } from './record';
-import { JSONRpc, AccountView, NearProtocolConfig, AccountBalance, CodeResult, BlockId, Finality, StateItem, Empty, PublicKey, Network, AccessKeyView, AccessKeyList } from './types';
+import { type Records } from './record';
+import { JSONRpc, type AccountView, type NearProtocolConfig, type AccountBalance, type CodeResult, type BlockId, type Finality, type StateItem, type Empty, type PublicKey, type Network, type AccessKeyView, type AccessKeyList } from './types';
 /**
  * Extends the main provider class in near-api-js, adding more methods for
  * interacting with an endpoint.

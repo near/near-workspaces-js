@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import { PathLike } from 'fs';
+import { type PathLike } from 'fs';
 import { spawn as _spawn } from 'child_process';
 import { URL } from 'url';
-import { Binary } from 'near-sandbox';
-import { ChildProcessPromise } from './types';
+import { type Binary } from 'near-sandbox';
+import { type ChildProcessPromise } from './types';
 export declare const rm: (arg1: string) => Promise<void>;
 export declare const sandboxBinary: () => Promise<Binary>;
 export declare function exists(d: PathLike): Promise<boolean>;

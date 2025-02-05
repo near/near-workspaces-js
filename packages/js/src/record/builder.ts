@@ -1,7 +1,12 @@
-import {Buffer} from 'buffer';
-import {KeyPair, NamedAccount, PublicKey} from '../types';
+import {type Buffer} from 'buffer';
+import {type KeyPair, type NamedAccount, PublicKey} from '../types';
 import {hashContract} from '../utils';
-import {AccessKeyData, Account, AccountData, StateRecord} from './types';
+import {
+  type AccessKeyData,
+  type Account,
+  type AccountData,
+  type StateRecord,
+} from './types';
 
 export class RecordBuilder {
   readonly records: StateRecord[] = [];

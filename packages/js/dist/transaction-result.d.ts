@@ -1,5 +1,5 @@
 import { Gas } from 'near-units';
-import { Action, ClientConfig, ExecutionError, ExecutionOutcome, ExecutionOutcomeWithId, ExecutionStatus, ExecutionStatusBasic, FinalExecutionOutcome, FinalExecutionStatus, FinalExecutionStatusBasic, PublicKey } from './types';
+import { type Action, type ClientConfig, type ExecutionError, type ExecutionOutcome, type ExecutionOutcomeWithId, type ExecutionStatus, type ExecutionStatusBasic, type FinalExecutionOutcome, type FinalExecutionStatus, type FinalExecutionStatusBasic, type PublicKey } from './types';
 export declare class ReceiptOutcome {
     outcome: ExecutionOutcome;
     constructor(outcome: ExecutionOutcome);

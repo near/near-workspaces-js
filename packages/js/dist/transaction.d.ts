@@ -1,10 +1,9 @@
 /// <reference types="node" />
-/// <reference types="node" />
-import { Buffer } from 'buffer';
-import { URL } from 'url';
+import { type Buffer } from 'buffer';
+import { type URL } from 'url';
 import { NEAR } from 'near-units';
-import { TransactionResult } from './transaction-result';
-import { Action, PublicKey, AccessKey, BN, KeyPair, NamedAccount } from './types';
+import { type TransactionResult } from './transaction-result';
+import { type Action, PublicKey, type AccessKey, BN, type KeyPair, type NamedAccount } from './types';
 export declare abstract class Transaction {
     readonly receiverId: string;
     readonly senderId: string;

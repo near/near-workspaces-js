@@ -3,8 +3,26 @@ import {Buffer} from 'buffer';
 import process from 'process';
 import {NEAR} from 'near-units';
 import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
-import {Records} from './record';
-import {JSONRpc, ContractCodeView, AccountView, NearProtocolConfig, AccountBalance, CodeResult, ViewStateResult, BlockId, Finality, StateItem, TESTNET_RPC_ADDR, Empty, MAINNET_RPC_ADDR, PublicKey, Network, AccessKeyView, AccessKeyList} from './types';
+import {type Records} from './record';
+import {
+  JSONRpc,
+  type ContractCodeView,
+  type AccountView,
+  type NearProtocolConfig,
+  type AccountBalance,
+  type CodeResult,
+  type ViewStateResult,
+  type BlockId,
+  type Finality,
+  type StateItem,
+  TESTNET_RPC_ADDR,
+  type Empty,
+  MAINNET_RPC_ADDR,
+  type PublicKey,
+  type Network,
+  type AccessKeyView,
+  type AccessKeyList,
+} from './types';
 
 const OPTIMISTIC: {finality: 'optimistic'} = {finality: 'optimistic'};
 /**

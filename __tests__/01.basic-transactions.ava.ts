@@ -7,8 +7,8 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import anyTest, {TestFn} from 'ava';
-import {Worker, NEAR, NearAccount} from '../packages/js';
+import anyTest, {type TestFn} from 'ava';
+import {Worker, NEAR, type NearAccount} from '../packages/js';
 
 const test = anyTest as TestFn<{
   worker: Worker;

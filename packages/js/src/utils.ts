@@ -6,7 +6,13 @@ import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
 import bs58 from 'bs58';
 import {Gas, NEAR} from 'near-units';
-import {NamedAccount, KeyPair, ClientConfig, KeyStore, BN} from './types';
+import {
+  type NamedAccount,
+  type KeyPair,
+  type ClientConfig,
+  type KeyStore,
+  type BN,
+} from './types';
 
 export const ONE_NEAR = NEAR.parse('1N');
 

@@ -68,7 +68,7 @@ class CustomnetWorker extends Worker {
             port: 3030,
             rm: false,
             refDir: null,
-            ...(0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: config.rpcAddr }),
+            ...(0, utils_1.urlConfigFromNetwork)({ network: 'custom', rpcAddr: config.rpcAddr }), // Copied over, can't access member clientConfig here
             ...config,
         };
         const worker = new CustomnetWorker(fullConfig);
@@ -195,7 +195,7 @@ class SandboxWorker extends Worker {
         return {
             network: 'sandbox',
             rootAccountId: 'test.near',
-            rpcAddr: '',
+            rpcAddr: '', // Will be over written
             initialBalance: near_units_1.NEAR.parse('100 N').toJSON(),
         };
     }

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
 import { Gas, NEAR } from 'near-units';
-import { NamedAccount, KeyPair, ClientConfig, KeyStore, BN } from './types';
+import { type NamedAccount, type KeyPair, type ClientConfig, type KeyStore, type BN } from './types';
 export declare const ONE_NEAR: NEAR;
 export declare function toYocto(amount: string): string;
 export declare function createKeyPair(): KeyPair;
