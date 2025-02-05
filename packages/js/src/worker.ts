@@ -31,17 +31,24 @@ export abstract class Worker {
   static async init(config: Partial<Config> = {}): Promise<Worker> {
     debug('Lifecycle.Worker.init()', 'config:', config);
     switch (config.network ?? getNetworkFromEnv()) {
-      case 'testnet':
+      case 'testnet': {
         return TestnetWorker.init(config);
-      case 'sandbox':
+      }
+
+      case 'sandbox': {
         return SandboxWorker.init(config);
-      case 'custom':
+      }
+
+      case 'custom': {
         return CustomnetWorker.init(config);
-      default:
+      }
+      
+      default: {
         throw new Error(
           `config.network = '${config.network}' invalid; `
             + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'',
         );
+      }
     }
   }
 

@@ -41,13 +41,18 @@ class AccountManager {
     static create(config) {
         const { network } = config;
         switch (network) {
-            case 'sandbox':
+            case 'sandbox': {
                 return new SandboxManager(config);
-            case 'testnet':
+            }
+            case 'testnet': {
                 return new TestnetManager(config);
-            case 'custom':
+            }
+            case 'custom': {
                 return new CustomnetManager(config);
-            default: throw new Error(`Bad network id: "${network}"; expected "testnet", "custom" or "sandbox"`);
+            }
+            default: {
+                throw new Error(`Bad network id: "${network}"; expected "testnet", "custom" or "sandbox"`);
+            }
         }
     }
     accountsCreated = new Set();

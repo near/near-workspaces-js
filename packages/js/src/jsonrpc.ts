@@ -46,9 +46,21 @@ export class JsonRpcProvider extends JSONRpc {
 
   static fromNetwork(network: Network): JsonRpcProvider {
     switch (network) {
-      case 'mainnet': return process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL ? JsonRpcProvider.from(process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL) : MainnetRpc;
-      case 'testnet': return process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL ? JsonRpcProvider.from(process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL) : TestnetRpc;
-      default: throw new TypeError('Invalid network only mainnet or testnet');
+      case 'mainnet': {
+        return process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL
+          ? JsonRpcProvider.from(process.env.NEAR_CLI_MAINNET_RPC_SERVER_URL)
+          : MainnetRpc;
+      }
+
+      case 'testnet': {
+        return process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL
+          ? JsonRpcProvider.from(process.env.NEAR_CLI_TESTNET_RPC_SERVER_URL)
+          : TestnetRpc;
+      }
+
+      default: {
+        throw new TypeError('Invalid network only mainnet or testnet');
+      }
     }
   }
 
@@ -219,7 +231,7 @@ export class JsonRpcProvider extends JSONRpc {
     return this.sendJsonRpc('sandbox_fast_forward', {delta_height: deltaHeight});
   }
 }
-//eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestnetRpc = JsonRpcProvider.from(TESTNET_RPC_ADDR);
-//eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const MainnetRpc = JsonRpcProvider.from(MAINNET_RPC_ADDR);

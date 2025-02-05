@@ -34,15 +34,19 @@ class Worker {
     static async init(config = {}) {
         (0, internal_utils_1.debug)('Lifecycle.Worker.init()', 'config:', config);
         switch (config.network ?? (0, utils_1.getNetworkFromEnv)()) {
-            case 'testnet':
+            case 'testnet': {
                 return TestnetWorker.init(config);
-            case 'sandbox':
+            }
+            case 'sandbox': {
                 return SandboxWorker.init(config);
-            case 'custom':
+            }
+            case 'custom': {
                 return CustomnetWorker.init(config);
-            default:
+            }
+            default: {
                 throw new Error(`config.network = '${config.network}' invalid; `
                     + 'must be \'testnet\', \'sandbox\' or \'custom\' (the default). Soon \'mainnet\'');
+            }
         }
     }
     config;

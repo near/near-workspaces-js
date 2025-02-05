@@ -30,13 +30,21 @@ export abstract class AccountManager implements NearAccountManager {
   ): AccountManager {
     const {network} = config;
     switch (network) {
-      case 'sandbox':
+      case 'sandbox': {
         return new SandboxManager(config);
-      case 'testnet':
+      }
+
+      case 'testnet': {
         return new TestnetManager(config);
-      case 'custom':
+      }
+
+      case 'custom': {
         return new CustomnetManager(config);
-      default: throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
+      }
+
+      default: {
+      throw new Error(`Bad network id: "${network as string}"; expected "testnet", "custom" or "sandbox"`);
+      }
     }
   }
 
