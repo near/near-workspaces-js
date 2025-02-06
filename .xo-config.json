@@ -32,6 +32,15 @@
         "leadingUnderscore": "allow",
         "trailingUnderscore": "allow"
       }
+    ],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          "null": false,
+          "Buffer": false
+        }
+      }
     ]
   },
   "ignores": ["examples/**/*.js", "*.cjs"],
