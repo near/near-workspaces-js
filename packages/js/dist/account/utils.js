@@ -53,7 +53,7 @@ async function getKeyFromFile(filePath, create = true) {
         const keyFile = require(filePath); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
         return types_1.KeyPair.fromString(
         // @ts-expect-error `x` does not exist on KeyFile
-        keyFile.secret_key ?? keyFile.private_key);
+        String(keyFile.secret_key ?? keyFile.private_key));
     }
     catch (error) {
         if (!create) {

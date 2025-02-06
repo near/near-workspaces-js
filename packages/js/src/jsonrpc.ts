@@ -64,7 +64,7 @@ export class JsonRpcProvider extends JSONRpc {
     }
   }
 
-  private static readonly providers: Map<string, JsonRpcProvider> = new Map();
+  private static readonly providers: Map<string, JsonRpcProvider> = new Map<string, JsonRpcProvider>();
 
   /**
    * Download the binary of a given contract.

@@ -4,7 +4,6 @@ import {constants, type PathLike} from 'fs';
 import {access} from 'fs/promises';
 import * as fs from 'fs/promises';
 import {promisify} from 'util';
-import {spawn as _spawn} from 'child_process';
 import {URL} from 'url';
 import {spawn as _asyncSpawn} from 'promisify-child-process';
 import rimraf from 'rimraf';
@@ -34,9 +33,9 @@ export async function asyncSpawn(bin: string, ...args: string[]): ChildProcessPr
   return _asyncSpawn(bin, args, {encoding: 'utf8'});
 }
 
-export {_spawn as spawn};
+export {spawn} from 'child_process';
 
-export function debug(...args: any[]): void {
+export function debug(...args: unknown[]): void {
   if (process.env.NEAR_WORKSPACES_DEBUG) {
     console.error(...args);
   }

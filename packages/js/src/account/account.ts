@@ -360,6 +360,7 @@ export class Account implements NearAccount {
   }
 
   async patchState(key: string, value_: any, borshSchema?: any): Promise<Empty> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return this.updateData(Buffer.from(key), Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
   }
 

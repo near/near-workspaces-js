@@ -89,7 +89,6 @@ class CustomnetWorker extends Worker {
     }
     async tearDown() {
         // We are not stopping any server here because it is an external network.
-        return Promise.resolve();
     }
     get defaultConfig() {
         return {
@@ -120,7 +119,6 @@ class TestnetWorker extends Worker {
     }
     async tearDown() {
         // We are not stoping any server here because we are using Testnet
-        return Promise.resolve();
     }
     static get defaultConfig() {
         return {

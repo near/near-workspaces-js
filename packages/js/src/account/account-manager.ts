@@ -48,7 +48,7 @@ export abstract class AccountManager implements NearAccountManager {
     }
   }
 
-  accountsCreated: Set<string> = new Set();
+  accountsCreated: Set<string> = new Set<string>();
   private _root?: NearAccount;
   constructor(
     protected config: Config,
@@ -311,7 +311,7 @@ export class TestnetManager extends AccountManager {
 
   get urlAccountCreator(): nearAPI.accountCreator.UrlAccountCreator {
     return new nearAPI.accountCreator.UrlAccountCreator(
-      {} as any, // ignored
+      {} as nearAPI.Connection, // ignored
       this.config.helperUrl!,
     );
   }

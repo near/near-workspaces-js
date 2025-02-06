@@ -33,8 +33,6 @@ const fs_1 = require("fs");
 const promises_1 = require("fs/promises");
 const fs = __importStar(require("fs/promises"));
 const util_1 = require("util");
-const child_process_1 = require("child_process");
-Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
 const url_1 = require("url");
 const promisify_child_process_1 = require("promisify-child-process");
 const rimraf_1 = __importDefault(require("rimraf"));
@@ -62,6 +60,8 @@ async function asyncSpawn(bin, ...args) {
     return (0, promisify_child_process_1.spawn)(bin, args, { encoding: 'utf8' });
 }
 exports.asyncSpawn = asyncSpawn;
+var child_process_1 = require("child_process");
+Object.defineProperty(exports, "spawn", { enumerable: true, get: function () { return child_process_1.spawn; } });
 function debug(...args) {
     if (process_1.default.env.NEAR_WORKSPACES_DEBUG) {
         console.error(...args);

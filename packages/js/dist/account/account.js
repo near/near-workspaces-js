@@ -234,6 +234,7 @@ class Account {
         return this.provider.viewAccessKeys(accountId);
     }
     async patchState(key, value_, borshSchema) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return this.updateData(buffer_1.Buffer.from(key), buffer_1.Buffer.from(borshSchema ? borsh.serialize(borshSchema, value_) : value_));
     }
     async patchStateRecords(records) {

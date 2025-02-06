@@ -40,6 +40,7 @@ class ContractState {
     get(key, borshSchema) {
         const value = this.getRaw(key);
         if (borshSchema) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
         }
         return value.toJSON();
