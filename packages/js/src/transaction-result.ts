@@ -1,5 +1,4 @@
 import {Buffer} from 'buffer';
-import {Gas} from 'near-units';
 import {
   type Action,
   type ClientConfig,
@@ -98,8 +97,8 @@ export class ReceiptOutcome {
     return this.outcome.logs;
   }
 
-  get gas_burnt(): Gas {
-    return Gas.from(this.outcome.gas_burnt);
+  get gas_burnt(): string {
+    return this.outcome.gas_burnt.toString();
   }
 }
 
@@ -220,9 +219,9 @@ export class TransactionResult {
     return this.receiptFailures.map(failure => JSON.stringify(failure));
   }
 
-  get gas_burnt(): Gas {
+  get gas_burnt(): string {
     const receiptsGas = this.receipts_outcomes.reduce((accamulator, current) => accamulator + current.outcome.gas_burnt, 0);
-    return Gas.from(this.result.transaction_outcome.outcome.gas_burnt + receiptsGas);
+    return (this.result.transaction_outcome.outcome.gas_burnt + receiptsGas).toString();
   }
 
   receiptFailureMessagesContain(pattern: string | RegExp): boolean {
@@ -242,7 +241,7 @@ export class TransactionResult {
   }
 
   summary(): string {
-    return `(${this.durationMs} ms) burned ${this.gas_burnt.toHuman()} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
+    return `(${this.durationMs} ms) burned ${this.gas_burnt} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
   }
 }
 
@@ -262,7 +261,11 @@ function transactionReceiptToString(tx: TransactionReceipt, explorerUrl?: string
 
 export class TransactionError extends Error {
   constructor(result: TransactionResult) {
-    super(JSON.stringify(result));
+    super(JSON.stringify(result, (_key, value) =>
+      typeof value === 'bigint'
+        ? value.toString()
+        : value,
+    ));
   }
 
   parse(): ExecutionOutcome {

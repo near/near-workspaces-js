@@ -7,7 +7,6 @@ exports.MainnetRpc = exports.TestnetRpc = exports.JsonRpcProvider = void 0;
 // eslint-disable unicorn/no-object-as-default-parameter
 const buffer_1 = require("buffer");
 const process_1 = __importDefault(require("process"));
-const near_units_1 = require("near-units");
 const transaction_1 = require("near-api-js/lib/transaction");
 const types_1 = require("./types");
 const OPTIMISTIC = { finality: 'optimistic' };
@@ -105,17 +104,17 @@ class JsonRpcProvider extends types_1.JSONRpc {
     async accountBalance(accountId, blockQuery) {
         const config = await this.protocolConfig(blockQuery);
         const state = await this.viewAccount(accountId, blockQuery);
-        const cost = config.runtime_config.storage_amount_per_byte;
-        const costPerByte = near_units_1.NEAR.from(cost);
-        const stateStaked = near_units_1.NEAR.from(state.storage_usage).mul(costPerByte);
-        const staked = near_units_1.NEAR.from(state.locked);
-        const total = near_units_1.NEAR.from(state.amount).add(staked);
-        const available = total.sub(staked.max(stateStaked));
+        const costPerByte = BigInt(config.runtime_config.storage_amount_per_byte);
+        const stateStaked = BigInt(state.storage_usage) * costPerByte;
+        const staked = BigInt(state.locked);
+        const total = BigInt(state.amount) + staked;
+        // eslint-disable-next-line unicorn/prefer-math-min-max
+        const available = total - (staked > stateStaked ? staked : stateStaked);
         return {
-            total,
-            stateStaked,
-            staked,
-            available,
+            total: total.toString(),
+            stateStaked: stateStaked.toString(),
+            staked: staked.toString(),
+            available: available.toString(),
         };
     }
     async viewCall(accountId, methodName, args, blockQuery) {

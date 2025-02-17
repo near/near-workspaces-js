@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SandboxWorker = exports.TestnetWorker = exports.CustomnetWorker = exports.Worker = void 0;
 const fs_1 = __importDefault(require("fs"));
-const near_units_1 = require("near-units");
 const proper_lockfile_1 = require("proper-lockfile");
 const utils_1 = require("./utils");
 const account_1 = require("./account");
@@ -198,7 +197,7 @@ class SandboxWorker extends Worker {
             network: 'sandbox',
             rootAccountId: 'test.near',
             rpcAddr: '', // Will be over written
-            initialBalance: near_units_1.NEAR.parse('100 N').toJSON(),
+            initialBalance: BigInt((0, utils_1.parseNEAR)('100')),
         };
     }
     get rpcAddr() {

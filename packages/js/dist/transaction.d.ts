@@ -1,9 +1,9 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { type Buffer } from 'buffer';
 import { type URL } from 'url';
-import { NEAR } from 'near-units';
 import { type TransactionResult } from './transaction-result';
-import { type Action, PublicKey, type AccessKey, BN, type KeyPair, type NamedAccount } from './types';
+import { type Action, PublicKey, type AccessKey, type KeyPair, type NamedAccount } from './types';
 export declare abstract class Transaction {
     readonly receiverId: string;
     readonly senderId: string;
@@ -23,13 +23,13 @@ export declare abstract class Transaction {
     deployContractFile(code: string | URL | Uint8Array | Buffer): Promise<Transaction>;
     deployContract(code: Uint8Array | Buffer): this;
     functionCall(methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, }?: {
-        gas?: BN | string;
-        attachedDeposit?: BN | string;
+        gas?: bigint;
+        attachedDeposit?: bigint;
     }): this;
-    stake(amount: BN | string, publicKey: PublicKey | string): this;
-    transfer(amount: string | BN): this;
+    stake(amount: bigint, publicKey: PublicKey | string): this;
+    transfer(amount: bigint): this;
     get accountCreated(): boolean;
-    get transferAmount(): NEAR;
+    get transferAmount(): bigint;
     abstract transact(keyPair?: KeyPair): Promise<TransactionResult>;
 }
 //# sourceMappingURL=transaction.d.ts.map

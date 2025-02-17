@@ -1,6 +1,5 @@
 import * as nearAPI from 'near-api-js';
-import { NEAR } from 'near-units';
-import { type Config, type KeyPair, BN, type KeyStore, type AccountBalance, type NamedAccount, type PublicKey, type AccountView } from '../types';
+import { type Config, type KeyPair, type KeyStore, type AccountBalance, type NamedAccount, type PublicKey, type AccountView } from '../types';
 import { Transaction } from '../transaction';
 import { JsonRpcProvider } from '../jsonrpc';
 import { TransactionResult } from '../transaction-result';
@@ -18,8 +17,8 @@ export declare abstract class AccountManager implements NearAccountManager {
     deleteKey(accountId: string): Promise<void>;
     init(): Promise<AccountManager>;
     get root(): NearAccount;
-    get initialBalance(): string;
-    get doubleInitialBalance(): BN;
+    get initialBalance(): bigint;
+    get doubleInitialBalance(): bigint;
     get provider(): JsonRpcProvider;
     batch(sender: NearAccount | string, receiver: NearAccount | string): Transaction;
     getKey(accountId: string): Promise<KeyPair | null>;
@@ -30,15 +29,15 @@ export declare abstract class AccountManager implements NearAccountManager {
     deleteAccount(accountId: string, beneficiaryId: string, keyPair?: KeyPair): Promise<TransactionResult>;
     getRootKey(): Promise<KeyPair>;
     balance(account: string | NearAccount): Promise<AccountBalance>;
-    availableBalance(account: string | NearAccount): Promise<NEAR>;
+    availableBalance(account: string | NearAccount): Promise<bigint>;
     exists(accountId: string | NearAccount): Promise<boolean>;
-    canCoverBalance(account: string | NearAccount, amount: BN): Promise<boolean>;
+    canCoverBalance(account: string | NearAccount, amount: bigint): Promise<boolean>;
     executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult>;
     addAccountCreated(account: string, _sender: string): void;
     cleanup(): Promise<void>;
     get rootAccountId(): string;
     protected set rootAccountId(value: string);
-    abstract get DEFAULT_INITIAL_BALANCE(): string;
+    abstract get DEFAULT_INITIAL_BALANCE(): bigint;
     abstract createFrom(config: Config): Promise<NearAccountManager>;
     abstract get defaultKeyStore(): KeyStore;
     protected get keyStore(): KeyStore;
@@ -47,7 +46,7 @@ export declare abstract class AccountManager implements NearAccountManager {
     protected get connection(): nearAPI.Connection;
 }
 export declare class CustomnetManager extends AccountManager {
-    get DEFAULT_INITIAL_BALANCE(): string;
+    get DEFAULT_INITIAL_BALANCE(): bigint;
     get defaultKeyStore(): KeyStore;
     get connection(): nearAPI.Connection;
     get networkId(): string;
@@ -62,24 +61,24 @@ export declare class TestnetManager extends AccountManager {
     get masterAccountId(): string;
     get fullRootAccountId(): string;
     get root(): NearAccount;
-    get DEFAULT_INITIAL_BALANCE(): string;
+    get DEFAULT_INITIAL_BALANCE(): bigint;
     get defaultKeyStore(): KeyStore;
     get urlAccountCreator(): nearAPI.accountCreator.UrlAccountCreator;
     init(): Promise<AccountManager>;
     createTopLevelAccountWithHelper(accountId: string, keyPair: KeyPair): Promise<void>;
     createAccount(accountId: string, keyPair?: KeyPair): Promise<NearAccount>;
     addFundsFromNetwork(accountId?: string): Promise<void>;
-    addFunds(accountId: string, amount: BN): Promise<void>;
+    addFunds(accountId: string, amount: bigint): Promise<void>;
     deleteAccounts(accounts: string[], beneficiaryId: string): Promise<void[]>;
     createFrom(config: Config): Promise<AccountManager>;
     cleanup(): Promise<void>;
-    needsFunds(accountId: string, amount: BN): Promise<boolean>;
+    needsFunds(accountId: string, amount: bigint): Promise<boolean>;
     isRootOrTLAccount(accountId: string): boolean;
 }
 export declare class SandboxManager extends AccountManager {
     init(): Promise<AccountManager>;
     createFrom(config: Config): Promise<NearAccountManager>;
-    get DEFAULT_INITIAL_BALANCE(): string;
+    get DEFAULT_INITIAL_BALANCE(): bigint;
     get defaultKeyStore(): KeyStore;
     get keyFilePath(): string;
 }

@@ -8,7 +8,7 @@
  * package.json.
  */
 import anyTest, {type TestFn} from 'ava';
-import {Worker, NEAR, type NearAccount} from '../packages/js';
+import {Worker, type NearAccount, parseNEAR} from '../packages/js';
 
 const test = anyTest as TestFn<{
   worker: Worker;
@@ -23,9 +23,9 @@ test.beforeEach(async t => {
   const root = worker.rootAccount;
   const contract = await root.devDeploy(
     '__tests__/build/debug/status_message.wasm',
-    {initialBalance: NEAR.parse('3 N').toJSON()},
+    {initialBalance: BigInt(parseNEAR('3'))},
   );
-  const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('3 N').toJSON()});
+  const ali = await root.createSubAccount('ali', {initialBalance: BigInt(parseNEAR('3'))});
 
   // Save state for test runs, it is unique for each test
   t.context.worker = worker;

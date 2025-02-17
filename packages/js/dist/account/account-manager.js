@@ -27,7 +27,6 @@ exports.ManagedTransaction = exports.SandboxManager = exports.TestnetManager = e
 const path = __importStar(require("path"));
 const process = __importStar(require("process"));
 const nearAPI = __importStar(require("near-api-js"));
-const near_units_1 = require("near-units");
 const utils_1 = require("../utils");
 const types_1 = require("../types");
 const internal_utils_1 = require("../internal-utils");
@@ -93,7 +92,7 @@ class AccountManager {
         return this.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
     }
     get doubleInitialBalance() {
-        return new types_1.BN(this.initialBalance).mul(new types_1.BN('2'));
+        return this.initialBalance * 2n;
     }
     get provider() {
         return jsonrpc_1.JsonRpcProvider.from(this.config);
@@ -142,13 +141,13 @@ class AccountManager {
     }
     async availableBalance(account) {
         const balance = await this.balance(account);
-        return balance.available;
+        return BigInt(balance.available);
     }
     async exists(accountId) {
         return this.provider.accountExists((0, utils_1.asId)(accountId));
     }
     async canCoverBalance(account, amount) {
-        return amount.lt(await this.availableBalance(account));
+        return amount < await this.availableBalance(account);
     }
     async executeTransaction(tx, keyPair) {
         const account = new nearAPI.Account(this.connection, tx.senderId);
@@ -179,7 +178,9 @@ class AccountManager {
             }
             if (error instanceof Error) {
                 const key = await this.getPublicKey(tx.receiverId);
-                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
+                (0, internal_utils_1.debug)(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions, (_key, value) => typeof value === 'bigint'
+                    ? value.toString()
+                    : value).slice(0, 1000)}`);
                 (0, internal_utils_1.debug)(error);
             }
             throw error;
@@ -211,7 +212,7 @@ class AccountManager {
 exports.AccountManager = AccountManager;
 class CustomnetManager extends AccountManager {
     get DEFAULT_INITIAL_BALANCE() {
-        return near_units_1.NEAR.parse('10 N').toJSON();
+        return BigInt((0, utils_1.parseNEAR)('10'));
     }
     get defaultKeyStore() {
         return new nearAPI.keyStores.InMemoryKeyStore();
@@ -253,7 +254,7 @@ class TestnetManager extends AccountManager {
         return this._testnetRoot;
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return near_units_1.NEAR.parse('10 N').toJSON();
+        return BigInt((0, utils_1.parseNEAR)('10'));
     }
     get defaultKeyStore() {
         return TestnetManager.defaultKeyStore;
@@ -325,7 +326,7 @@ class TestnetManager extends AccountManager {
         return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId);
     }
     async needsFunds(accountId, amount) {
-        return !amount.isZero() && this.isRootOrTLAccount(accountId)
+        return amount !== 0n && this.isRootOrTLAccount(accountId)
             && (!await this.canCoverBalance(accountId, amount));
     }
     isRootOrTLAccount(accountId) {
@@ -344,7 +345,7 @@ class SandboxManager extends AccountManager {
         return new SandboxManager(config);
     }
     get DEFAULT_INITIAL_BALANCE() {
-        return near_units_1.NEAR.parse('200 N').toJSON();
+        return BigInt((0, utils_1.parseNEAR)('200'));
     }
     get defaultKeyStore() {
         const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(this.config.homeDir);

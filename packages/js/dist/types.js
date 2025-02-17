@@ -13,12 +13,8 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MAINNET_RPC_ADDR = exports.TESTNET_RPC_ADDR = exports.BN = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JSONRpc = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = exports.ServerError = void 0;
-const bn_js_1 = __importDefault(require("bn.js"));
+exports.MAINNET_RPC_ADDR = exports.TESTNET_RPC_ADDR = exports.DEFAULT_FUNCTION_CALL_GAS = exports.KeyStore = exports.JSONRpc = exports.AccessKey = exports.fullAccessKey = exports.deleteAccount = exports.deleteKey = exports.addKey = exports.stake = exports.transfer = exports.functionCall = exports.deployContract = exports.createAccount = exports.Action = exports.KeyPairEd25519 = exports.PublicKey = exports.Connection = exports.KeyPair = exports.ServerError = void 0;
 var rpc_errors_1 = require("near-api-js/lib/utils/rpc_errors");
 Object.defineProperty(exports, "ServerError", { enumerable: true, get: function () { return rpc_errors_1.ServerError; } });
 var near_api_js_1 = require("near-api-js");
@@ -46,12 +42,6 @@ Object.defineProperty(exports, "KeyStore", { enumerable: true, get: function () 
 __exportStar(require("near-api-js/lib/providers/provider"), exports);
 var constants_1 = require("near-api-js/lib/constants");
 Object.defineProperty(exports, "DEFAULT_FUNCTION_CALL_GAS", { enumerable: true, get: function () { return constants_1.DEFAULT_FUNCTION_CALL_GAS; } });
-class BN extends bn_js_1.default {
-    toJSON() {
-        return this.toString(10);
-    }
-}
-exports.BN = BN;
 exports.TESTNET_RPC_ADDR = 'https://archival-rpc.testnet.near.org';
 exports.MAINNET_RPC_ADDR = 'https://archival-rpc.mainnet.near.org';
 //# sourceMappingURL=types.js.map

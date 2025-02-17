@@ -1,8 +1,7 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { type URL } from 'url';
 import { Buffer } from 'buffer';
-import type BN from 'bn.js';
-import { type NEAR } from 'near-units';
 import { type KeyPair, type PublicKey, type CodeResult, type AccountBalance, type Args, type AccountView, type Empty, type StateItem, type AccessKeyView, type AccessKeyList } from '../types';
 import { type Transaction } from '../transaction';
 import { ContractState } from '../contract-state';
@@ -19,19 +18,19 @@ export declare class Account implements NearAccount {
     exists(): Promise<boolean>;
     protected get provider(): JsonRpcProvider;
     get accountId(): string;
-    availableBalance(): Promise<NEAR>;
+    availableBalance(): Promise<bigint>;
     balance(): Promise<AccountBalance>;
     batch(receiver: NearAccount | string): Transaction;
     getKey(): Promise<KeyPair | null>;
     setKey(keyPair?: KeyPair): Promise<PublicKey>;
     createAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
-        initialBalance?: string;
+        initialBalance?: bigint;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     createSubAccount(accountId: string, { keyPair, initialBalance, }?: {
         keyPair?: KeyPair;
-        initialBalance?: string;
+        initialBalance?: bigint;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     importContract({ testnetContract, mainnetContract, withData, blockId, keyPair, initialBalance, }: {
@@ -39,33 +38,33 @@ export declare class Account implements NearAccount {
         mainnetContract?: string;
         withData?: boolean;
         keyPair?: KeyPair;
-        initialBalance?: string;
+        initialBalance?: bigint;
         blockId?: number | string;
     }): Promise<NearAccount>;
     getSubAccount(accountId: string): NearAccount;
     getAccount(accountId: string): NearAccount;
     deploy(code: string | URL | Uint8Array | Buffer): Promise<TransactionResult>;
     devCreateAccount({ initialBalance, keyPair, }?: {
-        initialBalance?: BN | string;
+        initialBalance?: bigint;
         keyPair?: KeyPair;
     }): Promise<NearAccount>;
     devDeploy(wasm: string | URL | Uint8Array | Buffer, { attachedDeposit, args, gas, initialBalance, keyPair, method, isSubAccount, }?: {
         args?: Record<string, unknown> | Uint8Array;
-        attachedDeposit?: string | BN;
-        gas?: string | BN;
-        initialBalance?: BN | string;
+        attachedDeposit?: bigint;
+        gas?: bigint;
+        initialBalance?: bigint;
         keyPair?: KeyPair;
         method?: string;
         isSubAccount?: boolean;
     }): Promise<NearAccount>;
     callRaw(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
-        gas?: string | BN;
-        attachedDeposit?: string | BN;
+        gas?: bigint;
+        attachedDeposit?: bigint;
         signWithKey?: KeyPair;
     }): Promise<TransactionResult>;
     call<T>(contractId: NearAccount | string, methodName: string, args: Record<string, unknown> | Uint8Array, { gas, attachedDeposit, signWithKey, }?: {
-        gas?: string | BN;
-        attachedDeposit?: string | BN;
+        gas?: bigint;
+        attachedDeposit?: bigint;
         signWithKey?: KeyPair;
     }): Promise<T>;
     viewRaw(method: string, args?: Args): Promise<CodeResult>;
@@ -86,10 +85,10 @@ export declare class Account implements NearAccount {
     updateAccessKey(key: string | PublicKey | KeyPair, access_key_data?: AccessKeyData): Promise<Empty>;
     updateContract(binary: Buffer | string): Promise<Empty>;
     updateData(key: string | Buffer, value: string | Buffer): Promise<Empty>;
-    transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
+    transfer(accountId: string | NearAccount, amount: bigint): Promise<TransactionResult>;
     protected internalCreateAccount(accountId: string, { keyPair, initialBalance, isSubAccount, }?: {
         keyPair?: KeyPair;
-        initialBalance?: string | BN;
+        initialBalance?: bigint;
         isSubAccount?: boolean;
     }): Promise<Transaction>;
     private getOrCreateKey;

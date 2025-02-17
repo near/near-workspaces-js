@@ -24,7 +24,7 @@ if (getNetworkFromEnv() === 'testnet') {
     const balance = await root.availableBalance();
     await accountManager.addFundsFromNetwork();
     const newBalance = await root.availableBalance();
-    t.true(balance.lt(newBalance));
+    t.true(BigInt(balance) < BigInt(newBalance));
   });
 } else {
   test('skipping on ' + getNetworkFromEnv(), t => {

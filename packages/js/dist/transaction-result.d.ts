@@ -1,4 +1,3 @@
-import { Gas } from 'near-units';
 import { type Action, type ClientConfig, type ExecutionError, type ExecutionOutcome, type ExecutionOutcomeWithId, type ExecutionStatus, type ExecutionStatusBasic, type FinalExecutionOutcome, type FinalExecutionStatus, type FinalExecutionStatusBasic, type PublicKey } from './types';
 export declare class ReceiptOutcome {
     outcome: ExecutionOutcome;
@@ -14,7 +13,7 @@ export declare class ReceiptOutcome {
     get failureMessage(): string | undefined;
     get failureType(): string | undefined;
     get logs(): string[];
-    get gas_burnt(): Gas;
+    get gas_burnt(): string;
 }
 export declare class TransactionResult {
     readonly result: FinalExecutionOutcome;
@@ -43,7 +42,7 @@ export declare class TransactionResult {
     get receiptFailures(): ExecutionError[];
     get receiptSuccessValues(): string[];
     get receiptFailureMessages(): string[];
-    get gas_burnt(): Gas;
+    get gas_burnt(): string;
     receiptFailureMessagesContain(pattern: string | RegExp): boolean;
     parseResult<T>(): T;
     parsedReceiptResults(): any[];

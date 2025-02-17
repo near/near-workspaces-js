@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transaction = void 0;
 const fs = __importStar(require("fs/promises"));
-const near_units_1 = require("near-units");
 const types_1 = require("./types");
 const internal_utils_1 = require("./internal-utils");
 const utils_1 = require("./utils");
@@ -67,21 +66,19 @@ class Transaction {
             : code);
     }
     deployContract(code) {
-        this.actions.push((0, types_1.deployContract)(code));
+        this.actions.push((0, types_1.deployContract)(new Uint8Array(code)));
         return this;
     }
-    functionCall(methodName, args, { 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
-        this.actions.push((0, types_1.functionCall)(methodName, args, (0, utils_1.parseGas)(gas), (0, utils_1.parseNEAR)(attachedDeposit)));
+    functionCall(methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, } = {}) {
+        this.actions.push((0, types_1.functionCall)(methodName, args, gas, attachedDeposit));
         return this;
     }
     stake(amount, publicKey) {
-        this.actions.push((0, types_1.stake)(new types_1.BN(amount), types_1.PublicKey.from(publicKey)));
+        this.actions.push((0, types_1.stake)(amount, types_1.PublicKey.from(publicKey)));
         return this;
     }
     transfer(amount) {
-        this._transferAmount = (0, utils_1.parseNEAR)(amount);
+        this._transferAmount = amount;
         this.actions.push((0, types_1.transfer)(this._transferAmount));
         return this;
     }
@@ -89,7 +86,7 @@ class Transaction {
         return this.accountToBeCreated;
     }
     get transferAmount() {
-        return this._transferAmount ?? near_units_1.NEAR.from('0');
+        return this._transferAmount ?? BigInt('0');
     }
 }
 exports.Transaction = Transaction;

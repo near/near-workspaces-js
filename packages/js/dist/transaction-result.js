@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransactionError = exports.TransactionResult = exports.ReceiptOutcome = void 0;
 const buffer_1 = require("buffer");
-const near_units_1 = require("near-units");
 function includes(pattern) {
     if (typeof pattern === 'string') {
         return s => s.includes(pattern);
@@ -72,7 +71,7 @@ class ReceiptOutcome {
         return this.outcome.logs;
     }
     get gas_burnt() {
-        return near_units_1.Gas.from(this.outcome.gas_burnt);
+        return this.outcome.gas_burnt.toString();
     }
 }
 exports.ReceiptOutcome = ReceiptOutcome;
@@ -169,7 +168,7 @@ class TransactionResult {
     }
     get gas_burnt() {
         const receiptsGas = this.receipts_outcomes.reduce((accamulator, current) => accamulator + current.outcome.gas_burnt, 0);
-        return near_units_1.Gas.from(this.result.transaction_outcome.outcome.gas_burnt + receiptsGas);
+        return (this.result.transaction_outcome.outcome.gas_burnt + receiptsGas).toString();
     }
     receiptFailureMessagesContain(pattern) {
         return this.receiptFailureMessages.some(includes(pattern));
@@ -184,7 +183,7 @@ class TransactionResult {
         return this.receiptSuccessValues.map(parseValue);
     }
     summary() {
-        return `(${this.durationMs} ms) burned ${this.gas_burnt.toHuman()} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
+        return `(${this.durationMs} ms) burned ${this.gas_burnt} ${transactionReceiptToString(this.transactionReceipt, this.config.explorerUrl)}`;
     }
 }
 exports.TransactionResult = TransactionResult;
@@ -193,7 +192,9 @@ function transactionReceiptToString(tx, explorerUrl) {
 }
 class TransactionError extends Error {
     constructor(result) {
-        super(JSON.stringify(result));
+        super(JSON.stringify(result, (_key, value) => typeof value === 'bigint'
+            ? value.toString()
+            : value));
     }
     parse() {
         return JSON.parse(this.message);

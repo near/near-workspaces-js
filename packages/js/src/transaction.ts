@@ -1,7 +1,6 @@
 import {type Buffer} from 'buffer';
 import * as fs from 'fs/promises';
 import {type URL} from 'url';
-import {NEAR} from 'near-units';
 import {type TransactionResult} from './transaction-result';
 import {
   type Action,
@@ -16,20 +15,19 @@ import {
   functionCall,
   stake,
   transfer,
-  BN,
   DEFAULT_FUNCTION_CALL_GAS,
   type KeyPair,
   type NamedAccount,
 } from './types';
 import {findFile, isPathLike} from './internal-utils';
-import {NO_DEPOSIT, parseGas, parseNEAR} from './utils';
+import {NO_DEPOSIT} from './utils';
 
 export abstract class Transaction {
   readonly receiverId: string;
   readonly senderId: string;
   readonly actions: Action[] = [];
   private accountToBeCreated = false;
-  private _transferAmount?: NEAR;
+  private _transferAmount?: bigint;
 
   constructor(sender: NamedAccount | string, receiver: NamedAccount | string) {
     this.senderId = typeof sender === 'string' ? sender : sender.accountId;
@@ -72,7 +70,7 @@ export abstract class Transaction {
   }
 
   deployContract(code: Uint8Array | Buffer): this {
-    this.actions.push(deployContract(code));
+    this.actions.push(deployContract(new Uint8Array(code)));
     return this;
   }
 
@@ -80,24 +78,23 @@ export abstract class Transaction {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
-    }: {gas?: BN | string; attachedDeposit?: BN | string} = {},
+    }: {gas?: bigint; attachedDeposit?: bigint} = {},
   ): this {
     this.actions.push(
-      functionCall(methodName, args, parseGas(gas), parseNEAR(attachedDeposit)),
+      functionCall(methodName, args, gas, attachedDeposit),
     );
     return this;
   }
 
-  stake(amount: BN | string, publicKey: PublicKey | string): this {
-    this.actions.push(stake(new BN(amount), PublicKey.from(publicKey)));
+  stake(amount: bigint, publicKey: PublicKey | string): this {
+    this.actions.push(stake(amount, PublicKey.from(publicKey)));
     return this;
   }
 
-  transfer(amount: string | BN): this {
-    this._transferAmount = parseNEAR(amount);
+  transfer(amount: bigint): this {
+    this._transferAmount = amount;
     this.actions.push(transfer(this._transferAmount));
     return this;
   }
@@ -106,8 +103,8 @@ export abstract class Transaction {
     return this.accountToBeCreated;
   }
 
-  get transferAmount(): NEAR {
-    return this._transferAmount ?? NEAR.from('0');
+  get transferAmount(): bigint {
+    return this._transferAmount ?? BigInt('0');
   }
 
   abstract transact(keyPair?: KeyPair): Promise<TransactionResult>;

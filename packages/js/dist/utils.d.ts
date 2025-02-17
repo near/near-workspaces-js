@@ -1,14 +1,11 @@
 /// <reference types="node" />
 import { Buffer } from 'buffer';
-import { Gas, NEAR } from 'near-units';
-import { type NamedAccount, type KeyPair, type ClientConfig, type KeyStore, type BN } from './types';
-export declare const ONE_NEAR: NEAR;
-export declare function toYocto(amount: string): string;
+import { type NamedAccount, type KeyPair, type ClientConfig, type KeyStore } from './types';
+export declare const ONE_NEAR: bigint;
 export declare function createKeyPair(): KeyPair;
-export declare function tGas(x: string | number): string;
 export declare function randomAccountId(prefix?: string, dateLength?: number, suffixLength?: number): string;
 export declare function asId(id: string | NamedAccount): string;
-export declare const NO_DEPOSIT: NEAR;
+export declare const NO_DEPOSIT = 0n;
 export declare function captureError(function_: () => Promise<any>): Promise<string>;
 export declare function isTopLevelAccount(accountId: string): boolean;
 export declare function urlConfigFromNetwork(network: string | {
@@ -29,6 +26,5 @@ export declare const EMPTY_CONTRACT_HASH = "11111111111111111111111111111111";
 export declare function getNetworkFromEnv(): 'sandbox' | 'testnet' | 'custom';
 export declare function homeKeyStore(): KeyStore;
 export declare function timeSuffix(prefix: string, length?: number): string;
-export declare function parseGas(s: string | BN): Gas;
-export declare function parseNEAR(s: string | BN): NEAR;
+export declare function parseNEAR(s: string): string;
 //# sourceMappingURL=utils.d.ts.map

@@ -1,7 +1,8 @@
 import path from 'path';
 import anyTest, {type TestFn} from 'ava';
-import {NEAR} from 'near-units';
-import {getNetworkFromEnv, type NearAccount, Worker} from '..';
+import {
+  getNetworkFromEnv, type NearAccount, parseNEAR, Worker,
+} from '..';
 import {RecordBuilder} from '../dist/record';
 
 const test = anyTest as TestFn<{
@@ -34,10 +35,10 @@ if (getNetworkFromEnv() === 'sandbox') {
     const bob = root.getAccount('bob');
     const public_key = await bob.setKey();
     const {code_hash} = await contract.accountView();
-    const BOB_BALANCE = NEAR.parse('100 N');
+    const BOB_BALANCE = parseNEAR('100');
     const rb = RecordBuilder.fromAccount(bob)
       .account({
-        amount: BOB_BALANCE.toString(),
+        amount: BOB_BALANCE,
         code_hash,
       }).accessKey(
         public_key,
@@ -47,7 +48,7 @@ if (getNetworkFromEnv() === 'sandbox') {
         }).contract(await contract.viewCode());
     await bob.patchStateRecords(rb);
     const balance = await bob.availableBalance();
-    t.deepEqual(balance, BOB_BALANCE);
+    t.deepEqual(balance, BigInt(BOB_BALANCE));
     await ali.call(bob, 'set_status', {message: 'hello'});
     const result = await bob.view('get_status', {
       account_id: ali.accountId,

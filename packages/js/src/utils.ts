@@ -5,33 +5,17 @@ import * as path from 'path';
 import * as nearAPI from 'near-api-js';
 import sha256 from 'js-sha256';
 import bs58 from 'bs58';
-import {Gas, NEAR} from 'near-units';
 import {
   type NamedAccount,
   type KeyPair,
   type ClientConfig,
   type KeyStore,
-  type BN,
 } from './types';
 
-export const ONE_NEAR = NEAR.parse('1N');
-
-export function toYocto(amount: string): string {
-  return NEAR.parse(`${amount}N`).toString();
-}
+export const ONE_NEAR = BigInt(parseNEAR('1'));
 
 export function createKeyPair(): KeyPair {
   return nearAPI.utils.KeyPairEd25519.fromRandom();
-}
-
-export function tGas(x: string | number) {
-  if (typeof x === 'string' && Number.isNaN(Number.parseInt(x, 10))) {
-    throw new TypeError(
-      `tGas expects a number or a number-like string; got: ${x}`,
-    );
-  }
-
-  return String(x) + '0'.repeat(12);
 }
 
 // Create random account with at least 33 digits by default
@@ -44,7 +28,7 @@ export function asId(id: string | NamedAccount): string {
   return typeof id === 'string' ? id : id.accountId;
 }
 
-export const NO_DEPOSIT = NEAR.from(0);
+export const NO_DEPOSIT = 0n;
 
 export async function captureError(function_: () => Promise<any>): Promise<string> {
   try {
@@ -116,7 +100,7 @@ export function urlConfigFromNetwork(network: string | {network: string; rpcAddr
  */
 export function hashContract(contract: string | Buffer): string {
   const bytes = typeof contract === 'string' ? Buffer.from(contract, 'base64') : contract;
-  const buffer = Buffer.from(sha256.sha256(bytes), 'hex');
+  const buffer = Buffer.from(sha256.sha256(new Uint8Array(bytes)), 'hex');
   return bs58.encode(buffer);
 }
 
@@ -160,20 +144,13 @@ export function timeSuffix(prefix: string, length = 6): string {
 
 const NOT_NUMBER_OR_UNDERLINE = /[^\d_]/;
 
-export function parseGas(s: string | BN): Gas {
-  if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
-    return Gas.parse(s);
+// Near-API func to parse NEAR into yoctoNEAR string with with check for not-null value. 1N = 10^24yocto
+export function parseNEAR(s: string): string {
+  const parsedNear = nearAPI.utils.format.parseNearAmount(s);
+
+  if (parsedNear === null) {
+    throw new Error(`Invalid NEAR amount: ${s}`);
   }
 
-  return Gas.from(s);
-}
-
-// One difference with `NEAR.parse` is that here strings of just numbers are considered `yN`
-// And not `N`
-export function parseNEAR(s: string | BN): NEAR {
-  if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
-    return NEAR.parse(s);
-  }
-
-  return NEAR.from(s);
+  return parsedNear;
 }

@@ -1,8 +1,6 @@
 import {type ChildProcess} from 'child_process';
-import _BN from 'bn.js';
 import {type KeyPair} from 'near-api-js';
 import {type Output} from 'promisify-child-process';
-import {type NEAR} from 'near-units';
 import {type KeyStore} from 'near-api-js/lib/key_stores';
 
 export {ServerError} from 'near-api-js/lib/utils/rpc_errors';
@@ -28,12 +26,6 @@ export * from 'near-api-js/lib/providers/provider';
 
 export {DEFAULT_FUNCTION_CALL_GAS} from 'near-api-js/lib/constants';
 
-export class BN extends _BN {
-  toJSON(): string {
-    return this.toString(10);
-  }
-}
-
 export type Args = Record<string, any> | Uint8Array;
 
 export interface NamedAccount {
@@ -41,18 +33,18 @@ export interface NamedAccount {
 }
 
 export interface CallOptions {
-  gas?: string | BN;
-  attachedDeposit?: string | BN;
+  gas?: bigint;
+  attachedDeposit?: bigint;
   signWithKey?: KeyPair;
 }
 
 export type ChildProcessPromise = Promise<ChildProcess & Promise<Output>>;
 
 export interface AccountBalance {
-  total: NEAR;
-  stateStaked: NEAR;
-  staked: NEAR;
-  available: NEAR;
+  total: string;
+  stateStaked: string;
+  staked: string;
+  available: string;
 }
 
 export type Network = 'testnet' | 'mainnet' | 'sandbox' | 'custom';
@@ -65,7 +57,7 @@ export interface ClientConfig {
   apiKey?: string;
   helperUrl?: string;
   explorerUrl?: string;
-  initialBalance?: string;
+  initialBalance?: bigint;
   walletUrl?: string;
   archivalUrl?: string;
 }

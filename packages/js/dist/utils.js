@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseNEAR = exports.parseGas = exports.timeSuffix = exports.homeKeyStore = exports.getNetworkFromEnv = exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.tGas = exports.createKeyPair = exports.toYocto = exports.ONE_NEAR = void 0;
+exports.parseNEAR = exports.timeSuffix = exports.homeKeyStore = exports.getNetworkFromEnv = exports.EMPTY_CONTRACT_HASH = exports.hashContract = exports.urlConfigFromNetwork = exports.isTopLevelAccount = exports.captureError = exports.NO_DEPOSIT = exports.asId = exports.randomAccountId = exports.createKeyPair = exports.ONE_NEAR = void 0;
 const buffer_1 = require("buffer");
 const process = __importStar(require("process"));
 const os = __importStar(require("os"));
@@ -34,23 +34,11 @@ const path = __importStar(require("path"));
 const nearAPI = __importStar(require("near-api-js"));
 const js_sha256_1 = __importDefault(require("js-sha256"));
 const bs58_1 = __importDefault(require("bs58"));
-const near_units_1 = require("near-units");
-exports.ONE_NEAR = near_units_1.NEAR.parse('1N');
-function toYocto(amount) {
-    return near_units_1.NEAR.parse(`${amount}N`).toString();
-}
-exports.toYocto = toYocto;
+exports.ONE_NEAR = BigInt(parseNEAR('1'));
 function createKeyPair() {
     return nearAPI.utils.KeyPairEd25519.fromRandom();
 }
 exports.createKeyPair = createKeyPair;
-function tGas(x) {
-    if (typeof x === 'string' && Number.isNaN(Number.parseInt(x, 10))) {
-        throw new TypeError(`tGas expects a number or a number-like string; got: ${x}`);
-    }
-    return String(x) + '0'.repeat(12);
-}
-exports.tGas = tGas;
 // Create random account with at least 33 digits by default
 function randomAccountId(prefix = 'dev-', dateLength = 13, suffixLength = 15) {
     const suffix = Math.floor(Math.random() * (10 ** 22)) % (10 ** suffixLength);
@@ -61,7 +49,7 @@ function asId(id) {
     return typeof id === 'string' ? id : id.accountId;
 }
 exports.asId = asId;
-exports.NO_DEPOSIT = near_units_1.NEAR.from(0);
+exports.NO_DEPOSIT = 0n;
 async function captureError(function_) {
     try {
         await function_();
@@ -128,7 +116,7 @@ exports.urlConfigFromNetwork = urlConfigFromNetwork;
  */
 function hashContract(contract) {
     const bytes = typeof contract === 'string' ? buffer_1.Buffer.from(contract, 'base64') : contract;
-    const buffer = buffer_1.Buffer.from(js_sha256_1.default.sha256(bytes), 'hex');
+    const buffer = buffer_1.Buffer.from(js_sha256_1.default.sha256(new Uint8Array(bytes)), 'hex');
     return bs58_1.default.encode(buffer);
 }
 exports.hashContract = hashContract;
@@ -164,20 +152,13 @@ function timeSuffix(prefix, length = 6) {
 }
 exports.timeSuffix = timeSuffix;
 const NOT_NUMBER_OR_UNDERLINE = /[^\d_]/;
-function parseGas(s) {
-    if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
-        return near_units_1.Gas.parse(s);
-    }
-    return near_units_1.Gas.from(s);
-}
-exports.parseGas = parseGas;
-// One difference with `NEAR.parse` is that here strings of just numbers are considered `yN`
-// And not `N`
+// Near-API func to parse NEAR into yoctoNEAR string with with check for not-null value. 1N = 10^24yocto
 function parseNEAR(s) {
-    if (typeof s === 'string' && NOT_NUMBER_OR_UNDERLINE.test(s)) {
-        return near_units_1.NEAR.parse(s);
+    const parsedNear = nearAPI.utils.format.parseNearAmount(s);
+    if (parsedNear === null) {
+        throw new Error(`Invalid NEAR amount: ${s}`);
     }
-    return near_units_1.NEAR.from(s);
+    return parsedNear;
 }
 exports.parseNEAR = parseNEAR;
 //# sourceMappingURL=utils.js.map

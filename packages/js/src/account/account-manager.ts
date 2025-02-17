@@ -1,12 +1,12 @@
 import * as path from 'path';
 import * as process from 'process';
 import * as nearAPI from 'near-api-js';
-import {NEAR} from 'near-units';
-import {asId, isTopLevelAccount, randomAccountId} from '../utils';
+import {
+  asId, isTopLevelAccount, parseNEAR, randomAccountId,
+} from '../utils';
 import {
   type Config,
   type KeyPair,
-  BN,
   KeyPairEd25519,
   type FinalExecutionOutcome,
   type KeyStore,
@@ -92,12 +92,12 @@ export abstract class AccountManager implements NearAccountManager {
     return this._root;
   }
 
-  get initialBalance(): string {
+  get initialBalance(): bigint {
     return this.config.initialBalance ?? this.DEFAULT_INITIAL_BALANCE;
   }
 
-  get doubleInitialBalance(): BN {
-    return new BN(this.initialBalance).mul(new BN('2'));
+  get doubleInitialBalance(): bigint {
+    return this.initialBalance * 2n;
   }
 
   get provider(): JsonRpcProvider {
@@ -155,17 +155,17 @@ export abstract class AccountManager implements NearAccountManager {
     return this.provider.accountBalance(asId(account));
   }
 
-  async availableBalance(account: string | NearAccount): Promise<NEAR> {
+  async availableBalance(account: string | NearAccount): Promise<bigint> {
     const balance = await this.balance(account);
-    return balance.available;
+    return BigInt(balance.available);
   }
 
   async exists(accountId: string | NearAccount): Promise<boolean> {
     return this.provider.accountExists(asId(accountId));
   }
 
-  async canCoverBalance(account: string | NearAccount, amount: BN): Promise<boolean> {
-    return amount.lt(await this.availableBalance(account));
+  async canCoverBalance(account: string | NearAccount, amount: bigint): Promise<boolean> {
+    return amount < await this.availableBalance(account);
   }
 
   async executeTransaction(tx: Transaction, keyPair?: KeyPair): Promise<TransactionResult> {
@@ -198,7 +198,11 @@ export abstract class AccountManager implements NearAccountManager {
 
       if (error instanceof Error) {
         const key = await this.getPublicKey(tx.receiverId);
-        debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions).slice(0, 1000)}`);
+        debug(`TX FAILED: receiver ${tx.receiverId} with key ${key?.toString() ?? 'MISSING'} ${JSON.stringify(tx.actions, (_key, value) =>
+          typeof value === 'bigint'
+            ? value.toString()
+            : value,
+        ).slice(0, 1000)}`);
         debug(error);
       }
 
@@ -220,7 +224,7 @@ export abstract class AccountManager implements NearAccountManager {
     this.config.rootAccountId = value;
   }
 
-  abstract get DEFAULT_INITIAL_BALANCE(): string;
+  abstract get DEFAULT_INITIAL_BALANCE(): bigint;
   abstract createFrom(config: Config): Promise<NearAccountManager>;
   abstract get defaultKeyStore(): KeyStore;
 
@@ -242,8 +246,8 @@ export abstract class AccountManager implements NearAccountManager {
 }
 
 export class CustomnetManager extends AccountManager {
-  get DEFAULT_INITIAL_BALANCE(): string {
-    return NEAR.parse('10 N').toJSON();
+  get DEFAULT_INITIAL_BALANCE(): bigint {
+    return BigInt(parseNEAR('10'));
   }
 
   get defaultKeyStore(): KeyStore {
@@ -301,8 +305,8 @@ export class TestnetManager extends AccountManager {
     return this._testnetRoot;
   }
 
-  get DEFAULT_INITIAL_BALANCE(): string {
-    return NEAR.parse('10 N').toJSON();
+  get DEFAULT_INITIAL_BALANCE(): bigint {
+    return BigInt(parseNEAR('10'));
   }
 
   get defaultKeyStore(): KeyStore {
@@ -357,7 +361,7 @@ export class TestnetManager extends AccountManager {
     }
   }
 
-  async addFunds(accountId: string, amount: BN): Promise<void> {
+  async addFunds(accountId: string, amount: bigint): Promise<void> {
     const parent = this.getParentAccount(accountId);
     if (parent.accountId === accountId) {
       return this.addFundsFromNetwork(accountId);
@@ -392,8 +396,8 @@ export class TestnetManager extends AccountManager {
     return this.deleteAccounts([...this.accountsCreated.values()], this.rootAccountId) as unknown as void;
   }
 
-  async needsFunds(accountId: string, amount: BN): Promise<boolean> {
-    return !amount.isZero() && this.isRootOrTLAccount(accountId)
+  async needsFunds(accountId: string, amount: bigint): Promise<boolean> {
+    return amount !== 0n && this.isRootOrTLAccount(accountId)
     && (!await this.canCoverBalance(accountId, amount));
   }
 
@@ -415,8 +419,8 @@ export class SandboxManager extends AccountManager {
     return new SandboxManager(config);
   }
 
-  get DEFAULT_INITIAL_BALANCE(): string {
-    return NEAR.parse('200 N').toJSON();
+  get DEFAULT_INITIAL_BALANCE(): bigint {
+    return BigInt(parseNEAR('200'));
   }
 
   get defaultKeyStore(): KeyStore {

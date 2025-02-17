@@ -13,7 +13,8 @@
  */
 import anyTest, {type TestFn} from 'ava';
 import {
-  Worker, createKeyPair, NEAR, type NearAccount,
+  DEFAULT_FUNCTION_CALL_GAS,
+  Worker, createKeyPair, parseNEAR, type NearAccount,
 } from '../packages/js';
 
 /* Contract API for reference
@@ -38,7 +39,7 @@ test.beforeEach(async t => {
   const root = worker.rootAccount;
   const linkdrop = await root.devDeploy(
     '__tests__/build/debug/linkdrop.wasm',
-    {initialBalance: NEAR.parse('3 N').toJSON()},
+    {initialBalance: BigInt(parseNEAR('3'))},
   );
 
   t.context.worker = worker;
@@ -56,7 +57,7 @@ test('Use `create_account_and_claim` to create a new account', async t => {
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
-  const attachedDeposit = '2 N';
+  const attachedDeposit = BigInt(parseNEAR('2'));
 
   // This adds the key as a function access key on `create_account_and_claim`
   await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
@@ -74,26 +75,26 @@ test('Use `create_account_and_claim` to create a new account', async t => {
     },
     {
       signWithKey: senderKey,
-      gas: '50 TGas',
+      gas: 50_000_000_000_000n,
     },
   );
 
   const bob = root.getAccount(new_account_id);
   const balance = await bob.availableBalance();
-  t.log(balance.toHuman());
-  t.deepEqual(balance, NEAR.parse('0.99818'));
+  t.log(balance.toString());
+  t.deepEqual(balance, BigInt(parseNEAR('0.99818')));
 
-  t.log(`Account ${new_account_id} claim and has ${balance.toHuman()} available`);
+  t.log(`Account ${new_account_id} claim and has ${balance.toString()} available`);
 });
 
 test('Use `claim` to transfer to an existing account', async t => {
   const {root, linkdrop} = t.context.accounts;
-  const bob = await root.createSubAccount('bob', {initialBalance: NEAR.parse('3 N').toJSON()});
+  const bob = await root.createSubAccount('bob', {initialBalance: BigInt(parseNEAR('3'))});
   const originalBalance = await bob.availableBalance();
   // Create temporary keys for access key on linkdrop
   const senderKey = createKeyPair();
   const public_key = senderKey.getPublicKey().toString();
-  const attachedDeposit = '2 N';
+  const attachedDeposit = BigInt(parseNEAR('2'));
 
   // This adds the key as a function access key on `create_account_and_claim`
   await root.call(linkdrop, 'send', {public_key}, {attachedDeposit});
@@ -107,15 +108,15 @@ test('Use `claim` to transfer to an existing account', async t => {
     },
     {
       signWithKey: senderKey,
-      gas: '50 TGas',
+      gas: DEFAULT_FUNCTION_CALL_GAS,
     },
   );
 
   const newBalance = await bob.availableBalance();
 
-  t.assert(originalBalance.lt(newBalance));
+  t.assert(originalBalance < newBalance);
   t.log(
-    `${bob.accountId} claimed ${newBalance
-      .sub(originalBalance).toHuman()}`,
+    `${bob.accountId} claimed ${(newBalance
+      - originalBalance).toString()}`,
   );
 });

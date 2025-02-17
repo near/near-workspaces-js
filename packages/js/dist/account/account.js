@@ -103,7 +103,7 @@ class Account {
         const account = this.getAccount(refContract);
         // Get account view of account on reference network
         const accountView = await rpc.viewAccount(refContract, blockQuery);
-        accountView.amount = initialBalance ?? accountView.amount;
+        accountView.amount = initialBalance?.toString() ?? accountView.amount;
         const pubKey = await account.setKey(keyPair);
         const records = account.recordBuilder()
             .account(accountView)
@@ -153,9 +153,7 @@ class Account {
         }
         return this.getAccount(accountId);
     }
-    async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
+    async devDeploy(wasm, { attachedDeposit = utils_1.NO_DEPOSIT, args = {}, gas = types_1.DEFAULT_FUNCTION_CALL_GAS, initialBalance, keyPair, method, isSubAccount, } = {}) {
         const accountId = `${(0, utils_1.randomAccountId)('dev-', 5, 5)}.${this.accountId}`;
         let tx = await this.internalCreateAccount(accountId, {
             keyPair,
@@ -172,16 +170,12 @@ class Account {
         }
         return this.getAccount(accountId);
     }
-    async callRaw(contractId, methodName, args, { 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+    async callRaw(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         return this.batch(contractId)
             .functionCall(methodName, args, { gas, attachedDeposit })
             .transact(signWithKey);
     }
-    async call(contractId, methodName, args, { 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
+    async call(contractId, methodName, args, { gas = types_1.DEFAULT_FUNCTION_CALL_GAS, attachedDeposit = utils_1.NO_DEPOSIT, signWithKey = undefined, } = {}) {
         const txResult = await this.callRaw(contractId, methodName, args, {
             gas,
             attachedDeposit,
@@ -284,7 +278,7 @@ class Account {
         const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
         const keyPairResult = await this.getOrCreateKey(newAccountId, keyPair);
         const pubKey = keyPairResult.getPublicKey();
-        const amount = (initialBalance ?? this.manager.initialBalance).toString();
+        const amount = (initialBalance ?? this.manager.initialBalance);
         return this.batch(newAccountId)
             .createAccount()
             .transfer(amount)
