@@ -16,7 +16,7 @@
 import anyTest, {type TestFn} from 'ava';
 import {
   Worker, type NearAccount, captureError, BN, NEAR,
-} from '../packages/js';
+} from 'near-workspaces';
 
 const STORAGE_BYTE_COST = '1.5 mN';
 

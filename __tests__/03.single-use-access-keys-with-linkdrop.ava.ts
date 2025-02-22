@@ -14,7 +14,7 @@
 import anyTest, {type TestFn} from 'ava';
 import {
   Worker, createKeyPair, NEAR, type NearAccount,
-} from '../packages/js';
+} from 'near-workspaces';
 
 /* Contract API for reference
 impl Linkdrop {

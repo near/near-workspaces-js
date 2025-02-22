@@ -25,7 +25,7 @@ import {
   type NearAccount,
   Worker,
   captureError,
-} from '../packages/js';
+} from 'near-workspaces';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 
