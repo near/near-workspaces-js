@@ -1,7 +1,5 @@
 import {type URL} from 'url';
 import {type Buffer} from 'buffer';
-import type BN from 'bn.js';
-import {type NEAR} from 'near-units';
 import {type KeyPair} from 'near-api-js';
 import {
   type AccountBalance,
@@ -33,7 +31,7 @@ export interface NearAccount {
   accountView(): Promise<AccountView>;
 
   /* How many liquid yNear tokens that belong to the user */
-  availableBalance(): Promise<NEAR>;
+  availableBalance(): Promise<bigint>;
 
   /** Current balance of account on network. */
   balance(): Promise<AccountBalance>;
@@ -42,7 +40,7 @@ export interface NearAccount {
    * Then once built can be signed and transmitted.
    * E.g.
    * ```ts
-   * const result = await account.batch(bob).transfer(NEAR.parse("1N")).transact();
+   * const result = await account.batch(bob).transfer(BigInt(parseNear("1"))).transact();
    * ```
    * @param receiver account that the transaction is addressed to.
    */
@@ -67,7 +65,7 @@ export interface NearAccount {
    */
   createAccount(
     accountId: string,
-    options?: {keyPair?: KeyPair; initialBalance?: string},
+    options?: {keyPair?: KeyPair; initialBalance?: bigint},
   ): Promise<NearAccount>;
 
   /**
@@ -78,7 +76,7 @@ export interface NearAccount {
    */
   createSubAccount(
     accountId: string,
-    options?: {keyPair?: KeyPair; initialBalance?: string},
+    options?: {keyPair?: KeyPair; initialBalance?: bigint},
   ): Promise<NearAccount>;
 
   /**
@@ -98,7 +96,7 @@ export interface NearAccount {
     mainnetContract?: string;
     withData?: boolean;
     keyPair?: KeyPair;
-    initialBalance?: string;
+    initialBalance?: bigint;
     blockId?: number | string;
     isSubAccount?: boolean;
   }): Promise<NearAccount>;
@@ -125,15 +123,15 @@ export interface NearAccount {
    *
    * @param wasm path or data of contract binary
    * @param options If any method is passed it will be added to the transaction so that contract will be initialized
-   *                `gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
+   *                `gas` and `initialBalance` as bigint
    */
   devDeploy(
     wasm: string | URL | Uint8Array | Buffer,
     options?: {
       args?: Record<string, unknown> | Uint8Array;
-      attachedDeposit?: string | BN;
-      gas?: string | BN;
-      initialBalance?: BN | string;
+      attachedDeposit?: bigint;
+      gas?: bigint;
+      initialBalance?: bigint;
       keyPair?: KeyPair;
       method?: string;
       isSubAccount?: boolean;
@@ -143,12 +141,10 @@ export interface NearAccount {
   /**
    * Call a NEAR contract and return full results with raw receipts, etc. Example:
    *
-   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas: new BN(30 * 10**12), attachedDeposit: new BN(10**24)})
+   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas: BigInt(30 * 10**12), attachedDeposit: BigInt(10**24)})
    *
-   *     //`gas` and `initialBalance` as strings can be either numbers, e.g. `1_000_000` or have units, `30 Tgas`
+   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas: BigInt(30 * 10**12), attachedDeposit: BigInt(parseNear('1'))})
    *
-   *     await callRaw('lol.testnet', 'set_status', { message: 'hello' }, {gas:"10 Tgas", attachedDeposit: "1 N"})
-
    * @returns Promise<TransactionResult>
    */
   callRaw(
@@ -156,8 +152,8 @@ export interface NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     options?: {
-      gas?: string | BN;
-      attachedDeposit?: string | BN;
+      gas?: bigint;
+      attachedDeposit?: bigint;
       signWithKey?: KeyPair;
     }
   ): Promise<TransactionResult>;
@@ -165,7 +161,7 @@ export interface NearAccount {
   /**
    * Convenient wrapper around lower-level `callRaw` that returns only successful result of call, or throws error encountered during call.  Example:
    *
-   *     await call('lol.testnet', 'set_status', { message: 'hello' }, new BN(30 * 10**12), '0')
+   *     await call('lol.testnet', 'set_status', { message: 'hello' }, BigInt(30 * 10**12), 0n)
    *
    * @returns any parsed return value, or throws with an error if call failed
    */
@@ -174,8 +170,8 @@ export interface NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     options?: {
-      gas?: string | BN;
-      attachedDeposit?: string | BN;
+      gas?: bigint;
+      attachedDeposit?: bigint;
       signWithKey?: KeyPair;
     }
   ): Promise<T>;
@@ -259,9 +255,8 @@ export interface NearAccount {
 
   /**
   * Transfer yoctoNear to another account.
-  * If amount is string it can be either numbers, e.g. `"1_000_000_000_000_000_000_000_000"` or have units, `"1 N"`
   */
-  transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult>;
+  transfer(accountId: string | NearAccount, amount: bigint): Promise<TransactionResult>;
 
   /**
    * Update the account balance, storage usage, locked_amount.

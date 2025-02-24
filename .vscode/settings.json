@@ -8,6 +8,6 @@
     "editor.defaultFormatter": "spence-s.linter-xo"
   },
   "editor.codeActionsOnSave": {
-    "spence-s.linter-xo": true
+    "spence-s.linter-xo": "explicit"
   }
 }

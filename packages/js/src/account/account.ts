@@ -1,8 +1,6 @@
 import {type URL} from 'url';
 import {Buffer} from 'buffer';
 import {env} from 'process';
-import type BN from 'bn.js';
-import {type NEAR} from 'near-units';
 import * as borsh from 'borsh';
 import {
   DEFAULT_FUNCTION_CALL_GAS,
@@ -54,7 +52,7 @@ export class Account implements NearAccount {
     return this._accountId;
   }
 
-  async availableBalance(): Promise<NEAR> {
+  async availableBalance(): Promise<bigint> {
     return this.manager.availableBalance(this.accountId);
   }
 
@@ -80,7 +78,7 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-    }: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean} = {},
+    }: {keyPair?: KeyPair; initialBalance?: bigint; isSubAccount?: boolean} = {},
   ): Promise<NearAccount> {
     const tx = await this.internalCreateAccount(accountId, {
       keyPair,
@@ -102,7 +100,7 @@ export class Account implements NearAccount {
     {
       keyPair,
       initialBalance,
-    }: {keyPair?: KeyPair; initialBalance?: string; isSubAccount?: boolean} = {},
+    }: {keyPair?: KeyPair; initialBalance?: bigint; isSubAccount?: boolean} = {},
   ): Promise<NearAccount> {
     const tx = await this.internalCreateAccount(accountId, {
       keyPair,
@@ -131,7 +129,7 @@ export class Account implements NearAccount {
     mainnetContract?: string;
     withData?: boolean;
     keyPair?: KeyPair;
-    initialBalance?: string;
+    initialBalance?: bigint;
     blockId?: number | string;
   }): Promise<NearAccount> {
     if ((testnetContract && mainnetContract) ?? !(testnetContract ?? mainnetContract)) {
@@ -147,7 +145,7 @@ export class Account implements NearAccount {
 
     // Get account view of account on reference network
     const accountView = await rpc.viewAccount(refContract, blockQuery);
-    accountView.amount = initialBalance ?? accountView.amount;
+    accountView.amount = initialBalance?.toString() ?? accountView.amount;
     const pubKey = await account.setKey(keyPair);
     const records = account.recordBuilder()
       .account(accountView)
@@ -198,7 +196,7 @@ export class Account implements NearAccount {
     initialBalance,
     keyPair,
   }: {
-    initialBalance?: BN | string;
+    initialBalance?: bigint;
     keyPair?: KeyPair;
   } = {}): Promise<NearAccount> {
     const accountId = `${randomAccountId('dev-', 5, 5)}.${this.accountId}`;
@@ -221,7 +219,6 @@ export class Account implements NearAccount {
     {
       attachedDeposit = NO_DEPOSIT,
       args = {},
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       initialBalance,
       keyPair,
@@ -229,9 +226,9 @@ export class Account implements NearAccount {
       isSubAccount,
     }: {
       args?: Record<string, unknown> | Uint8Array;
-      attachedDeposit?: string | BN;
-      gas?: string | BN;
-      initialBalance?: BN | string;
+      attachedDeposit?: bigint;
+      gas?: bigint;
+      initialBalance?: bigint;
       keyPair?: KeyPair;
       method?: string;
       isSubAccount?: boolean;
@@ -262,13 +259,12 @@ export class Account implements NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
     }: {
-      gas?: string | BN;
-      attachedDeposit?: string | BN;
+      gas?: bigint;
+      attachedDeposit?: bigint;
       signWithKey?: KeyPair;
     } = {},
   ): Promise<TransactionResult> {
@@ -282,13 +278,12 @@ export class Account implements NearAccount {
     methodName: string,
     args: Record<string, unknown> | Uint8Array,
     {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       gas = DEFAULT_FUNCTION_CALL_GAS,
       attachedDeposit = NO_DEPOSIT,
       signWithKey = undefined,
     }: {
-      gas?: string | BN;
-      attachedDeposit?: string | BN;
+      gas?: bigint;
+      attachedDeposit?: bigint;
       signWithKey?: KeyPair;
     } = {},
   ): Promise<T> {
@@ -414,7 +409,7 @@ export class Account implements NearAccount {
     return this.patchStateRecords(this.recordBuilder().data(keyString, valueString));
   }
 
-  async transfer(accountId: string | NearAccount, amount: string | BN): Promise<TransactionResult> {
+  async transfer(accountId: string | NearAccount, amount: bigint): Promise<TransactionResult> {
     return this.batch(accountId).transfer(amount).transact();
   }
 
@@ -424,12 +419,12 @@ export class Account implements NearAccount {
       keyPair,
       initialBalance,
       isSubAccount,
-    }: {keyPair?: KeyPair; initialBalance?: string | BN; isSubAccount?: boolean} = {},
+    }: {keyPair?: KeyPair; initialBalance?: bigint; isSubAccount?: boolean} = {},
   ): Promise<Transaction> {
     const newAccountId = isSubAccount ? this.makeSubAccount(accountId) : accountId;
     const keyPairResult = await this.getOrCreateKey(newAccountId, keyPair);
     const pubKey = keyPairResult.getPublicKey();
-    const amount = (initialBalance ?? this.manager.initialBalance).toString();
+    const amount = (initialBalance ?? this.manager.initialBalance);
     return this.batch(newAccountId)
       .createAccount()
       .transfer(amount)

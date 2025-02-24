@@ -20,11 +20,10 @@
  */
 import anyTest, {type TestFn} from 'ava';
 import {
-  Gas,
-  NEAR,
   type NearAccount,
   Worker,
   captureError,
+  parseNEAR,
 } from 'near-workspaces';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
@@ -100,28 +99,28 @@ test('integrate own FT with Ref.Finance', async t => {
         method: 'new_default_meta',
         args: {
           owner_id: root,
-          total_supply: NEAR.parse('1,000,000,000 N'),
+          total_supply: parseNEAR('1,000,000,000'),
         },
       }),
     createRef(root),
     createWNEAR(root),
   ]);
   const pool_id = await createPoolWithLiquidity(root, refFinance, {
-    [ft.accountId]: NEAR.parse('5 N').toJSON(),
-    [wNEAR.accountId]: NEAR.parse('10 N').toJSON(),
+    [ft.accountId]: parseNEAR('5'),
+    [wNEAR.accountId]: parseNEAR('10'),
   });
   await depositTokens(root, refFinance, {
-    [ft.accountId]: NEAR.parse('100 N').toJSON(),
-    [wNEAR.accountId]: NEAR.parse('100 N').toJSON(),
+    [ft.accountId]: parseNEAR('100'),
+    [wNEAR.accountId]: parseNEAR('100'),
   });
   await depositTokens(root, refFinance, {});
   t.is(
     await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-    NEAR.parse('100 N').toJSON(),
+    parseNEAR('100'),
   );
   t.is(
     await refFinance.view('get_deposit', {account_id: root, token_id: wNEAR}),
-    NEAR.parse('100 N').toJSON(),
+    parseNEAR('100'),
   );
   t.is(
     await refFinance.view('get_pool_total_shares', {pool_id}),
@@ -132,7 +131,7 @@ test('integrate own FT with Ref.Finance', async t => {
   const expectedOut: string = await refFinance.view('get_return', {
     pool_id,
     token_in: ft,
-    amount_in: NEAR.parse('1 N'),
+    amount_in: parseNEAR('1'),
     token_out: wNEAR,
   });
   t.is(expectedOut, '1662497915624478906119726');
@@ -140,17 +139,17 @@ test('integrate own FT with Ref.Finance', async t => {
     actions: [{
       pool_id,
       token_in: ft,
-      amount_in: NEAR.parse('1 N'),
+      amount_in: parseNEAR('1'),
       token_out: wNEAR,
       min_amount_out: '1',
     }],
   }, {
-    attachedDeposit: '1',
+    attachedDeposit: 1n,
   });
   t.is(amountOut, expectedOut);
   t.is(
     await refFinance.view('get_deposit', {account_id: root, token_id: ft}),
-    NEAR.parse('99 N').toJSON(),
+    parseNEAR('99'),
   );
 });
 
@@ -165,13 +164,13 @@ async function createWNEAR(
   });
   await creator.call(wNEAR, 'new', {
     owner_id: creator,
-    total_supply: NEAR.parse('1,000,000,000 N'),
+    total_supply: parseNEAR('1,000,000,000'),
   });
   await creator.call(wNEAR, 'storage_deposit', {}, {
-    attachedDeposit: NEAR.parse('0.008 N'),
+    attachedDeposit: BigInt(parseNEAR('0.008')),
   });
   await creator.call(wNEAR, 'near_deposit', {}, {
-    attachedDeposit: NEAR.parse('200 N'),
+    attachedDeposit: BigInt(parseNEAR('200')),
   });
   return wNEAR;
 }
@@ -184,7 +183,7 @@ async function createRef(
   const refFinance = await creator.importContract({
     mainnetContract: REF_FINANCE_ACCOUNT,
     blockId,
-    initialBalance: NEAR.parse('1000 N').toJSON(),
+    initialBalance: BigInt(parseNEAR('1000')),
   });
   await creator.call(
     refFinance,
@@ -196,7 +195,7 @@ async function createRef(
     },
   );
   await creator.call(refFinance, 'storage_deposit', {}, {
-    attachedDeposit: NEAR.parse('30 mN'),
+    attachedDeposit: BigInt(parseNEAR('0.03')),
   });
   return refFinance;
 }
@@ -211,17 +210,17 @@ async function createPoolWithLiquidity(
   const tokens = Object.keys(tokenAmounts);
   await root.call(refFinance, 'extend_whitelisted_tokens', {tokens});
   const pool_id: string = await root.call(refFinance, 'add_simple_pool', {tokens, fee: 25}, {
-    attachedDeposit: NEAR.parse('3mN'),
+    attachedDeposit: BigInt(parseNEAR('0.03')),
   });
   await root.call(refFinance, 'register_tokens', {token_ids: tokens}, {
-    attachedDeposit: '1',
+    attachedDeposit: 1n,
   });
   await depositTokens(root, refFinance, tokenAmounts);
   await root.call(refFinance, 'add_liquidity', {
     pool_id,
     amounts: Object.values(tokenAmounts),
   }, {
-    attachedDeposit: NEAR.parse('1N'),
+    attachedDeposit: BigInt(parseNEAR('1')),
   });
   return pool_id;
 }
@@ -233,15 +232,15 @@ async function depositTokens(
 ): Promise<void> {
   await Promise.all(Object.entries(tokenAmounts).map(async ([accountId, amount]) => {
     await refFinance.call(accountId, 'storage_deposit', {registration_only: true}, {
-      attachedDeposit: NEAR.parse('1N'),
+      attachedDeposit: BigInt(parseNEAR('1')),
     });
     await root.call(accountId, 'ft_transfer_call', {
       receiver_id: refFinance,
       amount,
       msg: '',
     }, {
-      attachedDeposit: '1',
-      gas: Gas.parse('200Tgas'),
+      attachedDeposit: 1n,
+      gas: 200_000_000_000_000n,
     });
   }));
 }

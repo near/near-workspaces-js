@@ -1,7 +1,6 @@
 import fs from 'fs';
-import {NEAR} from 'near-units';
 import {lock} from 'proper-lockfile';
-import {getNetworkFromEnv, urlConfigFromNetwork} from './utils';
+import {getNetworkFromEnv, parseNEAR, urlConfigFromNetwork} from './utils';
 import {type Config, type ClientConfig} from './types';
 import {AccountManager, type NearAccount, type NearAccountManager} from './account';
 import {JsonRpcProvider} from './jsonrpc';
@@ -226,7 +225,7 @@ export class SandboxWorker extends Worker {
       network: 'sandbox',
       rootAccountId: 'test.near',
       rpcAddr: '', // Will be over written
-      initialBalance: NEAR.parse('100 N').toJSON(),
+      initialBalance: BigInt(parseNEAR('100')),
     };
   }
 

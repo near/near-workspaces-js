@@ -15,15 +15,17 @@
  */
 import anyTest, {type TestFn} from 'ava';
 import {
-  Worker, type NearAccount, captureError, BN, NEAR,
+  Worker, type NearAccount, captureError,
+  parseNEAR,
+  DEFAULT_FUNCTION_CALL_GAS,
 } from 'near-workspaces';
 
-const STORAGE_BYTE_COST = '1.5 mN';
+const STORAGE_BYTE_COST = BigInt(parseNEAR('0.0015'));
 
 async function init_ft(
   ft: NearAccount,
   owner: NearAccount,
-  supply: BN | string = '10000',
+  supply = '10000',
 ) {
   await ft.call(ft, 'new_default_meta', {
     owner_id: owner,
@@ -47,8 +49,8 @@ async function registerUser(ft: NearAccount, user: NearAccount) {
   );
 }
 
-async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<BN> {
-  return new BN(await ft.view('ft_balance_of', {
+async function ft_balance_of(ft: NearAccount, user: NearAccount): Promise<bigint> {
+  return BigInt(await ft.view('ft_balance_of', {
     account_id: user,
   }));
 }
@@ -63,13 +65,13 @@ test.beforeEach(async t => {
   const root = worker.rootAccount;
   const ft = await root.devDeploy(
     '__tests__/build/debug/fungible_token.wasm',
-    {initialBalance: NEAR.parse('3 N').toJSON()},
+    {initialBalance: BigInt(parseNEAR('3'))},
   );
   const defi = await root.devDeploy(
     '__tests__/build/debug/defi.wasm',
-    {initialBalance: NEAR.parse('3 N').toJSON()},
+    {initialBalance: BigInt(parseNEAR('3'))},
   );
-  const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('1 N').toJSON()});
+  const ali = await root.createSubAccount('ali', {initialBalance: BigInt(parseNEAR('1'))});
 
   t.context.worker = worker;
   t.context.accounts = {
@@ -93,9 +95,9 @@ test('Total supply', async t => {
 
 test('Simple transfer', async t => {
   const {ft, ali, root} = t.context.accounts;
-  const initialAmount = new BN('10000');
-  const transferAmount = new BN('100');
-  await init_ft(ft, root, initialAmount);
+  const initialAmount = BigInt('10000');
+  const transferAmount = BigInt('100');
+  await init_ft(ft, root, initialAmount.toString());
 
   // Register by prepaying for storage.
   await registerUser(ft, ali);
@@ -105,16 +107,16 @@ test('Simple transfer', async t => {
     'ft_transfer',
     {
       receiver_id: ali,
-      amount: transferAmount,
+      amount: transferAmount.toString(),
     },
-    {attachedDeposit: '1'},
+    {attachedDeposit: 1n},
   );
 
   const rootBalance = await ft_balance_of(ft, root);
   const aliBalance = await ft_balance_of(ft, ali);
 
-  t.deepEqual(new BN(rootBalance), initialAmount.sub(transferAmount));
-  t.deepEqual(new BN(aliBalance), transferAmount);
+  t.deepEqual(BigInt(rootBalance), (initialAmount - transferAmount));
+  t.deepEqual(BigInt(aliBalance), transferAmount);
 });
 
 test('Can close empty balance account', async t => {
@@ -127,7 +129,7 @@ test('Can close empty balance account', async t => {
     ft,
     'storage_unregister',
     {},
-    {attachedDeposit: '1'},
+    {attachedDeposit: 1n},
   );
 
   t.is(result, true);
@@ -139,14 +141,14 @@ test('Can force close non-empty balance account', async t => {
   await init_ft(ft, root, '100');
 
   const errorString = await captureError(async () =>
-    root.call(ft, 'storage_unregister', {}, {attachedDeposit: '1'}));
+    root.call(ft, 'storage_unregister', {}, {attachedDeposit: 1n}));
   t.regex(errorString, /Can't unregister the account with the positive balance without force/);
 
   const result = await root.callRaw(
     ft,
     'storage_unregister',
     {force: true},
-    {attachedDeposit: '1'},
+    {attachedDeposit: 1n},
   );
 
   t.is(result.logs[0],
@@ -157,10 +159,10 @@ test('Can force close non-empty balance account', async t => {
 test('Transfer call with burned amount', async t => {
   const {ft, defi, root} = t.context.accounts;
 
-  const initialAmount = new BN(10_000);
-  const transferAmount = new BN(100);
-  const burnAmount = new BN(10);
-  await init_ft(ft, root, initialAmount);
+  const initialAmount = BigInt(10_000);
+  const transferAmount = BigInt(100);
+  const burnAmount = BigInt(10);
+  await init_ft(ft, root, initialAmount.toString());
   await init_defi(defi, ft);
 
   await registerUser(ft, defi);
@@ -170,21 +172,20 @@ test('Transfer call with burned amount', async t => {
       'ft_transfer_call',
       {
         receiver_id: defi,
-        amount: transferAmount,
-        msg: burnAmount,
+        amount: transferAmount.toString(),
+        msg: burnAmount.toString(),
       },
-      {attachedDeposit: '1', gas: '150 Tgas'},
+      {attachedDeposit: 1n, gas: DEFAULT_FUNCTION_CALL_GAS * 5n},
     )
     .functionCall(
       'storage_unregister',
       {force: true},
-      {attachedDeposit: '1', gas: '150 Tgas'},
+      {attachedDeposit: 1n},
     )
     .transact();
-
   t.true(result.logs.includes(
     `Closed @${root.accountId} with ${
-      (initialAmount.sub(transferAmount)).toString()}`,
+      (initialAmount - transferAmount).toString()}`,
   ));
 
   t.is(result.parseResult(), true);
@@ -200,7 +201,7 @@ test('Transfer call with burned amount', async t => {
   // Help: this index is diff from sim, we have 10 len when they have 4
   const callbackOutcome = result.receipts_outcomes[5];
   t.is(callbackOutcome.parseResult(), transferAmount.toString());
-  const expectedAmount = transferAmount.sub(burnAmount);
+  const expectedAmount = (transferAmount - burnAmount);
   const totalSupply: string = await ft.view('ft_total_supply');
   t.is(totalSupply, expectedAmount.toString());
   const defiBalance = await ft_balance_of(ft, defi);
@@ -209,9 +210,9 @@ test('Transfer call with burned amount', async t => {
 
 test('Transfer call immediate return no refund', async t => {
   const {ft, defi, root} = t.context.accounts;
-  const initialAmount = new BN(10_000);
-  const transferAmount = new BN(100);
-  await init_ft(ft, root, initialAmount);
+  const initialAmount = BigInt(10_000);
+  const transferAmount = BigInt(100);
+  await init_ft(ft, root, initialAmount.toString());
   await init_defi(defi, ft);
 
   await registerUser(ft, defi);
@@ -221,25 +222,25 @@ test('Transfer call immediate return no refund', async t => {
     'ft_transfer_call',
     {
       receiver_id: defi,
-      amount: transferAmount,
+      amount: transferAmount.toString(),
       memo: null,
       msg: 'take-my-money',
     },
-    {attachedDeposit: '1', gas: '150 Tgas'},
+    {attachedDeposit: 1n, gas: DEFAULT_FUNCTION_CALL_GAS * 5n},
   );
 
   const rootBalance = await ft_balance_of(ft, root);
   const defiBalance = await ft_balance_of(ft, defi);
 
-  t.deepEqual(rootBalance, initialAmount.sub(transferAmount));
+  t.deepEqual(rootBalance, (initialAmount - transferAmount));
   t.deepEqual(defiBalance, transferAmount);
 });
 
 test('Transfer call promise panics for a full refund', async t => {
   const {ft, defi, root} = t.context.accounts;
-  const initialAmount = new BN(10_000);
-  const transferAmount = new BN(100);
-  await init_ft(ft, root, initialAmount);
+  const initialAmount = BigInt(10_000);
+  const transferAmount = BigInt(100);
+  await init_ft(ft, root, initialAmount.toString());
   await init_defi(defi, ft);
 
   await registerUser(ft, defi);
@@ -249,11 +250,11 @@ test('Transfer call promise panics for a full refund', async t => {
     'ft_transfer_call',
     {
       receiver_id: defi,
-      amount: transferAmount,
+      amount: transferAmount.toString(),
       memo: null,
       msg: 'this won\'t parse as an integer',
     },
-    {attachedDeposit: '1', gas: '150 Tgas'},
+    {attachedDeposit: 1n, gas: DEFAULT_FUNCTION_CALL_GAS * 5n},
   );
 
   t.regex(result.receiptFailureMessages.join('\n'), /ParseIntError/);
@@ -262,5 +263,5 @@ test('Transfer call promise panics for a full refund', async t => {
   const defiBalance = await ft_balance_of(ft, defi);
 
   t.deepEqual(rootBalance, initialAmount);
-  t.assert(defiBalance.isZero(), `Expected zero got ${defiBalance.toJSON()}`);
+  t.assert(defiBalance === BigInt(0), `Expected zero got ${defiBalance.toString()}`);
 });

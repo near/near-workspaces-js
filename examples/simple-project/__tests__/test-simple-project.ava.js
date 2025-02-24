@@ -7,7 +7,7 @@
  * on testnet by using the `test:sandbox` and `test:testnet` scripts in
  * package.json.
  */
-import {Worker, NEAR} from 'near-workspaces';
+import {Worker, parseNEAR} from 'near-workspaces';
 import test from 'ava';
 
 test.beforeEach(async t => {
@@ -19,9 +19,9 @@ test.beforeEach(async t => {
   const contract = await root.devDeploy(
       // source code: https://github.com/NEARFoundation/near-smart-contract-rust-template/tree/main
     'contracts/near_smart_contract_rust_template.wasm',
-    {initialBalance: NEAR.parse('30 N').toJSON()},
+    {initialBalance: BigInt(parseNEAR('30'))},
   );
-  const ali = await root.createSubAccount('ali', {initialBalance: NEAR.parse('3 N').toJSON()});
+  const ali = await root.createSubAccount('ali', {initialBalance: BigInt(parseNEAR('3'))});
 
   // Save state for test runs, it is unique for each test
   t.context.worker = worker;

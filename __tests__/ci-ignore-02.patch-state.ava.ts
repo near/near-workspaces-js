@@ -13,9 +13,10 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-argument */
 import anyTest, {type TestFn} from 'ava';
-import * as borsh from '../packages/js/node_modules/borsh';
-import {Worker, getNetworkFromEnv, type NearAccount} from '../packages/js';
-import {NEAR} from '../packages/js/node_modules/near-units';
+import * as borsh from 'borsh';
+import {
+  Worker, getNetworkFromEnv, parseNEAR, type NearAccount,
+} from 'near-workspaces';
 
 if (getNetworkFromEnv() === 'sandbox') {
   const test = anyTest as TestFn<{
@@ -112,10 +113,10 @@ if (getNetworkFromEnv() === 'sandbox') {
     const bob = root.getAccount('bob');
     const public_key = await bob.setKey();
     const {code_hash} = await contract.accountView();
-    const BOB_BALANCE = NEAR.parse('100 N');
+    const BOB_BALANCE = parseNEAR('100');
 
     await bob.updateAccount({
-      amount: BOB_BALANCE.toString(),
+      amount: BOB_BALANCE,
       code_hash,
     });
 
@@ -129,7 +130,7 @@ if (getNetworkFromEnv() === 'sandbox') {
 
     await bob.updateContract(await contract.viewCode());
     const balance = await bob.availableBalance();
-    t.deepEqual(balance, BOB_BALANCE);
+    t.deepEqual(balance, BigInt(BOB_BALANCE));
     await ali.call(bob, 'set_status', {message: 'hello'});
     const result = await bob.view('get_status', {
       account_id: ali.accountId,

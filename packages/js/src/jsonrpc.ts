@@ -1,7 +1,6 @@
 // eslint-disable unicorn/no-object-as-default-parameter
 import {Buffer} from 'buffer';
 import process from 'process';
-import {NEAR} from 'near-units';
 import {stringifyJsonOrBytes} from 'near-api-js/lib/transaction';
 import {type Records} from './record';
 import {
@@ -131,17 +130,17 @@ export class JsonRpcProvider extends JSONRpc {
   async accountBalance(accountId: string, blockQuery?: {block_id: BlockId} | {finality: Finality}): Promise<AccountBalance> {
     const config = await this.protocolConfig(blockQuery);
     const state = await this.viewAccount(accountId, blockQuery);
-    const cost = config.runtime_config.storage_amount_per_byte;
-    const costPerByte = NEAR.from(cost);
-    const stateStaked = NEAR.from(state.storage_usage).mul(costPerByte);
-    const staked = NEAR.from(state.locked);
-    const total = NEAR.from(state.amount).add(staked);
-    const available = total.sub(staked.max(stateStaked));
+    const costPerByte = BigInt(config.runtime_config.storage_amount_per_byte);
+    const stateStaked = BigInt(state.storage_usage) * costPerByte;
+    const staked = BigInt(state.locked);
+    const total = BigInt(state.amount) + staked;
+    // eslint-disable-next-line unicorn/prefer-math-min-max
+    const available = total - (staked > stateStaked ? staked : stateStaked);
     return {
-      total,
-      stateStaked,
-      staked,
-      available,
+      total: total.toString(),
+      stateStaked: stateStaked.toString(),
+      staked: staked.toString(),
+      available: available.toString(),
     };
   }
 
