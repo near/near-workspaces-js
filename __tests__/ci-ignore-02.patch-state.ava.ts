@@ -13,10 +13,10 @@
 
 /* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-argument */
 import anyTest, {type TestFn} from 'ava';
-import * as borsh from '../packages/js/node_modules/borsh';
+import * as borsh from 'borsh';
 import {
   Worker, getNetworkFromEnv, parseNEAR, type NearAccount,
-} from '../packages/js';
+} from 'near-workspaces';
 
 if (getNetworkFromEnv() === 'sandbox') {
   const test = anyTest as TestFn<{
