@@ -24,7 +24,7 @@ import {
   Worker,
   captureError,
   parseNEAR,
-} from '../packages/js';
+} from 'near-workspaces';
 
 const REF_FINANCE_ACCOUNT = 'v2.ref-finance.near';
 

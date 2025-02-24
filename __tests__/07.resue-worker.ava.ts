@@ -6,7 +6,7 @@
  * It means that they should not depend on each other.
  */
 import anyTest, {type TestFn} from 'ava';
-import {Worker, type NearAccount, parseNEAR} from '../packages/js';
+import {Worker, type NearAccount, parseNEAR} from 'near-workspaces';
 
 const test = anyTest as TestFn<{
   worker: Worker;

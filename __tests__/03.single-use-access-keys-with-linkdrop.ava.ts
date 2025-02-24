@@ -15,7 +15,7 @@ import anyTest, {type TestFn} from 'ava';
 import {
   DEFAULT_FUNCTION_CALL_GAS,
   Worker, createKeyPair, parseNEAR, type NearAccount,
-} from '../packages/js';
+} from 'near-workspaces';
 
 /* Contract API for reference
 impl Linkdrop {

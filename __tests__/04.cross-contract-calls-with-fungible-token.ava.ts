@@ -18,7 +18,7 @@ import {
   Worker, type NearAccount, captureError,
   parseNEAR,
   DEFAULT_FUNCTION_CALL_GAS,
-} from '../packages/js';
+} from 'near-workspaces';
 
 const STORAGE_BYTE_COST = BigInt(parseNEAR('0.0015'));
 
