@@ -1,5 +1,5 @@
 import {Buffer} from 'buffer';
-import * as borsh from 'borsh';
+import {type Schema, deserialize} from 'borsh';
 
 export class ContractState {
   private readonly data: Map<string, Buffer>;
@@ -14,14 +14,9 @@ export class ContractState {
     return this.data.get(key) ?? Buffer.from('');
   }
 
-  get(key: string, borshSchema?: {type: any; schema: any}): any {
+  get(key: string, borshSchema: Schema): any {
     const value = this.getRaw(key);
-    if (borshSchema) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return borsh.deserialize(borshSchema.schema, borshSchema.type, value);
-    }
-
-    return value.toJSON();
+    return deserialize(borshSchema, Uint8Array.from(value));
   }
 }
 
