@@ -17,24 +17,26 @@
     "test:sandbox:ci-with-ignore": "pnpm build && ava __tests__/0* && cd examples/simple-project/ && ava && cd ../../packages/js && ava",
     "test": "pnpm test:sandbox && pnpm test:testnet",
     "prepare": "husky install",
-    "release": "pnpm publish",
+    "release": "changeset publish",
     "release:prerelease": "pnpm release --dist-tag next",
     "docs:generate": "typedoc"
   },
   "devDependencies": {
     "@ava/typescript": "^5.0.0",
     "@types/bn.js": "^5.1.0",
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.28.1",
     "@types/fs-extra": "^9.0.12",
     "@types/node": "20.0.0",
     "@types/rimraf": "^3.0.1",
-    "borsh": "^0.5.0",
     "ava": "^6.2.0",
+    "borsh": "^0.5.0",
     "husky": "^7.0.1",
+    "near-workspaces": "workspace:*",
     "ts-node": "^10.9.1",
     "typedoc": "^0.24",
     "typescript": "5.4.5",
-    "xo": "^0.60.0",
-    "near-workspaces": "workspace:*"
+    "xo": "^0.60.0"
   },
   "engines": {
     "node": ">=20.15.0",
