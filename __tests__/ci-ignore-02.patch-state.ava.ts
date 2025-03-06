@@ -11,7 +11,6 @@
  * testnet. That's why they're wrapped with `if (getNetworkFromEnv() === 'sandbox')`.
  */
 
-/* eslint-disable @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unsafe-argument */
 import anyTest, {type TestFn} from 'ava';
 import * as borsh from 'borsh';
 import {
@@ -40,32 +39,12 @@ if (getNetworkFromEnv() === 'sandbox') {
     });
   });
 
-  class Assignable {
-    [key: string]: any;
-    constructor(properties: any) {
-      for (const key of Object.keys(properties)) {
-        this[key] = properties[key];
-      }
-    }
-  }
-
-  class StatusMessage extends Assignable {}
-
-  class BorshRecord extends Assignable {}
-
-  const schema = new Map([
-    [StatusMessage, {kind: 'struct', fields: [['records', [BorshRecord]]]}],
-    [
-      BorshRecord,
-      {
-        kind: 'struct',
-        fields: [
-          ['k', 'string'],
-          ['v', 'string'],
-        ],
-      },
-    ],
-  ]);
+  const statusMessageSchema: borsh.Schema = {
+    map: {
+      key: 'string',
+      value: 'string',
+    },
+  };
 
   test('View state', async t => {
     const {contract, ali} = t.context.accounts;
@@ -74,13 +53,14 @@ if (getNetworkFromEnv() === 'sandbox') {
     // Get raw value
     const data = state.getRaw('STATE');
     // Deserialize from borsh
-    const statusMessage: StatusMessage = borsh.deserialize(
-      schema,
-      StatusMessage,
-      data,
-    );
-    t.deepEqual(statusMessage.records[0],
-      new BorshRecord({k: ali.accountId, v: 'hello'}),
+    const statusMessage = borsh.deserialize(
+      statusMessageSchema,
+      new Uint8Array(data),
+    ) as Map<string, string>;
+    const [key, value] = statusMessage.entries().next().value ?? [];
+    t.deepEqual(
+      {k: key, v: value},
+      {k: ali.accountId, v: 'hello'},
     );
   });
 
@@ -91,15 +71,16 @@ if (getNetworkFromEnv() === 'sandbox') {
     // Get state
     const state = await contract.viewState();
     // Get raw value
-    const statusMessage = state.get('STATE', {schema, type: StatusMessage});
+    const statusMessage = state.get('STATE', statusMessageSchema) as Map<string, string>;
     // Update contract state
-    statusMessage.records.push(
-      new BorshRecord({k: 'alice.near', v: 'hello world'}),
+    statusMessage.set(
+      'alice.near',
+      'hello world',
     );
     // Serialize and patch state back to runtime
     await contract.patchState(
       'STATE',
-      borsh.serialize(schema, statusMessage),
+      borsh.serialize(statusMessageSchema, statusMessage),
     );
     // Check again that the update worked
     const result = await contract.view('get_status', {
