@@ -72,8 +72,8 @@ importers:
         specifier: ^0.9.0
         version: 0.9.0
       near-api-js:
-        specifier: 5.0.1
-        version: 5.0.1
+        specifier: 5.1.0
+        version: 5.1.0
       near-sandbox:
         specifier: ^0.1.1
         version: 0.1.3
@@ -186,8 +186,8 @@ packages:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
 
-  '@eslint-community/eslint-utils@4.4.1':
-    resolution: {integrity: sha512-s3O3waFUrMV8P/XaF/+ZTp1X9XBZW1a4B97ZnjQF2KYWaFD2A8KyFBsrsfSjEmjn3RGWAIuvlneuZm3CUK3jbA==}
+  '@eslint-community/eslint-utils@4.5.0':
+    resolution: {integrity: sha512-RoV8Xs9eNwiDvhv7M+xcL4PWyRyIXRY/FLp3buU4h1EYfdF7unWUy3dOjPqb3C7rMUewIcqwW850PgS8h1o1yg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
@@ -264,49 +264,50 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@near-js/accounts@1.3.1':
-    resolution: {integrity: sha512-LAUN5L31JKtuXD9xS6D98GLtjG8KL9z761RvTYH6FMAwTFiyPed2M65mKNThGj3Zq46vWRGML0rJ2rlnXvewrA==}
+  '@near-js/accounts@1.4.0':
+    resolution: {integrity: sha512-H8ocFuFMSeopYN87w8eZpHDvhPSavfa/O8QEJl6Dfq3yyZp3vGYhFgVKQW09qP9CKZjID8Q2GrwSe+rmN+OQTw==}
 
-  '@near-js/crypto@1.4.1':
-    resolution: {integrity: sha512-hbricJD0H8nwu63Zw16UZQg3ms2W9NwDBsLt3OEtudTcu9q1MRrVZWc7ATjdmTvhkcgmouEFc6oLBsOxnmSLCA==}
+  '@near-js/crypto@1.4.2':
+    resolution: {integrity: sha512-GRfchsyfWvSAPA1gI9hYhw5FH94Ac1BUo+Cmp5rSJt/V0K3xVzCWgOQxvv4R3kDnWjaXJEuAmpEEnr4Bp3FWrA==}
 
-  '@near-js/keystores-browser@0.2.1':
-    resolution: {integrity: sha512-wF7UUDccnkVxdWqVgladupiXkrBmxNK9ilZg6zg9a11xtrDUpnjmWF4ON4tl1lJWF0XdTJmGdOrgOQZQDBQ79g==}
+  '@near-js/keystores-browser@0.2.2':
+    resolution: {integrity: sha512-Pxqm7WGtUu6zj32vGCy9JcEDpZDSB5CCaLQDTQdF3GQyL0flyRv2I/guLAgU5FLoYxU7dJAX9mslJhPW7P2Bfw==}
 
-  '@near-js/keystores-node@0.1.1':
-    resolution: {integrity: sha512-ht69dVB0IAX2RckOlBCCTxl7e8X29EYqgL4KE83Sg+cAwsQctAjVLpor5RbgJhg1iYY5BhIK5JgI0pTOJRAHxA==}
+  '@near-js/keystores-node@0.1.2':
+    resolution: {integrity: sha512-MWLvTszZOVziiasqIT/LYNhUyWqOJjDGlsthOsY6dTL4ZcXjjmhmzrbFydIIeQr+CcEl5wukTo68ORI9JrHl6g==}
 
-  '@near-js/keystores@0.2.1':
-    resolution: {integrity: sha512-KTeqSB+gx5LZNC9VGtHDe+aEiJts6e3nctMnnn/gqIgvW7KJ+BzcmTZZpxCmQLcy+s7hHSpzmyTVRkaCuYjCcQ==}
+  '@near-js/keystores@0.2.2':
+    resolution: {integrity: sha512-DLhi/3a4qJUY+wgphw2Jl4S+L0AKsUYm1mtU0WxKYV5OBwjOXvbGrXNfdkheYkfh3nHwrQgtjvtszX6LrRXLLw==}
 
-  '@near-js/providers@1.0.1':
-    resolution: {integrity: sha512-a1rU+JjTes/fdpnP/SLRQuWAK80os1DoHw2sszg/ccA9byTdI/CM6eKinrWJrO5i86IARfigOgjCJhrzPscvuQ==}
+  '@near-js/providers@1.0.2':
+    resolution: {integrity: sha512-+zjB9AvjU62JoF/vyyzyCiqQsFuSIcDxqzKqmCsgM3kv3yppQyo0Pdq36HWBTe3NJIcOOHMYjEngjbf9aexRRQ==}
 
-  '@near-js/signers@0.2.1':
-    resolution: {integrity: sha512-l1PnUy4e8NQe5AAHs7mEuWbbUt0rrsZLtcK1UlFaA16MKZmxXdHLMBfUmzyMA4bGzwkyUyGtIebkR+KjBfpEog==}
+  '@near-js/signers@0.2.2':
+    resolution: {integrity: sha512-M6ib+af9zXAPRCjH2RyIS0+RhCmd9gxzCeIkQ+I2A3zjgGiEDkBZbYso9aKj8Zh2lPKKSH7h+u8JGymMOSwgyw==}
 
-  '@near-js/transactions@1.3.1':
-    resolution: {integrity: sha512-kL9hxUqBr+tILQHFsh5T/bz3UkJrAq5tnyFqh0xf+7qGXZuRIPfuW/HMq4M6wFw0MGi/8ycmDT3yTQFH7PzZqw==}
+  '@near-js/transactions@1.3.2':
+    resolution: {integrity: sha512-9M0KT9zzCT6nsFmaH/ognmx0/PyWC47khZWA52U27mZDVfar3nb/5B+bdyrwi/4LmA6uFdi/Goj2Trqg6Okelg==}
 
   '@near-js/types@0.3.1':
     resolution: {integrity: sha512-8qIA7ynAEAuVFNAQc0cqz2xRbfyJH3PaAG5J2MgPPhD18lu/tCGd6pzYg45hjhtiJJRFDRjh/FUWKS+ZiIIxUw==}
 
-  '@near-js/utils@1.0.1':
-    resolution: {integrity: sha512-MzCAspVJJLrURnSbq059s6cWon2/qbbBVl+Ib1yBOMTs/6EuJ7GRvuSmtmSB7l9Hjjmz8Imn1aB2q3RVYZSbrA==}
+  '@near-js/utils@1.1.0':
+    resolution: {integrity: sha512-5XWRq7xpu8Wud9pRXe2U347KXyi0mXofedUY2DQ9TaqiZUcMIaN9xj7DbCs2v6dws3pJyYrT1KWxeNp5fSaY3w==}
 
-  '@near-js/wallet-account@1.3.1':
-    resolution: {integrity: sha512-POOKarJnYsTK0zEXygm43ecGlraPl5qagQHl+By5bk0zQFgeKaoFIJK/n04xUoGBhZTBIVp1/q7q3O1pB57hqg==}
+  '@near-js/wallet-account@1.3.2':
+    resolution: {integrity: sha512-c3hC+I+BUM9G8LIb3tsIzb5vUJeSN8oXSH/BCsqMXSkudVQ3Mn8GbsrZLvu1K9Kg7JKjHNJLJkdRVmnNG//NFQ==}
 
-  '@noble/curves@1.2.0':
-    resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
-
-  '@noble/hashes@1.3.2':
-    resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
-    engines: {node: '>= 16'}
+  '@noble/curves@1.8.1':
+    resolution: {integrity: sha512-warwspo+UYUPep0Q+vtdVB4Ugn8GGQj8iyB3gnRWsztmUHTI3S1nhdiWNsPUGL0vud7JlRRk1XEu7Lq1KGTnMQ==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.3.3':
     resolution: {integrity: sha512-V7/fPHgl+jsVPXqqeOzT8egNj2iBIVt+ECeMMG8TdcnTikP3oaBtUVqpT/gYCR68aEBJSF+XbYUxStjbFMqIIA==}
     engines: {node: '>= 16'}
+
+  '@noble/hashes@1.7.1':
+    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
+    engines: {node: ^14.21.3 || >=16}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -697,13 +698,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  base-x@2.0.6:
-    resolution: {integrity: sha512-UAmjxz9KbK+YIi66xej+pZVo/vxUOh49ubEvZW5egCbxhur05pBb+hwuireQwKO4nDpsNm64/jEei17LEpsr5g==}
-    engines: {node: '>=4.5.0'}
-    deprecated: use 3.0.0 instead, safe-buffer has been merged and release for compatability
-
-  base-x@3.0.10:
-    resolution: {integrity: sha512-7d0s06rR9rYaIWHkpfLIFICM/tkSVdoPC9qYAQRpxn9DdKNWNsKC0uk++akckyLq16Tx2WIinnZ6WRriAt6njQ==}
+  base-x@3.0.11:
+    resolution: {integrity: sha512-xz7wQ8xDhdyP7tQxwdteLYeFfS68tSMNCZ/Y37WJ4bhGfKPpqEIlmIyueQHqOyoPhE6xNUqjzRr8ra0eF9VRvA==}
 
   base64url@3.0.1:
     resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
@@ -746,9 +742,6 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  bs58@4.0.0:
-    resolution: {integrity: sha512-/jcGuUuSebyxwLLfKrbKnCJttxRf9PM51EnHTwmFKBxl4z1SGkoAhrfd6uZKE0dcjQTfm6XzTP8DPr1tzE4KIw==}
-
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
@@ -788,8 +781,8 @@ packages:
     resolution: {integrity: sha512-kfzR4zzQtAE9PC7CzZsjl3aBNbXWuXiSeOCdLcPpBfGW8YuCqQHcRPFDbr/BPVmd3EEPVpuFzLyuT/cUhPr4OQ==}
     engines: {node: '>=12.20'}
 
-  caniuse-lite@1.0.30001702:
-    resolution: {integrity: sha512-LoPe/D7zioC0REI5W73PeR1e1MLCipRGq/VkovJnd6Df+QVqT+vT33OXCp8QUd7kA7RZrHWxb1B36OQKI/0gOA==}
+  caniuse-lite@1.0.30001703:
+    resolution: {integrity: sha512-kRlAGTRWgPsOj7oARC9m1okJEXdL/8fekFVcxA8Hl7GH4r/sN4OJn/i6Flde373T50KS7Y37oFbMwlE8+F42kQ==}
 
   cbor@9.0.2:
     resolution: {integrity: sha512-JPypkxsB10s9QOWwa6zwPzqE1Md3vqpPc+cai4sAecuCsRyAtAl/pMyhPlMbT/xtPnm2dznJZYRLui57qiRhaQ==}
@@ -825,8 +818,8 @@ packages:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
     engines: {node: '>=8'}
 
-  ci-info@4.1.0:
-    resolution: {integrity: sha512-HutrvTNsF48wnxkzERIXOe5/mlcfFcbfCmwcg6CJnizbSue78AbDt+1cgl26zwn61WFxhcPykPfZrbqjGmBb4A==}
+  ci-info@4.2.0:
+    resolution: {integrity: sha512-cYY9mypksY8NRqgDB1XD1RiJL338v/551niynFTGkZOO2LHuB2OmOYxDIe/ttN9AHwrqdum1360G3ald0W9kCg==}
     engines: {node: '>=8'}
 
   ci-parallel-vars@1.0.1:
@@ -1015,8 +1008,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  electron-to-chromium@1.5.112:
-    resolution: {integrity: sha512-oen93kVyqSb3l+ziUgzIOlWt/oOuy4zRmpwestMn4rhFWAoFJeFuCVte9F2fASjeZZo7l/Cif9TiyrdW4CwEMA==}
+  electron-to-chromium@1.5.114:
+    resolution: {integrity: sha512-DFptFef3iktoKlFQK/afbo274/XNWD00Am0xa7M8FZUepHlHT8PEuiNBoRfFHbH1okqN58AlhbJ4QTkcnXorjA==}
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -1886,9 +1879,6 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  isomorphic-unfetch@3.1.0:
-    resolution: {integrity: sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q==}
-
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
@@ -2160,11 +2150,11 @@ packages:
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
-  near-abi@0.1.1:
-    resolution: {integrity: sha512-RVDI8O+KVxRpC3KycJ1bpfVj9Zv+xvq9PlW1yIFl46GhrnLw83/72HqHGjGDjQ8DtltkcpSjY9X3YIGZ+1QyzQ==}
+  near-abi@0.2.0:
+    resolution: {integrity: sha512-kCwSf/3fraPU2zENK18sh+kKG4uKbEUEQdyWQkmW8ZofmLarObIz2+zAYjA1teDZLeMvEQew3UysnPDXgjneaA==}
 
-  near-api-js@5.0.1:
-    resolution: {integrity: sha512-ZSQYIQdekIvSRfOFuRj6MW11jtK5lsOaiWM2VB0nq7eROuuxwSSXHg+syjCXl3HNNZ3hzg0CNdp+5Za0X1ZtYg==}
+  near-api-js@5.1.0:
+    resolution: {integrity: sha512-9oOyyWTxff0yQOQuc+hiRnl0zXGcJjW4ABX4excWCrHRpPMadRr/O2BIdAp+cdiPVjpi6st4yzknNnK8CQPKFg==}
 
   near-sandbox@0.1.3:
     resolution: {integrity: sha512-YUQWiCi7m67furmpxXo+weof86VhkD14ty6NqI/48twzapegu4suT7crnvOyVb2P8htzRpo7Ino0Mdz3mwLgBA==}
@@ -2594,9 +2584,9 @@ packages:
     resolution: {integrity: sha512-Gf9qqc58SpCA/xdziiHz35F4GNIWYWZrEshUc/G/r5BnLph6xpKuLeoJoQuj5WfBIx/eQLf+hmVPYHaxJu7V2g==}
     engines: {node: '>= 10.13.0'}
 
-  secp256k1@5.0.0:
-    resolution: {integrity: sha512-TKWX8xvoGHrxVdqbYeZM9w+izTF4b9z3NhSaDkdn81btvuh+ivbIMGT/zQvDtTFWhRlThpoz6LEYTr7n8A5GcA==}
-    engines: {node: '>=14.0.0'}
+  secp256k1@5.0.1:
+    resolution: {integrity: sha512-lDFs9AAIaWP9UCdtWrotXWWF9t8PWgQDcxqgAnpM9rMqxb3Oaq2J0thzPVSxBwdJgyQtkU/sYtFtbM1RSt/iYA==}
+    engines: {node: '>=18.0.0'}
 
   semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
@@ -2954,9 +2944,6 @@ packages:
     resolution: {integrity: sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==}
     engines: {node: '>=0.10.0'}
 
-  unfetch@4.2.0:
-    resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
-
   unicorn-magic@0.3.0:
     resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
     engines: {node: '>=18'}
@@ -3033,8 +3020,8 @@ packages:
     resolution: {integrity: sha512-K4jVyjnBdgvc86Y6BkaLZEN933SwYOuBFkdmBu9ZfkcAbdVbpITnDmjvZ/aQjRXQrv5EPkTnD1s39GiiqbngCw==}
     engines: {node: '>= 0.4'}
 
-  which-typed-array@1.1.18:
-    resolution: {integrity: sha512-qEcY+KJYlWyLH9vNbsr6/5j59AXk5ni5aakf8ldzBvGde6Iz4sxZGkJyWSAueTG7QhOvNRYb1lDdFmL5Td0QKA==}
+  which-typed-array@1.1.19:
+    resolution: {integrity: sha512-rEvr90Bck4WZt9HHFC4DJMsjvu7x+r6bImz0/BrbWb7A2djJ8hnZMrWnHo9F8ssv0OMErasDhftrfROTyqSDrw==}
     engines: {node: '>= 0.4'}
 
   which@2.0.2:
@@ -3290,7 +3277,7 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@eslint-community/eslint-utils@4.4.1(eslint@8.57.1)':
+  '@eslint-community/eslint-utils@4.5.0(eslint@8.57.1)':
     dependencies:
       eslint: 8.57.1
       eslint-visitor-keys: 3.4.3
@@ -3408,106 +3395,104 @@ snapshots:
       - encoding
       - supports-color
 
-  '@near-js/accounts@1.3.1':
+  '@near-js/accounts@1.4.0':
     dependencies:
-      '@near-js/crypto': 1.4.1
-      '@near-js/providers': 1.0.1
-      '@near-js/signers': 0.2.1
-      '@near-js/transactions': 1.3.1
+      '@near-js/crypto': 1.4.2
+      '@near-js/providers': 1.0.2
+      '@near-js/signers': 0.2.2
+      '@near-js/transactions': 1.3.2
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
+      '@near-js/utils': 1.1.0
       '@noble/hashes': 1.3.3
       borsh: 1.0.0
       depd: 2.0.0
       is-my-json-valid: 2.20.6
-      isomorphic-unfetch: 3.1.0
       lru_map: 0.4.1
-      near-abi: 0.1.1
+      near-abi: 0.2.0
     transitivePeerDependencies:
       - encoding
 
-  '@near-js/crypto@1.4.1':
+  '@near-js/crypto@1.4.2':
     dependencies:
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
-      '@noble/curves': 1.2.0
+      '@near-js/utils': 1.1.0
+      '@noble/curves': 1.8.1
       borsh: 1.0.0
       randombytes: 2.1.0
-      secp256k1: 5.0.0
+      secp256k1: 5.0.1
 
-  '@near-js/keystores-browser@0.2.1':
+  '@near-js/keystores-browser@0.2.2':
     dependencies:
-      '@near-js/crypto': 1.4.1
-      '@near-js/keystores': 0.2.1
+      '@near-js/crypto': 1.4.2
+      '@near-js/keystores': 0.2.2
 
-  '@near-js/keystores-node@0.1.1':
+  '@near-js/keystores-node@0.1.2':
     dependencies:
-      '@near-js/crypto': 1.4.1
-      '@near-js/keystores': 0.2.1
+      '@near-js/crypto': 1.4.2
+      '@near-js/keystores': 0.2.2
 
-  '@near-js/keystores@0.2.1':
+  '@near-js/keystores@0.2.2':
     dependencies:
-      '@near-js/crypto': 1.4.1
+      '@near-js/crypto': 1.4.2
       '@near-js/types': 0.3.1
 
-  '@near-js/providers@1.0.1':
+  '@near-js/providers@1.0.2':
     dependencies:
-      '@near-js/transactions': 1.3.1
+      '@near-js/transactions': 1.3.2
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
+      '@near-js/utils': 1.1.0
       borsh: 1.0.0
       exponential-backoff: 3.1.2
-      isomorphic-unfetch: 3.1.0
     optionalDependencies:
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
 
-  '@near-js/signers@0.2.1':
+  '@near-js/signers@0.2.2':
     dependencies:
-      '@near-js/crypto': 1.4.1
-      '@near-js/keystores': 0.2.1
+      '@near-js/crypto': 1.4.2
+      '@near-js/keystores': 0.2.2
       '@noble/hashes': 1.3.3
 
-  '@near-js/transactions@1.3.1':
+  '@near-js/transactions@1.3.2':
     dependencies:
-      '@near-js/crypto': 1.4.1
-      '@near-js/signers': 0.2.1
+      '@near-js/crypto': 1.4.2
+      '@near-js/signers': 0.2.2
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
+      '@near-js/utils': 1.1.0
       '@noble/hashes': 1.3.3
       borsh: 1.0.0
 
   '@near-js/types@0.3.1': {}
 
-  '@near-js/utils@1.0.1':
+  '@near-js/utils@1.1.0':
     dependencies:
       '@near-js/types': 0.3.1
-      bs58: 4.0.0
+      '@scure/base': 1.2.4
       depd: 2.0.0
       mustache: 4.0.0
 
-  '@near-js/wallet-account@1.3.1':
+  '@near-js/wallet-account@1.3.2':
     dependencies:
-      '@near-js/accounts': 1.3.1
-      '@near-js/crypto': 1.4.1
-      '@near-js/keystores': 0.2.1
-      '@near-js/providers': 1.0.1
-      '@near-js/signers': 0.2.1
-      '@near-js/transactions': 1.3.1
+      '@near-js/accounts': 1.4.0
+      '@near-js/crypto': 1.4.2
+      '@near-js/keystores': 0.2.2
+      '@near-js/providers': 1.0.2
+      '@near-js/signers': 0.2.2
+      '@near-js/transactions': 1.3.2
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
+      '@near-js/utils': 1.1.0
       borsh: 1.0.0
     transitivePeerDependencies:
       - encoding
 
-  '@noble/curves@1.2.0':
+  '@noble/curves@1.8.1':
     dependencies:
-      '@noble/hashes': 1.3.2
-
-  '@noble/hashes@1.3.2': {}
+      '@noble/hashes': 1.7.1
 
   '@noble/hashes@1.3.3': {}
+
+  '@noble/hashes@1.7.1': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -3559,7 +3544,7 @@ snapshots:
   '@types/bs58@4.0.4':
     dependencies:
       '@types/node': 20.0.0
-      base-x: 3.0.10
+      base-x: 3.0.11
 
   '@types/cacheable-request@6.0.3':
     dependencies:
@@ -3694,7 +3679,7 @@ snapshots:
 
   '@typescript-eslint/utils@7.18.0(eslint@8.57.1)(typescript@5.8.2)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@8.57.1)
       '@typescript-eslint/scope-manager': 7.18.0
       '@typescript-eslint/types': 7.18.0
       '@typescript-eslint/typescript-estree': 7.18.0(typescript@5.8.2)
@@ -3945,7 +3930,7 @@ snapshots:
       cbor: 9.0.2
       chalk: 5.4.1
       chunkd: 2.0.1
-      ci-info: 4.1.0
+      ci-info: 4.2.0
       ci-parallel-vars: 1.0.1
       cli-truncate: 4.0.0
       code-excerpt: 4.0.0
@@ -3988,11 +3973,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  base-x@2.0.6:
-    dependencies:
-      safe-buffer: 5.2.1
-
-  base-x@3.0.10:
+  base-x@3.0.11:
     dependencies:
       safe-buffer: 5.2.1
 
@@ -4031,14 +4012,10 @@ snapshots:
 
   browserslist@4.24.4:
     dependencies:
-      caniuse-lite: 1.0.30001702
-      electron-to-chromium: 1.5.112
+      caniuse-lite: 1.0.30001703
+      electron-to-chromium: 1.5.114
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
-
-  bs58@4.0.0:
-    dependencies:
-      base-x: 2.0.6
 
   buffer-from@1.1.2: {}
 
@@ -4081,7 +4058,7 @@ snapshots:
 
   callsites@4.2.0: {}
 
-  caniuse-lite@1.0.30001702: {}
+  caniuse-lite@1.0.30001703: {}
 
   cbor@9.0.2:
     dependencies:
@@ -4106,7 +4083,7 @@ snapshots:
 
   ci-info@3.9.0: {}
 
-  ci-info@4.1.0: {}
+  ci-info@4.2.0: {}
 
   ci-parallel-vars@1.0.1: {}
 
@@ -4280,7 +4257,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  electron-to-chromium@1.5.112: {}
+  electron-to-chromium@1.5.114: {}
 
   elliptic@6.6.1:
     dependencies:
@@ -4384,7 +4361,7 @@ snapshots:
       typed-array-byte-offset: 1.0.4
       typed-array-length: 1.0.7
       unbox-primitive: 1.1.0
-      which-typed-array: 1.1.18
+      which-typed-array: 1.1.19
 
   es-define-property@1.0.1: {}
 
@@ -4505,7 +4482,7 @@ snapshots:
 
   eslint-plugin-es-x@7.8.0(eslint@8.57.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@8.57.1)
       '@eslint-community/regexpp': 4.12.1
       eslint: 8.57.1
       eslint-compat-utils: 0.5.1(eslint@8.57.1)
@@ -4547,7 +4524,7 @@ snapshots:
 
   eslint-plugin-n@17.16.2(eslint@8.57.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@8.57.1)
       enhanced-resolve: 5.18.1
       eslint: 8.57.1
       eslint-plugin-es-x: 7.8.0(eslint@8.57.1)
@@ -4581,8 +4558,8 @@ snapshots:
   eslint-plugin-unicorn@56.0.1(eslint@8.57.1):
     dependencies:
       '@babel/helper-validator-identifier': 7.25.9
-      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
-      ci-info: 4.1.0
+      '@eslint-community/eslint-utils': 4.5.0(eslint@8.57.1)
+      ci-info: 4.2.0
       clean-regexp: 1.0.0
       core-js-compat: 3.41.0
       eslint: 8.57.1
@@ -4623,7 +4600,7 @@ snapshots:
 
   eslint@8.57.1:
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@8.57.1)
       '@eslint-community/regexpp': 4.12.1
       '@eslint/eslintrc': 2.1.4
       '@eslint/js': 8.57.1
@@ -5263,7 +5240,7 @@ snapshots:
 
   is-typed-array@1.1.15:
     dependencies:
-      which-typed-array: 1.1.18
+      which-typed-array: 1.1.19
 
   is-unc-path@1.0.0:
     dependencies:
@@ -5293,13 +5270,6 @@ snapshots:
   isarray@2.0.5: {}
 
   isexe@2.0.0: {}
-
-  isomorphic-unfetch@3.1.0:
-    dependencies:
-      node-fetch: 2.6.7
-      unfetch: 4.2.0
-    transitivePeerDependencies:
-      - encoding
 
   jackspeak@3.4.3:
     dependencies:
@@ -5509,28 +5479,28 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  near-abi@0.1.1:
+  near-abi@0.2.0:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  near-api-js@5.0.1:
+  near-api-js@5.1.0:
     dependencies:
-      '@near-js/accounts': 1.3.1
-      '@near-js/crypto': 1.4.1
-      '@near-js/keystores': 0.2.1
-      '@near-js/keystores-browser': 0.2.1
-      '@near-js/keystores-node': 0.1.1
-      '@near-js/providers': 1.0.1
-      '@near-js/signers': 0.2.1
-      '@near-js/transactions': 1.3.1
+      '@near-js/accounts': 1.4.0
+      '@near-js/crypto': 1.4.2
+      '@near-js/keystores': 0.2.2
+      '@near-js/keystores-browser': 0.2.2
+      '@near-js/keystores-node': 0.1.2
+      '@near-js/providers': 1.0.2
+      '@near-js/signers': 0.2.2
+      '@near-js/transactions': 1.3.2
       '@near-js/types': 0.3.1
-      '@near-js/utils': 1.0.1
-      '@near-js/wallet-account': 1.3.1
-      '@noble/curves': 1.2.0
+      '@near-js/utils': 1.1.0
+      '@near-js/wallet-account': 1.3.2
+      '@noble/curves': 1.8.1
       borsh: 1.0.0
       depd: 2.0.0
       http-errors: 1.7.2
-      near-abi: 0.1.1
+      near-abi: 0.2.0
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
@@ -5934,7 +5904,7 @@ snapshots:
       ajv-formats: 2.1.1(ajv@8.17.1)
       ajv-keywords: 5.1.0(ajv@8.17.1)
 
-  secp256k1@5.0.0:
+  secp256k1@5.0.1:
     dependencies:
       elliptic: 6.6.1
       node-addon-api: 5.1.0
@@ -6318,8 +6288,6 @@ snapshots:
 
   unc-path-regex@0.1.2: {}
 
-  unfetch@4.2.0: {}
-
   unicorn-magic@0.3.0: {}
 
   universalify@0.1.2: {}
@@ -6417,7 +6385,7 @@ snapshots:
       isarray: 2.0.5
       which-boxed-primitive: 1.1.1
       which-collection: 1.0.2
-      which-typed-array: 1.1.18
+      which-typed-array: 1.1.19
 
   which-collection@1.0.2:
     dependencies:
@@ -6426,12 +6394,13 @@ snapshots:
       is-weakmap: 2.0.2
       is-weakset: 2.0.4
 
-  which-typed-array@1.1.18:
+  which-typed-array@1.1.19:
     dependencies:
       available-typed-arrays: 1.0.7
       call-bind: 1.0.8
       call-bound: 1.0.4
       for-each: 0.3.5
+      get-proto: 1.0.1
       gopd: 1.2.0
       has-tostringtag: 1.0.2
 
