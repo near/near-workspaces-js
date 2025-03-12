@@ -6,13 +6,12 @@ import * as fs from 'fs/promises';
 import {promisify} from 'util';
 import {URL} from 'url';
 import {spawn as _asyncSpawn} from 'promisify-child-process';
-import rimraf from 'rimraf';
 import {type Binary} from 'near-sandbox';
 import {getBinary} from 'near-sandbox/dist/getBinary';
 import fs_extra from 'fs-extra';
 import {type ChildProcessPromise} from './types';
 
-export const rm = promisify(rimraf);
+export const {rm} = fs_extra;
 export const sandboxBinary: () => Promise<Binary> = async () => (getBinary());
 
 export async function exists(d: PathLike): Promise<boolean> {
