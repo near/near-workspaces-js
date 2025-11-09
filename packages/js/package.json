@@ -12,8 +12,22 @@
   },
   "author": "Near Inc (team@near.org)",
   "license": "(MIT AND Apache-2.0)",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
   "dependencies": {
     "@scure/base": "^1.2.0",
     "base64url": "^3.0.1",
@@ -30,7 +44,9 @@
     "temp-dir": "^2.0.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm build:cjs && pnpm build:esm && bash scripts/fix-esm-imports.sh",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
     "prepublishOnly": "pnpm build",
     "postinstall": "node scripts/install.js",
     "test:testnet": "NEAR_WORKSPACES_NETWORK=testnet && TESTNET_MASTER_ACCOUNT_ID='ro3evqruqecmi7q4uwux1651245117258' ava --verbose ",

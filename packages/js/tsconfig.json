@@ -20,7 +20,8 @@
     "strictNullChecks": true, /* Enable strict null checks. */
     "noImplicitThis": true, /* Raise error on 'this' expressions with an implied 'any' type. */
     "esModuleInterop": true, /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
+    "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
+    "skipLibCheck": true /* Skip type checking of declaration files. */
   },
   "include": [
     "src/*.ts",
