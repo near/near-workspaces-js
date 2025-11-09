@@ -45,6 +45,7 @@ find "$ESM_DIR" -name "*.js" -type f | while read -r file; do
   # Fix external module imports with subpaths
   sed -i.bak3 -E \
     -e "s/(import[[:space:]]+\{[^}]*\}[[:space:]]+from[[:space:]]+['\"])([^'\"@\.][^'\"]*\/lib\/[^'\"]+)(['\"])/\1\2.js\3/g" \
+    -e "s/(import[[:space:]]+\{[^}]*\}[[:space:]]+from[[:space:]]+['\"])([^'\"@\.][^'\"]*\/dist\/[^'\"]+)(['\"])/\1\2.js\3/g" \
     -e "s/(export[[:space:]]+\{[^}]*\}[[:space:]]+from[[:space:]]+['\"])([^'\"@\.][^'\"]*\/lib\/[^'\"]+)(['\"])/\1\2.js\3/g" \
     -e "s/(export[[:space:]]+\*[[:space:]]+from[[:space:]]+['\"])([^'\"@\.][^'\"]*\/lib\/[^'\"]+)(['\"])/\1\2.js\3/g" \
     -e "s/\.js\.js/.js/g" \
@@ -53,18 +54,25 @@ find "$ESM_DIR" -name "*.js" -type f | while read -r file; do
   # Fix directory imports by adding /index.js
   # But only if NOT already inside that directory
   if [[ "$file" != *"/account/"* ]]; then
-    sed -i.tmp -E "s/from '\.\/account\.js'/from '.\/account\/index.js'/g" "$file"
-    mv "$file.tmp" "$file" 2>/dev/null || true
+    sed -i.tmp -E \
+      -e "s/(from[[:space:]]+['\"])\.\/account\.js(['\"])/\1.\/account\/index.js\2/g" \
+      -e "s/(export[[:space:]]+\*[[:space:]]+from[[:space:]]+['\"])\.\/account\.js(['\"])/\1.\/account\/index.js\2/g" \
+      "$file"
   fi
   
   if [[ "$file" != *"/server/"* ]]; then
-    sed -i.tmp -E "s/from '\.\/server\.js'/from '.\/server\/index.js'/g" "$file"
-    mv "$file.tmp" "$file" 2>/dev/null || true
+    sed -i.tmp -E \
+      -e "s/(from[[:space:]]+['\"])\.\/server\.js(['\"])/\1.\/server\/index.js\2/g" \
+      -e "s/(export[[:space:]]+\*[[:space:]]+from[[:space:]]+['\"])\.\/server\.js(['\"])/\1.\/server\/index.js\2/g" \
+      "$file"
   fi
   
   if [[ "$file" != *"/record/"* ]]; then
-    sed -i.tmp -E "s/from '\.\/record\.js'/from '.\/record\/index.js'/g" "$file"
-    mv "$file.tmp" "$file" 2>/dev/null || true
+    sed -i.tmp -E \
+      -e "s/(from[[:space:]]+['\"])\.\/record\.js(['\"])/\1.\/record\/index.js\2/g" \
+      -e "s/(from[[:space:]]+['\"])\.\.\/record\.js(['\"])/\1.\.\/record\/index.js\2/g" \
+      -e "s/(export[[:space:]]+\*[[:space:]]+from[[:space:]]+['\"])\.\/record\.js(['\"])/\1.\/record\/index.js\2/g" \
+      "$file"
   fi
   
   # Fix external module directory imports
