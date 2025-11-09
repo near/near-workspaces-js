@@ -12,6 +12,20 @@
 
 `NEAR Workspaces` is a library for automating workflows and writing tests for NEAR smart contracts. You can use it as is or integrate with test runner of your choise (AVA, Jest, Mocha, etc.). If you don't have a preference, we suggest you to use AVA.
 
+## Module Format Support
+
+This library supports both CommonJS (CJS) and ECMAScript Modules (ESM):
+
+```javascript
+// ESM
+import {Worker, NEAR, parseNEAR} from 'near-workspaces';
+
+// CommonJS
+const {Worker, NEAR, parseNEAR} = require('near-workspaces');
+```
+
+Both module formats are fully supported and work identically.
+
 Quick Start (without testing frameworks)
 ===========
 To get started with `Near Workspaces` you need to do only two things:
