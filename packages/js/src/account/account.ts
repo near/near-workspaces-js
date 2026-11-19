@@ -293,11 +293,6 @@ export class Account implements NearAccount {
       signWithKey,
     });
 
-    if (!env.NEAR_WORKSPACES_NO_LOGS && txResult.logs.length > 0) {
-      const accountId = typeof contractId === 'string' ? contractId : contractId.accountId;
-      console.log(`Contract logs from ${accountId}.${methodName}(${JSON.stringify(args)}) call:`, txResult.logs);
-    }
-
     if (txResult.failed) {
       throw new TransactionError(txResult);
     }

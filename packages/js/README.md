@@ -12,6 +12,11 @@
 
 `NEAR Workspaces` is a library for automating workflows and writing tests for NEAR smart contracts. You can use it as is or integrate with test runner of your choise (AVA, Jest, Mocha, etc.). If you don't have a preference, we suggest you to use AVA.
 
+Contract receipt logs are printed once when a transaction completes, including
+transactions submitted with `batch(...).transact()` or `callRaw()` and batches
+whose execution failed. Logs remain available on `TransactionResult.logs`.
+Set `NEAR_WORKSPACES_NO_LOGS=1` to suppress console output.
+
 Quick Start (without testing frameworks)
 ===========
 To get started with `Near Workspaces` you need to do only two things:

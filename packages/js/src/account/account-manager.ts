@@ -458,6 +458,10 @@ export class ManagedTransaction extends Transaction {
    */
   async transact(keyPair?: KeyPair): Promise<TransactionResult> {
     const executionResult = await this.manager.executeTransaction(this, keyPair);
+    if (!process.env.NEAR_WORKSPACES_NO_LOGS && executionResult.logs.length > 0) {
+      console.log(`Contract logs from ${this.receiverId} transaction:`, executionResult.logs);
+    }
+
     if (executionResult.succeeded && this.delete) {
       await this.manager.deleteKey(this.receiverId);
     }
